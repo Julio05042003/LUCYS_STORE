@@ -1,5 +1,6 @@
 from django.db import models
 from apps.usuarios.models import Estado
+from decimal import Decimal, ROUND_HALF_UP
 
 class Marca(models.Model):
     marca_id = models.AutoField(primary_key=True, db_column='Marca_id')
@@ -32,3 +33,10 @@ class Producto(models.Model):
 
     class Meta:
         db_table = 'Productos'
+
+    @property
+    def precio_venta(self):
+        return (self.precio_c * Decimal('1.20')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+
+

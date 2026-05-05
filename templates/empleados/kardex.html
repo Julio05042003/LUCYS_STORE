@@ -1,0 +1,194 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="inventory-wrapper">
+
+    <!-- 🔷 HEADER -->
+    <div class="header-section">
+        <h2><i class="fas fa-chart-line"></i> Kardex de Producto</h2>
+    </div>
+
+    <!-- 🧾 INFO DEL PRODUCTO -->
+    <div class="kardex-info-card">
+
+        <div class="info-grid">
+
+            <div>
+                <label>Producto</label>
+                <p>{{ producto.nombre }}</p>
+            </div>
+
+            <div>
+                <label>Código</label>
+                <p>{{ producto.codigo }}</p>
+            </div>
+
+            <div>
+                <label>Categoría</label>
+                <p>{{ producto.categoria.nombre }}</p>
+            </div>
+
+            <div>
+                <label>Marca</label>
+                <p>{{ producto.marca.nombre }}</p>
+            </div>
+
+            <div>
+                <label>Estado</label>
+                <p>
+                    <span class="{% if producto.estado.nombre == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
+                        {{ producto.estado.nombre }}
+                    </span>
+                </p>
+            </div>
+
+            <div>
+                <label>Stock Actual</label>
+                <p>{{ stock }}</p>
+            </div>
+
+            <div>
+                <label>Precio Venta</label>
+                <p>${{ producto.precio_venta }}</p>
+            </div>
+
+            <div>
+                <label>Último Costo</label>
+                <p>${{ ultimo_precio }}</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 📊 TABLA KARDEX CONTABLE -->
+    <div class="table-container">
+        <table class="table-modern kardex-table">
+
+            <thead>
+                <tr>
+                    <th rowspan="2">Fecha</th>
+                    <th rowspan="2">Tipo</th>
+                    <th rowspan="2">Documento</th>
+
+                    <th colspan="2">Entradas</th>
+                    <th colspan="2">Salidas</th>
+                    <th colspan="2">Saldo</th>
+                </tr>
+
+                <tr>
+                    <th>Cant.</th>
+                    <th>Valor</th>
+
+                    <th>Cant.</th>
+                    <th>Valor</th>
+
+                    <th>Cant.</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for m in movimientos %}
+                <tr>
+
+                    <td>{{ m.fecha|date:"d/m/Y" }}</td>
+
+                    <td>
+                        <span class="{% if m.tipo == 'ENTRADA' %}badge-activo{% else %}badge-inactivo{% endif %}">
+                            {{ m.tipo }}
+                        </span>
+                    </td>
+
+                    <td>{{ m.documento }}</td>
+
+                    <!-- ENTRADAS -->
+                    <td>
+                        {% if m.tipo == 'ENTRADA' %}
+                            {{ m.cantidad }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if m.tipo == 'ENTRADA' %}
+                            ${{ m.valor }}
+                        {% endif %}
+                    </td>
+
+                    <!-- SALIDAS -->
+                    <td>
+                        {% if m.tipo == 'SALIDA' %}
+                            {{ m.cantidad }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if m.tipo == 'SALIDA' %}
+                            ${{ m.valor }}
+                        {% endif %}
+                    </td>
+
+                    <!-- SALDO -->
+                    <td>{{ m.saldo }}</td>
+                    <td>${{ m.saldo_valor }}</td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No hay movimientos registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<!-- 🎨 ESTILO EXTRA -->
+<style>
+
+.kardex-info-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.info-grid label {
+    font-size: 12px;
+    color: #888;
+}
+
+.info-grid p {
+    font-weight: bold;
+    margin: 5px 0 0;
+}
+
+.kardex-table thead th {
+    text-align: center;
+}
+
+.kardex-table tbody td {
+    text-align: center;
+}
+
+.kardex-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+</style>
+
+{% endblock %}

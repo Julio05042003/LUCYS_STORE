@@ -1,0 +1,147 @@
+@import url('style-inventario.css');
+
+/* Estilos específicos para Ventas */
+.field input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.badge-pago {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.total-display {
+    font-size: 1.5rem;
+    color: var(--rosa-principal);
+    font-weight: bold;
+}
+
+.mini-tabla {
+    margin-top: 15px;
+    border: 1px solid #eee;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.section-title {
+    display: block;
+    font-weight: bold;
+    color: #64748b;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.total-section {
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.total-item {
+    display: flex;
+    justify-content: space-between;
+    width: 220px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.grand-total {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--rosa-principal);
+    border-top: 1px solid #e2e8f0;
+    margin-top: 5px;
+    padding-top: 5px;
+}
+
+.input-table {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.btn-delete-row {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+@media print {
+    /* Ocultar todo lo que no sea el ticket */
+    body * {
+        visibility: hidden;
+    }
+    #ticket-imprimible, #ticket-imprimible * {
+        visibility: visible;
+    }
+    #ticket-imprimible {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm; /* Ancho estándar de ticket */
+    }
+    .modal-overlay, .modal-footer, .topbar, .sidebar {
+        display: none !important;
+    }
+}
+
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.table-detalle {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table-detalle th {
+    background: #f8fafc;
+    text-align: left;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table-detalle td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.total-area-detalle {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 2px solid #1e293b;
+}
+
+.total-area-detalle h4 {
+    color: #f472b6;
+    font-size: 1.2rem;
+}
+
+.badge-stock {
+    background: #dcfce7;
+    color: #166534;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}

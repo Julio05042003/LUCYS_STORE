@@ -1,0 +1,556 @@
+/* 1. CONFIGURACIÓN DE COLORES Y FUENTE */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+:root {
+    --rosa-principal: #ff8fa3;
+    --rosa-claro: #fff0f3;
+    --texto-oscuro: #4a4a4a;
+    --blanco: #ffffff;
+    --sombra: rgba(0, 0, 0, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* El contenedor que envuelve Sidebar y Contenido */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh; /* Obliga al contenedor a medir al menos el alto de la pantalla */
+}
+
+/* La barra lateral heredará el alto del padre */
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    /* No necesitas poner height, Flexbox la estirará automáticamente */
+}
+
+
+
+html, body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--rosa-claro);
+    color: var(--texto-oscuro);
+}
+
+/* 2. BARRA SUPERIOR (TOPBAR) */
+.topbar {
+    height: 60px;
+    background-color: var(--rosa-principal);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    color: white;
+    box-shadow: 0 2px 5px var(--sombra);
+    z-index: 100;
+}
+
+.logo-text {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* 3. CONTENEDOR PRINCIPAL Y SIDEBAR */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: var(--blanco);
+    border-right: 1px solid #eee;
+    padding-top: 20px;
+    /* AGREGA ESTO: */
+    height: calc(100vh - 60px); /* Asegura que siempre mida el alto total */
+    position: sticky;           /* La mantiene fija si hay mucho scroll en el contenido */
+    top: 60px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    transition: all 0.3s ease;
+}
+
+.sidebar li a {
+    text-decoration: none;
+    color: var(--texto-oscuro);
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    width: 100%;
+}
+
+.sidebar li i {
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar li:hover {
+    background-color: var(--sombra);
+}
+
+/*cambiar el color de fondo del elemento activo*/
+.sidebar li.active {
+    background-color: var(--sombra);
+    border-left: 5px solid var(--rosa-principal);
+}
+
+.sidebar li.active a {
+    color: var(--rosa-principal);
+    font-weight: 600;
+}
+
+.logout a {
+    color: #ff4d4d !important;
+    margin-top: 20px;
+}
+
+/* 4. ÁREA DE CONTENIDO */
+.content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* 5. DISEÑO DE INVENTARIO (TABLAS Y FILTROS) */
+.inventory-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.filters-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    box-shadow: 0 4px 6px var(--sombra);
+    margin-bottom: 20px;
+}
+
+.filters-card .field {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.filters-card label {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.filters-card input, .filters-card select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Tabla */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px var(--sombra);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: var(--rosa-principal);
+    color: white;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+/* 6. BOTONES */
+.action-footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+/* DISEÑO DE LA VENTANA MODAL */
+/* ACTUALIZA ESTAS REGLAS EN TU CSS ACTUAL */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 10px; /* Evita que la modal pegue a los bordes en móviles */
+}
+
+.modal-content {
+    background: white;
+    width: 95%; /* Cambiado de 90% para ganar espacio en móvil */
+    max-width: 500px;
+    border-radius: 15px;
+    padding: 0;
+    overflow: hidden;
+    display: flex; /* Añadido para controlar el scroll */
+    flex-direction: column;
+    max-height: 90vh; /* Seguridad: que no sea más alta que la pantalla */
+    animation: slideDown 0.3s ease;
+}
+
+.modal-form {
+    padding: 20px;
+    overflow-y: auto; /* IMPORTANTE: Permite bajar con el dedo si el form es largo */
+    flex: 1; /* Toma el espacio disponible */
+}
+
+
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    background: var(--rosa-principal);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-form {
+    padding: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group input, .form-group select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.modal-footer {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-primary { background: var(--rosa-principal); color: white; }
+.btn-secondary { background: var(--texto-oscuro); color: white; }
+.btn-danger { background: #ff4d4d; color: white; }
+.btn-clear { background: #eee; color: #666; }
+
+button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ==========================================
+   7. RESPONSIVE DESIGN (MEDIA QUERIES)
+   ========================================== */
+
+/* Tablet y Pantallas Medianas (992px o menos) */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: -240px; /* Escondemos el sidebar */
+        z-index: 999;
+        height: 100%;
+        transition: 0.3s;
+    }
+
+    /* Clase para mostrar sidebar con JS */
+    .sidebar.active {
+        left: 0;
+        box-shadow: 5px 0 15px var(--sombra);
+    }
+
+    .topbar .logo-area {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Icono de menú que debes añadir al HTML */
+    .menu-toggle {
+        display: block !important;
+        margin-right: 15px;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+}
+
+/* Celulares (768px o menos) */
+@media (max-width: 768px) {
+    .filters-card {
+        flex-direction: column; /* Apila los filtros verticalmente */
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .filters-card .field {
+        width: 100%;
+    }
+
+    .btn-clear {
+        width: 100%; /* Botón limpiar ocupa todo el ancho */
+    }
+
+    /* TABLA RESPONSIVE: Scroll horizontal */
+    .table-container {
+        overflow-x: auto; /* Permite deslizar la tabla */
+    }
+
+    table {
+        min-width: 600px; /* Asegura que la tabla no se comprima demasiado */
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr; /* Modal a una sola columna */
+    }
+
+    .action-footer {
+        flex-direction: column; /* Botones de acción apilados */
+    }
+
+    .action-footer button {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr; /* Una sola columna para que los inputs sean anchos */
+        gap: 10px;
+    }
+    
+    .modal-footer {
+        flex-direction: column; /* Botones uno arriba del otro */
+        padding: 15px;
+    }
+    
+    .modal-footer button {
+        width: 100%; /* Botones fáciles de presionar */
+    }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .content {
+        padding: 15px;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+}
+
+/* Utility: Mostrar el botón de menú solo en responsive */
+.menu-toggle {
+    display: none;
+    background: none;
+    color: white;
+    padding: 0;
+}
+
+.sidebar ul {
+    overflow-y: auto; /* Permite scroll si hay muchos botones */
+    max-height: calc(100vh - 80px); /* Ajusta según el alto de tu topbar */
+}
+
+/* Evita que el texto se parta en dos líneas */
+.sidebar li a span {
+    white-space: nowrap;
+}
+
+.modal-overlay {
+    z-index: 1000; /* Fondo del modal */
+}
+
+/* Si abres un modal encima de otro, el último abierto debería tener un z-index mayor o el mismo si usas display flex correctamente */
+#modalMarca, #modalCategoria {
+    background: rgba(0, 0, 0, 0.7); /* Oscurecer un poco más el fondo si es un modal secundario */
+}
+
+/* Botonera de fila */
+.row-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.btn-row {
+    border: none;
+    background: #f1f5f9;
+    color: #475569;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-row:hover { background: var(--rosa-principal); color: white; }
+.btn-row.kardex:hover { background: #6366f1; color: white; } /* Azul para historial */
+.btn-row.view:hover { background: #0ea5e9; color: white; }   /* Celeste para ver */
+
+/* Badges de Kardex */
+.badge-type {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.badge-type.in { background: #dcfce7; color: #166534; }
+.badge-type.out { background: #fee2e2; color: #991b1b; }
+
+/* Grid de detalle de producto */
+.product-detail-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.detail-image img {
+    width: 100%;
+    border-radius: 12px;
+    border: 2px solid #f1f5f9;
+}
+
+.detail-info .info-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 5px;
+}
+
+@media (max-width: 600px) {
+    .product-detail-grid { grid-template-columns: 1fr; text-align: center; }
+}
+
+.image-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e1;
+}
+
+.image-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 2rem;
+    border: 1px solid #cbd5e1;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.image-controls small {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+    .image-upload-container {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+.preview-upload-container {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.preview-upload-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Aquí usamos CONTAIN para que el trabajador vea la foto completa */
+    background: #f8fafc;
+}

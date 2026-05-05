@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+:root {
+    --rosa-principal: #ff8fa3;
+    --rosa-bg: #fce4ec;
+    --texto: #4a4a4a;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--rosa-bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Margen para pantallas muy pequeñas */
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 450px; /* Ancho máximo en escritorio */
+}
+
+.login-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    text-align: center;
+    width: 100%;
+}
+
+.logo-container img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 3px solid var(--rosa-principal);
+}
+
+h2 {
+    color: var(--texto);
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--texto);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #eee;
+    background: #fdfdfd;
+    border-radius: 15px;
+    outline: none;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--rosa-principal);
+    box-shadow: 0 0 0 4px rgba(255, 143, 163, 0.1);
+}
+
+.btn-ingresar {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--rosa-principal);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-ingresar:hover {
+    background-color: #ff758c;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 143, 163, 0.3);
+}
+
+.toggle-auth a {
+    color: var(--rosa-principal);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* MEDIA QUERIES PARA RESPONSIVE */
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 30px 20px; /* Menos espacio interno en celulares */
+        border-radius: 20px;
+    }
+    
+    .logo-container img {
+        width: 100px;
+        height: 100px;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .btn-ingresar {
+        padding: 14px;
+    }
+}

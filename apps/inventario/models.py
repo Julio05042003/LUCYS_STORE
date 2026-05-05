@@ -8,7 +8,7 @@ class Inventario(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, db_column='Producto_id')
     ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, db_column='Ubicacion_id')
 
-    stock = models.IntegerField(db_column='Stock')
+    stock = models.IntegerField(default=0, db_column='Stock')
 
     class Meta:
         db_table = 'Inventarios'
@@ -20,11 +20,19 @@ class Kardex(models.Model):
 
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, db_column='Producto_id')
     ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, db_column='Ubicacion_id')
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, db_column='Empleado_id')
 
-    tipo = models.CharField(max_length=20, db_column='Tipo')
+    TIPOS = (
+        ('ENTRADA', 'Entrada'),
+        ('SALIDA', 'Salida')
+    )
+    tipo = models.CharField(max_length=20, choices=TIPOS,db_column='Tipo')
     cantidad = models.IntegerField(db_column='Cantidad')
+    saldo = models.IntegerField(db_column='Saldo')
+    Precio = models.DecimalField(max_digits=10, decimal_places=2, db_column='Precio')    
     fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
     descripcion = models.CharField(max_length=200, db_column='Descripcion')
+    documento = models.CharField(max_length=100, db_column='Documento')
 
     class Meta:
         db_table = 'Kardex'

@@ -1,0 +1,187 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/style-ventas.css' %}">
+<link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
+
+<header class="topbar">
+    <div class="logo-area">
+        <button class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="logo-text">Lucy's System</span>
+    </div>
+    <div class="status-labels">
+        <span><i class="fas fa-cash-register"></i> Caja Abierta</span>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-container"></div>
+
+    <main class="content">
+        <div class="inventory-wrapper">
+            <div class="header-section">
+                <h2><i class="fas fa-history"></i> Historial de Ventas</h2>
+            </div>
+
+            <!-- TABLA DINÁMICA -->
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>No. Factura</th>
+                            <th>Cliente</th>
+                            <th>Vendedor</th>
+                            <th>Total</th>
+                            <th>Estado/Pago</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td>{{ v.fecha }}</td>
+                            <td><strong>#{{ v.numero_factura }}</strong></td>
+                            <td>{{ v.cliente }}</td>
+                            <td>{{ v.empleado }}</td>
+                            <td class="font-bold">${{ v.total }}</td>
+                            <td>
+                                <span class="badge-pago">{{ v.metodo }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="row-actions">
+                                    <button class="btn-row view" onclick="verVenta('{{ v.venta_id }}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-row edit" onclick="editarVenta('{{ v.venta_id }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-row status" onclick="toggleEstadoVenta('{{ v.venta_id }}')">
+                                        <i class="fas fa-toggle-on"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="action-footer">
+                <button class="btn-primary" onclick="abrirModalVenta()">
+                    <i class="fas fa-plus"></i> Registrar Nueva Venta
+                </button>
+                <button class="btn-primary" onclick="abrirModal('modalCliente')">
+                    <i class="fas fa-users"></i> Registrar Nuevo Cliente
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ========================= MODAL VENTA ========================= -->
+<div id="modalVenta" class="modal-overlay">
+    <div class="modal-content" style="max-width: 850px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-cash-register"></i> Facturación - Nueva Venta</h3>
+            <button class="close-btn" onclick="cerrarModal('modalVenta')">&times;</button>
+        </div>
+
+        <!-- FORM CONECTADO -->
+        <form class="modal-form" method="POST" action="{% url 'crear_venta' %}">
+            {% csrf_token %}
+
+            <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
+
+                <div class="form-group">
+                    <label>No. Factura</label>
+                    <input type="text" value="{{ numero_factura }}" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="text" id="fechaVentaActual" readonly>
+                </div>
+
+                <!-- CLIENTES DINÁMICOS -->
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select name="cliente">
+                        {% for c in clientes %}
+                        <option value="{{ c.cliente_id }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- METODO PAGO -->
+                <div class="form-group">
+                    <label>Método de Pago</label>
+                    <select name="metodo">
+                        {% for m in metodos %}
+                        <option value="{{ m.metodo_id }}">{{ m.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- EMPLEADO LOGUEADO -->
+                <div class="form-group">
+                    <label>Vendedor</label>
+                    <input type="text" value="{{ request.user }}" disabled>
+                    <input type="hidden" name="empleado" value="{{ request.user.empleado.empleado_id }}">
+                </div>
+
+            </div>
+
+            <!-- CARRITO -->
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Descuento</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="carrito-ventas"></tbody>
+            </table>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalVenta')">Cancelar</button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check-circle"></i> Finalizar Venta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================= MODAL CLIENTE ========================= -->
+<div id="modalCliente" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nuevo Cliente</h3>
+            <button class="close-btn" onclick="cerrarModal('modalCliente')">&times;</button>
+        </div>
+
+        <form method="POST" action="{% url 'crear_cliente' %}">
+            {% csrf_token %}
+
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="email" name="correo" placeholder="Correo">
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/menu.js' %}"></script>
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Lucy's Boutique</title>
+
+    <link rel="stylesheet" href="{% static 'css/style-login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <div class="logo-container">
+            <img src="{% static 'img/logo_lucys.jpeg' %}" alt="Lucy's">
+        </div>
+
+        <h2>Iniciar Sesión</h2>
+
+        <!-- 🔥 MENSAJES -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- 🔥 FORM CORRECTO -->
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="input-group">
+                <label>Correo</label>
+                <input type="text" name="usuario" placeholder="Ej: correo@gmail.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-ingresar">
+                Ingresar
+            </button>
+        </form>
+
+        <!-- 🔥 REGISTRO -->
+        <div class="toggle-auth">
+            <p>
+                ¿Eres cliente nuevo?
+                <a href="{% url 'registro_cliente' %}">
+                    Crear cuenta
+                </a>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

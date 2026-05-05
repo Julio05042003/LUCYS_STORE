@@ -1,0 +1,46 @@
+@import url('style-inventario.css');
+
+:root {
+    --rosa-principal: #ff8fa3;
+    --rosa-claro: #fff0f3;
+    --texto: #4a4a4a;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--rosa-claro);
+}
+
+
+/* BADGES */
+.badge-recibido {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.detalle-compra-container {
+    background: #fff;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.busqueda-producto-row input {
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+#lista-detalles-compra tr td {
+    padding: 8px;
+    border-bottom: 1px solid #f1f1f1;
+}

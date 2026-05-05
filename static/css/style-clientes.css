@@ -1,0 +1,46 @@
+@import url('style-inventario.css');
+
+.form-section-full {
+    grid-column: span 2;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.form-section-full label {
+    font-weight: bold;
+    color: var(--rosa-principal);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.dynamic-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.btn-add-small {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dynamic-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.badge-date {
+    background-color: #f0f0f0;
+    color: #666;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

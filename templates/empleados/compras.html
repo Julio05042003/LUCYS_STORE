@@ -1,0 +1,103 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style-compras.css' %}">
+
+<div class="inventory-wrapper">
+
+<h2>Historial de Compras</h2>
+
+<table>
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Proveedor</th>
+<th>Ubicación</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+{% for c in compras %}
+<tr>
+<td>{{ c.fecha }}</td>
+<td>{{ c.proveedor.nombre }}</td>
+<td>{{ c.ubicacion.nombre }}</td>
+<td>${{ c.total }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<button onclick="abrirModal('modalCompra')">Nueva Compra</button>
+
+</div>
+
+<!-- MODAL -->
+<div id="modalCompra" class="modal-overlay">
+<div class="modal-content">
+
+<h3>Nueva Compra</h3>
+
+<select id="proveedor_id">
+<option value="">Proveedor</option>
+{% for p in proveedores %}
+<option value="{{ p.id }}">{{ p.nombre }}</option>
+{% endfor %}
+</select>
+
+<select id="ubicacion_id">
+<option value="">Ubicación</option>
+{% for u in ubicaciones %}
+<option value="{{ u.id }}">{{ u.nombre }}</option>
+{% endfor %}
+</select>
+
+<select id="compra_empleado">
+<option value="">Empleado</option>
+{% for e in empleados %}
+<option value="{{ e.id }}">{{ e.nombre }}</option>
+{% endfor %}
+</select>
+
+<hr>
+
+<select id="producto_select">
+<option value="">Producto</option>
+{% for pr in productos %}
+<option value="{{ pr.id }}">{{ pr.nombre }}</option>
+{% endfor %}
+</select>
+
+<input type="number" id="cantidad_input" placeholder="Cantidad">
+<input type="number" id="precio_input" placeholder="Precio">
+
+<button onclick="agregarProductoCompra()">Agregar</button>
+
+<table>
+<thead>
+<tr>
+<th>Producto</th>
+<th>Cantidad</th>
+<th>Precio</th>
+<th>Subtotal</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="lista-detalles-compra"></tbody>
+
+</table>
+
+<h3>Total: <span id="total_compra">$0.00</span></h3>
+
+<button onclick="registrarCompra()">Guardar Compra</button>
+
+</div>
+</div>
+
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+
+{% endblock %}

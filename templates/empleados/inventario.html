@@ -1,0 +1,257 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+
+<div class="main-container">
+    <main class="content">
+        <div class="inventory-wrapper">
+
+            <div class="header-section">
+                <h2><i class="fas fa-boxes-stacked"></i> Gestión de Inventario</h2>
+            </div>
+
+            <!-- 🔍 FILTROS -->
+            <div class="filters-card">
+                <input type="text" id="buscar" placeholder="Buscar producto...">
+
+                <select id="filtroCategoria">
+                    <option value="">Todas las categorías</option>
+                    {% for c in categorias %}
+                    <option value="{{ c.nombre }}">{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+
+                <button class="btn-clear" onclick="limpiarFiltros()">Limpiar</button>
+            </div>
+
+            <!-- 📊 TABLA PRODUCTOS -->
+            <div class="table-container">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Marca</th>
+                            <th>Stock</th>
+                            <th>Precio Venta</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for p in productos %}
+                        <tr>
+                            <td>
+                                {% if p.imagen %}
+                                <img src="{{ p.imagen }}" width="50">
+                                {% else %}
+                                <img src="{% static 'img/no-image.png' %}" width="50">
+                                {% endif %}
+                            </td>
+
+                            <td>{{ p.codigo }}</td>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.categoria }}</td>
+                            <td>{{ p.marca }}</td>
+                            <td>{{ p.stock }}</td>
+                            <td>${{ p.precio }}</td>
+
+                            <td>
+                                <span
+                                    class="{% if p.estado == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
+                                    {{ p.estado }}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+
+                                <!-- 👁 TODOS -->
+                                <button class="btn-row view" onclick="verProductoDetalle('{{ p.id }}')" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+
+                                {% if rol != "Vendedor" %}
+
+                                <!-- ✏ EDITAR -->
+                                <button class="btn-row edit" onclick="editarProducto(
+                            '{{ p.producto_id }}',
+                            '{{ p.codigo }}',
+                            '{{ p.nombre }}',
+                            '{{ p.descripcion }}',
+                            '{{ p.categoria_id }}',
+                            '{{ p.marca_id }}')
+                            " title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <!-- 🔄 ESTADO -->
+                                <button onclick="toggleEstadoProducto('{{ p.id }}')">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+
+                                <!-- 📊 KARDEX -->
+                                <a href="{% url 'kardex_view' p.id  %}">
+                                    <i class="fas fa-chart-line"></i>
+                                </a>
+
+                                {% endif %}
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 📦 TABLA CATEGORÍAS -->
+            {% if rol != "Vendedor" %}
+            <div class="table-container" style="margin-top:20px;">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for c in categorias %}
+                        <tr>
+                            <td>{{ c.nombre }}</td>
+                            <td class="text-center">
+                                <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 🏷 MARCAS -->
+            <div class="table-container" style="margin-top:20px;">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Marca</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for m in marcas %}
+                        <tr>
+                            <td>{{ m.nombre }}</td>
+                            <td class="text-center">
+                                <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <!-- ⚡ ACCIONES -->
+            {% if rol != "Vendedor" %}
+            <div class="action-footer">
+                <button class="btn-primary" onclick="abrirModal('modalProducto')">Agregar Producto</button>
+                <button class="btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
+                <button class="btn-primary" onclick="abrirModal('modalMarca')">Agregar Marca</button>
+            </div>
+            {% endif %}
+
+            
+
+        </div>
+    </main>
+</div>
+
+<!-- 🟣 MODAL PRODUCTO -->
+<div id="modalProducto" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+
+        <div class="modal-header">
+            <h3>Nuevo Producto</h3>
+            <button class="close-btn" onclick="cerrarModal('modalProducto')">&times;</button>
+        </div>
+
+        <form class="modal-form" method="POST" action="{% url 'crear_producto' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-gruop">
+                    <label> Codigo</label>
+                    <input type="text" name="codigo" id="codigo" placeholder="Código" required>
+                </div>
+            </div>
+
+            <div class="from-group">
+                <label>Nombre</label>
+                <input type="text" name="nombre" id="nombre" placeholder="Nombre" required>
+            </div>
+
+            <div class="form-gruop">
+                <label>Categoria</label>
+                <select name="categoria" id="categoria">
+                    {% for c in categorias %}
+                    <option value="{{ c.categoria_id }}">{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-gruop">
+                <label>Marca</label>
+                <select name="marca" id="marca">
+                    {% for m in marcas %}
+                    <option value="{{ m.marca_id }}">{{ m.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="from-gruop" style="grid-column: span 2;">
+                <label>Imagen</label>
+                <div class="image-upload-container">
+                    <div class="image-preview" id="imagePreview">
+                        <i class="fas fa-camera"></i>
+                        <img src="" alt="Vista previa" style="display: none;">
+                    </div>
+                    <div class="image-controls">
+                        <input type="file" name="imagen" id="subirImagen" accept="image/*" style="display: none;"
+                            onchange="previsualizarImagen(event)">
+                        <button type="button" class="btn-secondary"
+                            onclick="document.getElementById('subirImagen').click()">
+                            <i class="fas fa-upload"></i> Seleccionar Imagen
+                        </button>
+                        <small>Formatos: JPG, PNG. Máx 2MB</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Descripción Larga (Opcional)</label>
+                <textarea name="descripcion" rows="2" placeholder="Detalles de tela, tallas disponibles..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalProducto')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endif %}
+
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+
+{% endblock %}

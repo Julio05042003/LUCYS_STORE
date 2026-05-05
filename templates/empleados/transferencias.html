@@ -1,0 +1,155 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+
+<div class="inventory-wrapper">
+    <div class="header-section">
+        <h2>Nuevo Traslado entre Bodegas</h2>
+    </div>
+
+    <form method="POST" action="{% url 'crear_transferencia' %}">
+        {% csrf_token %}
+
+        <div class="filters-card">
+            <div class="field">
+                <label><i class="fas fa-arrow-up"></i> Origen:</label>
+                <select name="origen_id" required>
+                    {% for u in ubicaciones %}
+                        <option value="{{ u.ubicacion_id }}">{{ u.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label><i class="fas fa-arrow-down"></i> Destino:</label>
+                <select name="destino_id" required>
+                    {% for u in ubicaciones %}
+                        <option value="{{ u.ubicacion_id }}">{{ u.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Referencia / Nota:</label>
+                <input type="text" name="nota">
+            </div>
+        </div>
+
+        <div class="filters-card" style="background: #fff5f7;">
+            <input type="text" id="producto" placeholder="Producto ID">
+            <input type="number" id="cantidad" value="1">
+            <button type="button" onclick="agregarProducto()">Añadir</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="detalle-body"></tbody>
+            </table>
+        </div>
+
+        <input type="hidden" name="detalles" id="detalles">
+
+        <div class="action-footer">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-check-circle"></i> PROCESAR TRASLADO
+            </button>
+
+            <button type="button" class="btn-secondary" onclick="abrirModal('modalHistorial')">
+                <i class="fas fa-history"></i> Ver Historial
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ================= HISTORIAL ================= -->
+<div id="modalHistorial" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Historial</h3>
+            <button onclick="cerrarModal('modalHistorial')">&times;</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>👁</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transferencias %}
+                    <tr>
+                        <td>{{ t.Fecha }}</td>
+                        <td>{{ t.origen.nombre }}</td>
+                        <td>{{ t.destino.nombre }}</td>
+                        <td>{{ t.estado.nombre }}</td>
+                        <td>
+                            <button onclick="verDetalle('{{ t.id }}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                            {% if empleado.ubicacion.nivel == 'CENTRAL' and t.estado.nombre == 'Pendiente' %}
+                            <button onclick="aprobar('{{ t.id }}')">
+                                ✔
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+let detalles = []
+
+function agregarProducto(){
+    let p = document.getElementById('producto').value
+    let c = document.getElementById('cantidad').value
+
+    detalles.push({producto:p, cantidad:c})
+
+    document.getElementById('detalle-body').innerHTML += `
+        <tr>
+            <td>${p}</td>
+            <td>${c}</td>
+            <td><button onclick="this.closest('tr').remove()">X</button></td>
+        </tr>
+    `
+
+    document.getElementById('detalles').value = JSON.stringify(detalles)
+}
+
+function aprobar(id){
+    fetch(`/transferencias/aprobar/${id}/`)
+    .then(()=> location.reload())
+}
+
+function verDetalle(id){
+
+    fetch(`/transferencias/detalle/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+        console.log(data)
+        alert("Ver consola para detalles") // aquí luego puedes hacer un modal bonito
+    })
+}
+</script>
+
+{% endblock %}

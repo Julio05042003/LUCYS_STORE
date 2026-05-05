@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Empleado, Cliente
+from .models import Empleado, Cliente, Ubicacion, Direccion
 
 
 # =========================
@@ -34,3 +34,32 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['identificacion', 'nombre', 'apellido']
+
+
+class UbicacionForm(forms.ModelForm):
+    # 🔥 Campos de Dirección embebidos
+    pais = forms.CharField(label="País")
+    departamento = forms.CharField(label="Departamento")
+    ciudad = forms.CharField(label="Ciudad")
+    detalle = forms.CharField(label="Detalle")
+
+    class Meta:
+        model = Ubicacion
+        fields = ['estado', 'nombre', 'tipo']
+
+    def save(self, commit=True):
+        # 🔥 Crear dirección primero
+        direccion = Direccion.objects.create(
+            pais=self.cleaned_data['pais'],
+            departamento=self.cleaned_data['departamento'],
+            ciudad=self.cleaned_data['ciudad'],
+            detalle=self.cleaned_data['detalle']
+        )
+
+        ubicacion = super().save(commit=False)
+        ubicacion.direccion = direccion
+
+        if commit:
+            ubicacion.save()
+
+        return ubicacion

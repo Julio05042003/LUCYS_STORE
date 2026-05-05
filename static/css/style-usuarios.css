@@ -1,0 +1,15 @@
+@import url('style-inventario.css');
+
+
+.badge-role {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.badge-role.admin { background: #fff3e0; color: #ef6c00; }
+.badge-role.seller { background: #e3f2fd; color: #1565c0; }
+
+.btn-edit-user { background: none; border: none; color: #888; cursor: pointer; margin-right: 10px; font-size: 1rem; }
+.btn-edit-user:hover { color: var(--rosa-principal); }
+

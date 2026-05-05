@@ -42,6 +42,7 @@ class Ubicacion(models.Model):
 
     nombre = models.CharField(max_length=100, db_column='Nombre')
     tipo = models.CharField(max_length=20, db_column='Tipo')
+    nivel = models.CharField(max_length=20, db_column='Nivel')
 
     class Meta:
         db_table = 'Ubicaciones'
@@ -89,7 +90,7 @@ class Cliente(models.Model):
 
     nombre = models.CharField(max_length=100, db_column='Nombre', null=True, blank=True)
     apellido = models.CharField(max_length=100, db_column='Apellido', null=True, blank=True)
-
+    fecha_registro = models.DateTimeField(auto_now_add=True, db_column='FechaRegistro')
     class Meta:
         db_table = 'Clientes'
 

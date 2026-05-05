@@ -1,0 +1,47 @@
+@import url('style-inventario.css');
+
+/* Estilo para los iconos de origen/destino */
+.field label i {
+    color: var(--rosa-principal);
+    margin-right: 5px;
+}
+
+/* Color especial para el botón de procesar traslado */
+.btn-confirm-traslado {
+    background-color: #27ae60; /* Verde para diferenciar de una venta */
+    color: white;
+}
+
+/* Responsividad para las dos tarjetas de selección */
+@media (max-width: 768px) {
+    .filters-card {
+        padding: 15px;
+        gap: 10px;
+    }
+}
+
+/* Etiquetas de estado (Badges) */
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Ajuste para que la tabla del historial no rompa la modal en móviles */
+@media (max-width: 600px) {
+    #modalHistorial .table-container {
+        overflow-x: auto;
+    }
+}

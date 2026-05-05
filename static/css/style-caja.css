@@ -1,0 +1,404 @@
+@import url('style-inventario.css');
+
+.btn-primary { background: var(--rosa-principal); color: white; }
+.btn-secondary { background: var(--texto-oscuro); color: white; }
+.btn-danger { background: #ff4d4d; color: white; }
+.btn-clear { background: #eee; color: #666; }
+
+.cash-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    flex: 1;
+    min-width: 180px;
+    box-shadow: 0 4px 6px var(--sombra);
+    border-left: 5px solid #eee;
+}
+
+.cash-card.income { border-left-color: #2ecc71; }
+.cash-card.expense { border-left-color: #e74c3c; }
+.cash-card.total { border-left-color: var(--rosa-principal); background: var(--rosa-claro); }
+
+.cash-card small { color: #888; text-transform: uppercase; font-size: 0.7rem; font-weight: 600; }
+.cash-card h3 { margin-top: 5px; font-size: 1.4rem; color: var(--rosa-claro); }
+
+.badge-expense {
+    background: #fdeaea;
+    color: #e74c3c;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.date-display {
+    font-size: 0.9rem;
+    color: var(--rosa-principal);
+    font-weight: 600;
+}
+
+/* Centrado del ticket dentro de la modal */
+#modalTicket .modal-content {
+    background: var(--rosa-claro); /* Fondo oscuro para que el ticket blanco resalte */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra el ticket horizontalmente */
+}
+
+
+/* Efecto de borde de papel cortado (opcional) */
+.ticket-container::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(-45deg, transparent 4px, white 4px), 
+                linear-gradient(45deg, transparent 4px, white 4px);
+    background-size: 8px 8px;
+}
+
+.ticket-header { 
+    text-align: center; 
+    margin-bottom: 20px; 
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.ticket-header h2 { 
+    font-size: 1.1rem; 
+    margin: 8px 0 2px 0; 
+    font-weight: 700;
+    color: #000;
+}
+
+.ticket-header p { 
+    font-size: 0.75rem; 
+    letter-spacing: 1px;
+    color: #666;
+}
+
+.ticket-info { 
+    font-size: 0.75rem; 
+    margin-bottom: 15px; 
+    line-height: 1.4;
+}
+
+.ticket-divider { 
+    border-top: 1px dashed #bbb; 
+    margin: 12px 0; 
+}
+
+.ticket-row { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.8rem; 
+    margin: 5px 0; 
+}
+
+.ticket-row.total { 
+    font-weight: bold; 
+    font-size: 1rem; 
+    margin-top: 10px;
+    padding-top: 5px;
+    color: #000;
+}
+
+.ticket-footer { 
+    text-align: center; 
+    margin-top: 25px; 
+    font-size: 0.7rem; 
+    color: #888;
+    font-style: italic;
+}
+
+/* Botones debajo del ticket */
+.modal-footer {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 15px;
+    background: transparent !important; /* Quita el fondo blanco de la modal */
+}
+
+.ticket-container {
+    background: white;
+    padding: 25px;
+    font-family: 'Courier New', Courier, monospace; /* Fuente de ticket */
+    color: #000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Grid de Estadísticas */
+.caja-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card.highlighted {
+    background: var(--rosa-principal);
+    color: white;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.income { background: #e0f2fe; color: #0369a1; }
+.total-income { background: #dcfce7; color: #15803d; }
+.expense { background: #fee2e2; color: #b91c1c; }
+
+.stat-label { font-size: 0.85rem; color: #64748b; display: block; }
+.highlighted .stat-label { color: #ffe4e6; }
+.stat-value { font-size: 1.2rem; font-weight: 700; }
+.stat-value.large { font-size: 1.8rem; }
+
+/* Botonera */
+.caja-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.btn-action {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-action.open { background: #f1f5f9; color: #475569; }
+.btn-action.move { background: #334155; color: white; }
+.btn-action.close { background: #f43f5e; color: white; }
+
+/* Badges de Tabla */
+.badge-type {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+.badge-type.in { background: #dcfce7; color: #166534; }
+.badge-type.out { background: #fee2e2; color: #991b1b; }
+
+/* Punto de pulso para "Abierto" */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #15803d;
+}
+
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.table-tools {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 2px 12px;
+    transition: all 0.3s ease;
+    width: 300px; /* Ancho ajustable */
+}
+
+/* Efecto cuando el usuario hace clic para escribir */
+.search-box:focus-within {
+    background: white;
+    border-color: var(--rosa-principal);
+    box-shadow: 0 0 0 4px rgba(255, 105, 180, 0.1); /* Resplandor rosa tenue */
+    width: 350px; /* El buscador se expande un poco al usarlo */
+}
+
+.search-icon {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.search-box:focus-within .search-icon {
+    color: var(--rosa-principal);
+}
+
+.search-box input {
+    border: none;
+    background: transparent;
+    padding: 10px;
+    outline: none;
+    font-size: 0.9rem;
+    color: #334155;
+    width: 100%;
+}
+
+.search-box input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.denominaciones-container {
+    background: #fdf2f8;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border: 1px solid #fbcfe8;
+}
+
+.section-title {
+    font-weight: bold;
+    color: var(--rosa-principal);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.denominaciones-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.denom-row {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.denom-row span {
+    flex: 1;
+    font-weight: bold;
+    color: #475569;
+}
+
+.denom-input {
+    width: 60px;
+    border: 1px solid #cbd5e1;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    outline-color: var(--rosa-principal);
+}
+
+.total-apertura-card {
+    background: #334155;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+}
+
+.total-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f472b6; /* Rosa vibrante */
+}
+
+/* Ajuste general del contenido del modal */
+.modal-content {
+    width: 95%; /* Ocupa casi todo el ancho en móviles */
+    margin: 20px auto;
+    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+    overflow-y: auto; /* Permite scroll interno si el contenido es largo */
+}
+
+/* Ajuste de la cuadrícula de denominaciones */
+.denominaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas por defecto */
+    gap: 10px;
+}
+
+/* --- MEDIA QUERIES PARA MÓVILES --- */
+@media (max-width: 600px) {
+    /* El grid de estadísticas de caja ahora será de 1 sola columna */
+    .caja-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* El desglose de billetes pasa a 1 sola columna para que sea fácil de tocar */
+    .denominaciones-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Los botones de acción se apilan */
+    .caja-actions {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Ajuste del buscador (Table Tools) */
+    .table-tools {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100% !important; /* Ocupa todo el ancho disponible */
+    }
+
+    /* Hacer que las tablas tengan scroll horizontal si no caben */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+

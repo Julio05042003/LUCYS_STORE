@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 
 from .models import *
-from .forms import EmpleadoForm, ClienteForm
+from .forms import EmpleadoForm, ClienteForm, UbicacionForm
 
 
 # =========================
@@ -49,7 +49,10 @@ class DireccionAdmin(admin.ModelAdmin):
 
 @admin.register(Ubicacion)
 class UbicacionAdmin(admin.ModelAdmin):
+    form = UbicacionForm
+
     list_display = ('ubicacion_id', 'nombre', 'tipo', 'estado')
+
     inlines = [TelefonoUbicacionInline]
 
 
@@ -61,7 +64,7 @@ class UbicacionAdmin(admin.ModelAdmin):
 class EmpleadoAdmin(admin.ModelAdmin):
     form = EmpleadoForm
 
-    list_display = ('empleado_id', 'get_nombre', 'rol', 'ubicacion', 'estado')
+    list_display = ('empleado_id', 'get_nombre', 'get_email', 'rol', 'ubicacion', 'estado')
 
     def get_nombre(self, obj):
         if obj.user:
@@ -69,21 +72,46 @@ class EmpleadoAdmin(admin.ModelAdmin):
         return "-"
     get_nombre.short_description = 'Nombre'
 
+    def get_email(self, obj):
+        if obj.user:
+            return obj.user.email
+        return "-"
+    get_email.short_description = 'Correo'
+
     def save_model(self, request, obj, form, change):
 
+        # SI ES NUEVO EMPLEADO
         if not obj.user:
+
+            email = form.cleaned_data['email']
+
+            # Validar si ya existe
+            if User.objects.filter(username=email).exists():
+                raise ValueError("Ya existe un usuario con ese correo")
+
             user = User.objects.create_user(
-                username=form.cleaned_data['email'],
+                username=email,
                 password=form.cleaned_data['password']
             )
 
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
-            user.email = form.cleaned_data['email']
-            user.is_staff = True
+            user.email = email
+
+            # IMPORTANTE: acceso al admin
+            user.is_staff = False
+
             user.save()
 
             obj.user = user
+
+        else:
+            # SI YA EXISTE (EDICIÓN)
+            user = obj.user
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
 
         super().save_model(request, obj, form, change)
 

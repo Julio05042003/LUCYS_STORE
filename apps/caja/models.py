@@ -45,3 +45,39 @@ class MovimientoCaja(models.Model):
 
     class Meta:
         db_table = 'Movimientos_Cajas'
+
+
+class ArqueoCaja(models.Model):
+    arqueo_id = models.AutoField(primary_key=True, db_column='Arqueo_id')
+
+    apertura = models.ForeignKey(
+        AperturaCaja,
+        on_delete=models.CASCADE,
+        db_column='Apertura_id'
+    )
+
+    empleado = models.ForeignKey(
+        Empleado,
+        on_delete=models.CASCADE,
+        db_column='Empleado_id'
+    )
+
+    fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
+
+    saldo_sistema = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo_real = models.DecimalField(max_digits=10, decimal_places=2)
+    diferencia = models.DecimalField(max_digits=10, decimal_places=2)
+
+    justificacion = models.TextField(null=True, blank=True)
+
+    estado = models.ForeignKey(
+        Estado,
+        on_delete=models.CASCADE,
+        db_column='Estado_id'
+    )
+
+    class Meta:
+        db_table = 'Arqueos_Caja'
+
+    def __str__(self):
+        return f"Arqueo {self.arqueo_id} - Dif: {self.diferencia}"

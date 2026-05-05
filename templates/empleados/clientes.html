@@ -1,0 +1,76 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Clientes - Lucy's System</title>
+
+    <link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <span>Clientes</span>
+    </header>
+
+    <div class="main-container">
+
+        <button onclick="abrirModal('modalCliente')">
+            Registrar Cliente
+        </button>
+
+    </div>
+
+    <!-- MODAL -->
+    <div id="modalCliente" class="modal-overlay">
+        <div class="modal-content">
+
+            <h3>Registro Cliente</h3>
+
+            <form method="POST" action="{% url 'registro_cliente' %}">
+                {% csrf_token %}
+
+                <!-- DATOS -->
+                <input type="text" name="identificacion" placeholder="Cédula" required>
+                <input type="text" name="nombre" placeholder="Nombre" required>
+                <input type="text" name="apellido" placeholder="Apellido" required>
+
+                <!-- TELÉFONOS -->
+                <h4>Teléfonos</h4>
+                <input type="text" name="telefono[]" placeholder="Número">
+                <input type="text" name="operadora[]" placeholder="Operadora">
+                <input type="text" name="tipo_tel[]" placeholder="Tipo">
+
+                <!-- DIRECCIÓN -->
+                <h4>Dirección</h4>
+                <input type="text" name="pais[]" placeholder="País">
+                <input type="text" name="departamento[]" placeholder="Departamento">
+                <input type="text" name="ciudad[]" placeholder="Ciudad">
+                <input type="text" name="detalle[]" placeholder="Detalle">
+
+                <button type="submit">Guardar</button>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+
+        /* MODALES */
+        function abrirModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+    </script>
+
+</body>
+
+</html>

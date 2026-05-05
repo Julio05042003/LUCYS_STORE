@@ -1,5 +1,5 @@
 from django.db import models
-from apps.usuarios.models import Direccion, Ubicacion
+from apps.usuarios.models import Direccion, Ubicacion, Empleado
 from apps.productos.models import Producto
 
 
@@ -42,6 +42,7 @@ class Compra(models.Model):
 
     proveedor = models.ForeignKey(Proveedor, db_column='Proveedor_id', on_delete=models.CASCADE)
     ubicacion = models.ForeignKey(Ubicacion, db_column='Ubicacion_id', on_delete=models.CASCADE)
+    empleado = models.ForeignKey(Empleado, db_column='Empleado_id', on_delete=models.CASCADE)
 
     fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)
     total = models.DecimalField(db_column='Total', max_digits=10, decimal_places=2)

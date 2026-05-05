@@ -1,0 +1,188 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style-usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="inventory-wrapper">
+
+    <!-- HEADER -->
+    <div class="header-section">
+        <h2><i class="fas fa-users-cog"></i> Control de Accesos</h2>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-card">
+        <form method="GET">
+            <div class="field" style="flex:2;">
+                <label>Buscar Usuario:</label>
+                <input type="text" name="q" placeholder="Nombre o usuario...">
+            </div>
+
+            <div class="field">
+                <label>Rol:</label>
+                <select name="rol">
+                    <option value="">Todos</option>
+                    {% for r in roles %}
+                        <option value="{{ r.rol_id }}">{{ r.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn-clear">Buscar</button>
+        </form>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emp in empleados %}
+                <tr>
+
+                    <td>{{ emp.user.first_name }} {{ emp.user.last_name }}</td>
+                    <td>{{ emp.user.username }}</td>
+                    <td>{{ emp.rol.nombre }}</td>
+                    <td>{{ emp.ubicacion.nombre }}</td>
+
+                    <td>
+                        {% if emp.user.is_active %}
+                            <span style="color:green;">● Activo</span>
+                        {% else %}
+                            <span style="color:red;">🔒 Bloqueado</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if not emp.user.is_active %}
+                            <a href="{% url 'desbloquear_usuario' emp.user.id %}">
+                                <button><i class="fas fa-unlock"></i></button>
+                            </a>
+                        {% else %}
+                            <button><i class="fas fa-key"></i></button>
+                            <button><i class="fas fa-trash"></i></button>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No hay usuarios registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BOTÓN -->
+    <div class="action-footer">
+        <button class="btn-primary" onclick="abrirModal('modalUsuario')">
+            <i class="fas fa-user-plus"></i> Crear Usuario
+        </button>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modalUsuario" class="modal-overlay">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h3><i class="fas fa-id-card"></i> Registrar Usuario</h3>
+            <button class="close-btn" onclick="cerrarModal('modalUsuario')">&times;</button>
+        </div>
+
+        <form method="POST" action="{% url 'crear_usuario' %}" class="modal-form">
+            {% csrf_token %}
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Correo</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombres</label>
+                    <input type="text" name="nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Apellidos</label>
+                    <input type="text" name="apellido" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select name="rol_id" required>
+                        {% for r in roles %}
+                            <option value="{{ r.rol_id }}">{{ r.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <select name="ubicacion_id" required>
+                        {% for u in ubicaciones %}
+                            <option value="{{ u.ubicacion_id }}">
+                                {{ u.nombre }} ({{ u.tipo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado_id">
+                        {% for e in estados %}
+                            <option value="{{ e.estado_id }}">{{ e.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalUsuario')">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Crear Usuario
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+{% endblock %}

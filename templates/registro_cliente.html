@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Cuenta</title>
+
+    <link rel="stylesheet" href="{% static 'css/registro.css' %}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Crear Cuenta</h2>
+
+        <!-- 🔥 MENSAJES DJANGO -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- ========================= -->
+            <!-- DATOS PERSONALES -->
+            <!-- ========================= -->
+            <div class="section">
+                <h3>Datos Personales</h3>
+
+                <div class="grid-2">
+                    <input type="text" name="nombre" placeholder="Nombre" required>
+                    <input type="text" name="apellido" placeholder="Apellido" required>
+                </div>
+
+                <div class="grid-2">
+                    <input type="text" name="identificacion" placeholder="Identificación" required>
+                    <input type="email" name="email" placeholder="Correo" required>
+                </div>
+
+                <input type="password" name="password" placeholder="Contraseña" required minlength="6">
+            </div>
+
+            <!-- ========================= -->
+            <!-- DIRECCIONES -->
+            <!-- ========================= -->
+            <div class="section">
+                <h3>Direcciones</h3>
+
+                <div id="direcciones">
+
+                    <div class="direccion-item">
+                        <div class="grid-2">
+                            <input type="text" name="pais[]" placeholder="País" required>
+                            <input type="text" name="departamento[]" placeholder="Departamento" required>
+                        </div>
+
+                        <div class="grid-2">
+                            <input type="text" name="ciudad[]" placeholder="Ciudad" required>
+                            <input type="text" name="detalle[]" placeholder="Detalle" required>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button type="button" onclick="agregarDireccion()" class="btn-add">
+                    + Agregar Dirección
+                </button>
+            </div>
+
+            <!-- ========================= -->
+            <!-- TELÉFONOS -->
+            <!-- ========================= -->
+            <div class="section">
+                <h3>Teléfonos</h3>
+
+                <div id="telefonos">
+
+                    <div class="telefono-item grid-3">
+                        <input type="text" name="telefono[]" placeholder="Número" required>
+
+                        <input type="text" name="operadora[]" placeholder="Operadora (Claro, Tigo)">
+
+                        <select name="tipo_tel[]">
+                            <option value="">Tipo</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Casa">Casa</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <button type="button" onclick="agregarTelefono()" class="btn-add">
+                    + Agregar Teléfono
+                </button>
+            </div>
+
+            <!-- ========================= -->
+            <!-- BOTÓN -->
+            <!-- ========================= -->
+            <button type="submit" class="btn-main">
+                Registrarse
+            </button>
+
+            <p class="login-link">
+                ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
+            </p>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+    function agregarDireccion() {
+        const container = document.getElementById('direcciones');
+
+        const html = `
+        <div class="direccion-item">
+            <div class="grid-2">
+                <input type="text" name="pais[]" placeholder="País" required>
+                <input type="text" name="departamento[]" placeholder="Departamento" required>
+            </div>
+            <div class="grid-2">
+                <input type="text" name="ciudad[]" placeholder="Ciudad" required>
+                <input type="text" name="detalle[]" placeholder="Detalle" required>
+            </div>
+        </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function agregarTelefono() {
+        const container = document.getElementById('telefonos');
+
+        const html = `
+        <div class="telefono-item grid-3">
+            <input type="text" name="telefono[]" placeholder="Número" required>
+            <input type="text" name="operadora[]" placeholder="Operadora">
+            <select name="tipo_tel[]">
+                <option value="">Tipo</option>
+                <option value="Personal">Personal</option>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Casa">Casa</option>
+            </select>
+        </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+    }
+</script>
+
+</body>
+</html>

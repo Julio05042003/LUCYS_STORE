@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lucy’s System</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style-dashboard.css' %}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="logo-area">
+        <button class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <span class="system-name">Lucy’s System</span>
+    </div>
+
+    <div class="status-labels">
+
+        {% if empleado %}
+        <span>
+            <i class="fas fa-user"></i>
+            {{ empleado.user.first_name }} {{ empleado.user.last_name }}
+        </span>
+
+        <span>
+            <i class="fas fa-id-badge"></i>
+            {{ empleado.rol.nombre }}
+        </span>
+
+        <span>
+            <i class="fas fa-store"></i>
+            {{ empleado.ubicacion.nombre }}
+        </span>
+        {% endif %}
+
+    </div>
+</header>
+
+<div class="main-container">
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <ul>
+
+            <li>
+                <a href="{% url 'index_empleados' %}">
+                    <i class="fas fa-house"></i> <span>Inicio</span>
+                </a>
+            </li>
+
+            <!-- ADMIN / GERENTE -->
+            {% if rol_usuario == "administrador" or rol_usuario == "gerente" %}
+
+                <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
+                <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
+                <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>
+                <li><a href="{% url 'clientes' %}"><i class="fas fa-users"></i> Clientes</a></li>
+                <li><a href="{% url 'usuarios' %}"><i class="fas fa-user-gear"></i> Usuarios</a></li>
+                <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i> Traslados</a></li>
+                <li><a href="{% url 'caja' %}"><i class="fas fa-cash-register"></i> Caja</a></li>
+
+            {% endif %}
+
+            <!-- VENDEDOR -->
+            {% if rol_usuario == "vendedor" %}
+                <li><a href="{% url 'ventas' %}">Ventas</a></li>
+                <li><a href="{% url 'clientes' %}">Clientes</a></li>
+                <li><a href="{% url 'inventario' %}">Inventario</a></li>
+            {% endif %}
+
+            <!-- BODEGA -->
+            {% if rol_usuario == "bodega" %}
+                <li><a href="{% url 'inventario' %}">Inventario</a></li>
+                <li><a href="{% url 'transferencias' %}">Traslados</a></li>
+                <li><a href="{% url 'compras' %}">Compras</a></li>
+                <li><a href="{% url 'proveedores' %}">Proveedores</a></li>
+            {% endif %}
+
+            <!-- CAJA -->
+            {% if rol_usuario == "cajero" %}
+                <li><a href="{% url 'ventas' %}">Ventas</a></li>
+                <li><a href="{% url 'caja' %}">Caja</a></li>
+            {% endif %}
+
+            <li class="logout">
+                <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <main class="content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</div>
+
+<script>
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+
+menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+});
+
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+});
+</script>
+
+</body>
+</html>
