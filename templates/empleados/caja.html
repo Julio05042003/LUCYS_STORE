@@ -3,6 +3,8 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 <link rel="stylesheet" href="{% static 'css/style-caja.css' %}">
 
 <div class="inventory-wrapper">
@@ -12,153 +14,367 @@
     </div>
 
     <!-- 📊 RESUMEN -->
-    <div class="caja-stats-grid">
-        <div class="stat-card">
-            <span>Saldo Inicial</span>
-            <strong>${{ apertura.saldo_inicial|default:"0.00" }}</strong>
-        </div>
+    <div class="main-container">
+        <div id="sidebar-container"></div>
 
-        <div class="stat-card">
-            <span>Ingresos</span>
-            <strong class="text-green">${{ ingresos|default:"0.00" }}</strong>
-        </div>
+        <main class="content">
+            <div class="inventory-wrapper">
 
-        <div class="stat-card">
-            <span>Egresos</span>
-            <strong class="text-red">${{ egresos|default:"0.00" }}</strong>
-        </div>
+                <div class="header-section" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2><i class="fas fa-wallet"></i> Control de Caja</h2>
+                    <div class="status-indicator">
+                        <span class="pulse-dot"></span>
+                        <strong>
+                            CAJA {{ apertura.estado.nombre|default:"Cerrada" }}
+                        </strong>
+                    </div>
+                </div>
 
-        <div class="stat-card highlighted">
-            <span>Total</span>
-            <strong>${{ total|default:"0.00" }}</strong>
-        </div>
+                <!-- 📊 STATS -->
+                <div class="caja-stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-icon income"><i class="fas fa-arrow-down"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Saldo Inicial</span>
+                            <strong class="stat-value">${{ apertura.saldo_inicial|default:"0.00" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon total-income"><i class="fas fa-plus"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Ingresos</span>
+                            <strong class="stat-value text-green">${{ ingresos|default:"0.00" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon expense"><i class="fas fa-minus"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Egresos</span>
+                            <strong class="stat-value text-red">${{ egresos|default:"0.00" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-card highlighted">
+                        <div class="stat-info">
+                            <span class="stat-label">Total</span>
+                            <strong class="stat-value large">${{ total|default:"0.00" }}</strong>
+                        </div>
+                        <i class="fas fa-money-bill-wave bg-icon"></i>
+                    </div>
+
+                </div>
+
+                <!-- 🎯 ACCIONES -->
+                <div class="caja-actions">
+
+                    {% if empleado.rol.nombre == "Gerente" %}
+                    <form method="POST" action="{% url 'crear_caja' %}">
+                        {% csrf_token %}
+                        <button class="btn-action open">
+                            <i class="fas fa-plus"></i> Crear Caja
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if empleado.rol.nombre == "Cajero" %}
+
+                    <button class="btn-action open" onclick="abrirModal('modalApertura')">
+                        <i class="fas fa-door-open"></i> Abrir Caja
+                    </button>
+
+                    <button class="btn-action move" onclick="abrirModal('modalMovimiento')">
+                        <i class="fas fa-exchange-alt"></i> Movimiento
+                    </button>
+
+                    <button class="btn-action close" onclick="abrirModal('modalCierre')">
+                        <i class="fas fa-door-closed"></i> Cerrar Caja
+                    </button>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- 📋 MOVIMIENTOS -->
+                <div class="table-container">
+
+                    <div class="table-header">
+                        <h3><i class="fas fa-history"></i> Movimientos</h3>
+
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="filterInput" placeholder="Filtrar movimientos...">
+                        </div>
+                    </div>
+
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tablaMovimientos">
+                            {% for m in movimientos %}
+                            <tr>
+                                <td>{{ m.fecha|time:"H:i" }}</td>
+                                <td>{{ m.tipo }}</td>
+                                <td>{{ m.descripcion }}</td>
+                                <td>${{ m.monto }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">Sin movimientos</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </main>
     </div>
-
-    <!-- 🎯 ACCIONES -->
-    <div class="caja-actions">
-
-        <!-- SOLO GERENTE -->
-        {% if empleado.rol.nombre == "Gerente" %}
-        <form method="post" action="{% url 'crear_caja' %}">
-            {% csrf_token %}
-            <button class="btn-action open">
-                <i class="fas fa-plus"></i> Crear Caja
-            </button>
-        </form>
-        {% endif %}
-
-        <!-- SOLO CAJERO -->
-        {% if empleado.rol.nombre == "Caja" %}
-
-        <button class="btn-action open" onclick="abrirModal('modalApertura')">
-            <i class="fas fa-door-open"></i> Abrir Caja
-        </button>
-
-        <button class="btn-action move" onclick="abrirModal('modalMovimiento')">
-            <i class="fas fa-exchange-alt"></i> Movimiento
-        </button>
-
-        <button class="btn-action close" onclick="abrirModal('modalCierre')">
-            <i class="fas fa-door-closed"></i> Cerrar Caja
-        </button>
-
-        {% endif %}
-    </div>
-
-    <!-- 📋 MOVIMIENTOS -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Hora</th>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th>Monto</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for m in movimientos %}
-                <tr>
-                    <td>{{ m.fecha|time:"H:i" }}</td>
-                    <td>{{ m.tipo }}</td>
-                    <td>{{ m.descripcion }}</td>
-                    <td>${{ m.monto }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
 </div>
 
-<!-- ========================= -->
-<!-- 🔓 MODAL APERTURA -->
-<!-- ========================= -->
+<!-- =========================
+ MODAL APERTURA
+========================= -->
 <div id="modalApertura" class="modal-overlay">
-    <div class="modal-content">
-        <form method="post" action="{% url 'abrir_caja' %}">
+    <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-cash-register"></i> Apertura de Caja</h3>
+            <button class="close-btn" onclick="cerrarModal('modalApertura')">&times;</button>
+        </div>
+
+        <form method="POST" action="{% url 'abrir_caja' %}" class="modal-form" id="formApertura">
             {% csrf_token %}
 
-            <h3>Apertura de Caja</h3>
+            <!-- CAJA -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Seleccionar Caja</label>
+                    <select name="caja_id" required>
+                        {% for c in cajas %}
+                            <option value="{{ c.id }}">{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <input type="hidden" name="empleado" value="{{ empleado.empleado_id }}">
-
-            <div class="form-group">
-                <label>Saldo Inicial</label>
-                <input type="number" step="0.01" name="saldo_inicial" required>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <input type="text" value="{{ empleado.user.first_name }} {{ empleado.user.last_name }}" disabled>
+                </div>
             </div>
 
-            <button class="btn-primary">Abrir</button>
+            <!-- DENOMINACIONES -->
+            <div class="denominaciones-container">
+                <label class="section-title">
+                    <i class="fas fa-coins"></i> Desglose de Billetes y Monedas
+                </label>
+
+                <div class="denominaciones-grid">
+
+                    <div class="denom-row">
+                        <span>Billetes de C$1000</span>
+                        <input type="number" class="denom-input" data-value="1000" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$500</span>
+                        <input type="number" class="denom-input" data-value="500" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$200</span>
+                        <input type="number" class="denom-input" data-value="200" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$100</span>
+                        <input type="number" class="denom-input" data-value="100" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$50</span>
+                        <input type="number" class="denom-input" data-value="50" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$20</span>
+                        <input type="number" class="denom-input" data-value="20" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$10</span>
+                        <input type="number" class="denom-input" data-value="10" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Billetes de C$5</span>
+                        <input type="number" class="denom-input" data-value="5" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Monedas de C$5</span>
+                        <input type="number" class="denom-input" data-value="5" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Monedas de C$1</span>
+                        <input type="number" class="denom-input" data-value="1" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Monedas de C$0.50</span>
+                        <input type="number" class="denom-input" data-value="0.50" min="0" value="0">
+                    </div>
+
+                    <div class="denom-row">
+                        <span>Monedas de C$0.25</span>
+                        <input type="number" class="denom-input" data-value="0.25" min="0" value="0">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SALDO AUTOMÁTICO -->
+            <div class="form-group">
+                <label>Monto Inicial Total</label>
+
+                <input type="hidden" name="saldo_inicial" id="inputSaldoInicial">
+
+                <input type="text" id="labelTotalApertura" value="$0.00" disabled>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalApertura')">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-primary">
+                    Confirmar e Iniciar Turno
+                </button>
+            </div>
         </form>
     </div>
 </div>
 
-<!-- ========================= -->
-<!-- 💰 MOVIMIENTO -->
-<!-- ========================= -->
+<!-- =========================
+ MODAL MOVIMIENTO
+========================= -->
 <div id="modalMovimiento" class="modal-overlay">
-    <div class="modal-content">
-        <form method="post" action="{% url 'crear_movimiento' %}">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> Nuevo Movimiento de Caja</h3>
+            <button class="close-btn" onclick="cerrarModal('modalMovimiento')">&times;</button>
+        </div>
+
+        <form method="POST" action="{% url 'crear_movimiento' %}" class="modal-form">
             {% csrf_token %}
 
-            <h3>Movimiento</h3>
+            <div class="form-group">
+                <select name="tipo">
+                    <option value="INGRESO">Ingreso</option>
+                    <option value="EGRESO">Egreso</option>
+                </select>
+            </div>
 
-            <select name="tipo">
-                <option value="INGRESO">Ingreso</option>
-                <option value="EGRESO">Egreso</option>
-            </select>
+            <div class="form-group">
+                <label>Monto</label>
+                <input type="number" name="monto" step="0.01" placeholder="C$ 0.00" required>
+            </div>
 
-            <input type="number" step="0.01" name="monto" required>
-            <textarea name="descripcion"></textarea>
+            <div class="form-group">
+                <label>Descripción / Concepto</label>
+                <textarea name="descripcion" placeholder="Descripción" rows="2"></textarea>
+            </div>
 
-            <button class="btn-primary">Guardar</button>
+            <div class="modal-footer">
+                <button type="submit" class="btn-primary">Registrar Movimiento</button>
+            </div>
         </form>
+
     </div>
 </div>
 
-<!-- ========================= -->
-<!-- 🔒 CIERRE -->
-<!-- ========================= -->
+<!-- =========================
+ MODAL CIERRE
+========================= -->
 <div id="modalCierre" class="modal-overlay">
-    <div class="modal-content">
-        <form method="post" action="{% url 'cerrar_caja' %}">
-            {% csrf_token %}
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header" style="background: var(--rosa-principal)">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Cierre de Caja</h3>
+            <button class="close-btn" onclick="cerrarModal('modalCierre')">&times;</button>
+        </div>
+        <div class="modal-form">
+            <div class="resumen-cierre" style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>(+) Fondo Inicial:</span> <strong>$50.00</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>(+) Ventas Totales:</span> <strong>$420.00</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>(-) Salidas/Gastos:</span> <strong style="color: #e74c3c;">$15.00</strong>
+                </div>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
+                <div style="display: flex; justify-content: space-between; font-size: 1.1rem;">
+                    <span>Esperado en Caja:</span> <span style="color: var(--rosa-principal); font-weight: 700;">$455.00</span>
+                </div>
+            </div>
 
-            <h3>Cierre de Caja</h3>
+                <div class="form-group">
+                    <label>Efectivo Real en Físico ($)</label>
+                    <input type="number" step="0.01" placeholder="Cuente el dinero de la gaveta..." id="efectivo-real">
+                </div>
+            
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Observaciones del Cierre</label>
+                    <textarea rows="2" placeholder="Ej: Faltaron $0.50 por falta de cambio..."></textarea>
+                </div>
 
-            <input type="number" step="0.01" name="saldo_real" placeholder="Efectivo real">
-
-            <textarea name="observacion"></textarea>
-
-            <button class="btn-primary">Cerrar Caja</button>
-        </form>
+                <div class="modal-footer" style="flex-direction: column;">
+                    <button class="btn-primary" onclick="confirmarCierre()" style="width: 100%; background: #27ae60; margin-bottom: 10px;">
+                        FINALIZAR Y CERRAR CAJA
+                    </button>
+                    <button type="button" class="btn-clear" onclick="cerrarModal('modalCierre')" style="width: 100%;">
+                        CONTINUAR VENDIENDO
+                    </button>
+                </div>
+            </div>
+        </div>
+        
     </div>
-</div>
 
+<!-- =========================
+ FILTRO JS
+========================= -->
+
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
 <script>
-function abrirModal(id){
-    document.getElementById(id).style.display = 'flex';
+function calcularApertura() {
+    let total = 0;
+
+    document.querySelectorAll('.denom-input').forEach(input => {
+        let valor = parseFloat(input.dataset.value);
+        let cantidad = parseInt(input.value || 0);
+
+        total += valor * cantidad;
+    });
+
+    document.getElementById('labelTotalApertura').value = "$" + total.toFixed(2);
+    document.getElementById('inputSaldoInicial').value = total.toFixed(2);
 }
+
+document.querySelectorAll('.denom-input').forEach(input => {
+    input.addEventListener('input', calcularApertura);
+});
 </script>
 
 {% endblock %}

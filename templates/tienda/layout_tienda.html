@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Lucy’s Boutique{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style-tienda.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style-footer.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ANUNCIO -->
+    <div class="top-announcement">
+        ENVÍOS A TODO EL PAÍS | LUCY'S STORE 🌸
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <div class="nav-center">
+
+            <!-- LOGO -->
+            <a href="{% url 'tienda' %}">
+                <img src="{% static 'img/logo_lucys.jpeg' %}" alt="Lucy's Store">
+            </a>
+
+            <!-- MENÚ -->
+            <div class="user-actions">
+
+                <a href="{% url 'tienda' %}" class="btn-login">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+
+                {% if user.is_authenticated %}
+
+                    <span class="user-name">
+                        <i class="fas fa-user-circle"></i>
+                        {{ user.first_name }} {{ user.last_name }}
+                    </span>
+
+                    <a href="{% url 'logout' %}" class="btn-login logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Cerrar Sesión
+                    </a>
+
+                {% else %}
+
+                    <a href="{% url 'login' %}" class="btn-login">
+                        <i class="fas fa-user"></i>
+                        Iniciar Sesión
+                    </a>
+
+                    <a href="{% url 'registro_cliente' %}" class="btn-login">
+                        <i class="fas fa-user-plus"></i>
+                        Registrarse
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- CATEGORÍAS -->
+        <div class="category-nav">
+            <div class="category-scroll">
+                <a href="#" class="cat-item active">Todo</a>
+                <a href="#" class="cat-item">Camisas</a>
+                <a href="#" class="cat-item">Pantalones</a>
+                <a href="#" class="cat-item">Faldas</a>
+                <a href="#" class="cat-item">Shorts</a>
+                <a href="#" class="cat-item">Tops</a>
+                <a href="#" class="cat-item">Conjuntos</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <!-- CONTENIDO -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- FOOTER -->
+    <footer class="shop-footer">
+
+        <div class="footer-top">
+            <div class="footer-main-container">
+
+                <div class="footer-col brand-col">
+                    <img src="{% static 'img/logo_lucys.jpeg' %}" class="footer-logo">
+
+                    <p class="footer-text">
+                        Tu destino favorito para la moda y el estilo.
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Soporte</h4>
+
+                    <ul>
+                        <li><a href="#">Preguntas Frecuentes</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col contact-col">
+                    <h4>Contacto</h4>
+
+                    <span>+505 8170-3596</span>
+                    <span>Managua, Nicaragua</span>
+                </div>
+
+            </div>
+        </div>
+
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

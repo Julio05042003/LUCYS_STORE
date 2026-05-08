@@ -22,7 +22,7 @@ class Venta(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.SET_NULL, null=True, blank=True, db_column='Pedido_id')
     estado = models.ForeignKey(Estado, on_delete=models.PROTECT, db_column='Estado_id')
 
-    numero_factura = models.IntegerField(unique=True, db_column='NumeroFactura')
+    numero_factura = models.CharField(max_length=10, db_column='NumeroFactura')
     fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
     total = models.DecimalField(max_digits=10, decimal_places=2, db_column='Total')
 

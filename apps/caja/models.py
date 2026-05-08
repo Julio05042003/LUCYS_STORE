@@ -26,7 +26,7 @@ class AperturaCaja(models.Model):
     fecha_cierre = models.DateTimeField(db_column='Fecha_cierre', null=True, blank=True)
 
     saldo_inicial = models.DecimalField(db_column='Saldo_inicial', max_digits=10, decimal_places=2)
-    saldo_final = models.DecimalField(db_column='Saldo_final', max_digits=10, decimal_places=2)
+    saldo_final = models.DecimalField(db_column='Saldo_final', max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
         db_table = 'Aperturas_Cajas'

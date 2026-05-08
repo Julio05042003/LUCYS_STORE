@@ -4,100 +4,855 @@
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/style-compras.css' %}">
+<link rel="stylesheet" href="{% static 'css/style-proveedores.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-<div class="inventory-wrapper">
 
-<h2>Historial de Compras</h2>
+<div class="main-container">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-container"></div>
 
-<table>
-<thead>
-<tr>
-<th>Fecha</th>
-<th>Proveedor</th>
-<th>Ubicación</th>
-<th>Total</th>
-</tr>
-</thead>
+    <main class="content">
+        <div class="inventory-wrapper">
 
-<tbody>
-{% for c in compras %}
-<tr>
-<td>{{ c.fecha }}</td>
-<td>{{ c.proveedor.nombre }}</td>
-<td>{{ c.ubicacion.nombre }}</td>
-<td>${{ c.total }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+            <div class="header-section">
+                <h2>
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Historial de Compras
+                </h2>
+            </div>
 
-<button onclick="abrirModal('modalCompra')">Nueva Compra</button>
+            <!-- FILTROS -->
+            <div class="filters-card">
 
+                <div class="field">
+                    <label>Proveedor:</label>
+
+                    <select id="filtro_proveedor">
+                        <option value="">Todos los proveedores</option>
+
+                        {% for p in proveedores %}
+                        <option value="{{ p.id }}">
+                            {{ p.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>N° Factura:</label>
+                    <input type="text" placeholder="Buscar folio...">
+                </div>
+
+                <div class="field">
+                    <label>Fecha Compra:</label>
+                    <input type="date">
+                </div>
+
+                <button class="btn-clear">
+                    Limpiar
+                </button>
+
+            </div>
+
+            <!-- TABLA -->
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Destino (Ubicación)</th>
+                            <th>Monto Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for c in compras %}
+                        <tr>
+
+                            <td>
+                                {{ c.fecha|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+                                {{ c.proveedor.nombre }}
+                            </td>
+
+                            <td>
+                                <i class="fas fa-warehouse"></i>
+                                {{ c.ubicacion.nombre }}
+                            </td>
+
+                            <td>
+                                <strong>${{ c.total }}</strong>
+                            </td>
+
+                            <td>
+
+                                <button class="btn-edit" title="Ver Detalle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+
+                                <button class="btn-print" title="Imprimir">
+                                    <i class="fas fa-print"></i>
+                                </button>
+
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- BOTONES -->
+            <div class="action-footer">
+
+                <button class="btn-primary" onclick="abrirModal('modalCompra')">
+
+                    <i class="fas fa-truck-moving"></i>
+                    Registrar Nueva Compra
+
+                </button>
+
+                <button class="btn-primary" onclick="abrirModal('modalProveedor')">
+
+                    <i class="fas fa-handshake"></i>
+                    Registrar Nuevo Proveedor
+
+                </button>
+
+            </div>
+
+        </div>
+    </main>
 </div>
 
-<!-- MODAL -->
+<!-- ========================================= -->
+<!-- MODAL COMPRAS -->
+<!-- ========================================= -->
+
 <div id="modalCompra" class="modal-overlay">
-<div class="modal-content">
 
-<h3>Nueva Compra</h3>
+    <div class="modal-content" style="max-width: 800px;">
 
-<select id="proveedor_id">
-<option value="">Proveedor</option>
-{% for p in proveedores %}
-<option value="{{ p.id }}">{{ p.nombre }}</option>
-{% endfor %}
-</select>
+        <div class="modal-header">
 
-<select id="ubicacion_id">
-<option value="">Ubicación</option>
-{% for u in ubicaciones %}
-<option value="{{ u.id }}">{{ u.nombre }}</option>
-{% endfor %}
-</select>
+            <h3>
+                <i class="fas fa-cart-plus"></i>
+                Registrar Nueva Compra
+            </h3>
 
-<select id="compra_empleado">
-<option value="">Empleado</option>
-{% for e in empleados %}
-<option value="{{ e.id }}">{{ e.nombre }}</option>
-{% endfor %}
-</select>
+            <button class="close-btn" onclick="cerrarModal('modalCompra')">&times;</button>
 
-<hr>
+        </div>
 
-<select id="producto_select">
-<option value="">Producto</option>
-{% for pr in productos %}
-<option value="{{ pr.id }}">{{ pr.nombre }}</option>
-{% endfor %}
-</select>
+        <form class="modal-form" id="formCompra" method="POST" action="{% url 'crear_compra' %}">
+            {% csrf_token %}
+            <div class="form-grid">
 
-<input type="number" id="cantidad_input" placeholder="Cantidad">
-<input type="number" id="precio_input" placeholder="Precio">
+                <!-- PROVEEDOR -->
+                <div class="form-group">
 
-<button onclick="agregarProductoCompra()">Agregar</button>
+                    <label>Proveedor</label>
 
-<table>
-<thead>
-<tr>
-<th>Producto</th>
-<th>Cantidad</th>
-<th>Precio</th>
-<th>Subtotal</th>
-<th></th>
-</tr>
-</thead>
+                    <select id="proveedor_id" required>
 
-<tbody id="lista-detalles-compra"></tbody>
+                        <option value="">
+                            Seleccionar proveedor
+                        </option>
 
-</table>
+                        {% for p in proveedores %}
+                        <option value="{{ p.id  }}">
+                            {{ p.nombre }}
+                        </option>
+                        {% endfor %}
 
-<h3>Total: <span id="total_compra">$0.00</span></h3>
+                    </select>
 
-<button onclick="registrarCompra()">Guardar Compra</button>
+                </div>
+
+                <!-- UBICACION -->
+                <div class="form-group">
+
+                    <label>Ubicación de Destino</label>
+
+                    <select id="ubicacion_id" required>
+
+                        <option value="">
+                            Seleccionar ubicación
+                        </option>
+
+                        {% for u in ubicaciones %}
+                        <option value="{{ u.ubicacion_id  }}">
+                            {{ u.nombre }}
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <!-- EMPLEADO -->
+                <div class="form-group">
+
+                    <label>Responsable de Recepción</label>
+
+                    <input type="text" value="{{ request.user.first_name }} {{ request.user.last_name }}" disabled>
+
+                    <input type="hidden" id="compra_empleado" value="{{ request.user.empleado.empleado_id }}">
+
+                </div>
+
+                <!-- FECHA -->
+                <div class="form-group">
+
+                    <label>Fecha</label>
+
+                    <input type="date" id="fecha" name="fecha" value="{{ today|date:'Y-m-d' }}" readonly>
+
+                </div>
+
+            </div>
+
+            <div class="ticket-divider"></div>
+
+            <!-- DETALLE -->
+            <div class="detalle-compra-container">
+
+                <label style="font-weight:bold;color:var(--rosa-principal);">
+                    <i class="fas fa-list"></i>
+                    Detalle de Productos
+                </label>
+
+                <!-- BUSQUEDA -->
+                <div class="busqueda-producto-row" style="display:flex;gap:10px;margin-top:10px;">
+
+                    <select id="producto_busqueda" style="flex:3; width: 100%;">
+                    </select>
+
+                    <input type="number" id="cantidad_producto" placeholder="Cant." min="1" max="9999" oninput="this.value = this.value.replace('-', '')" style="flex:1;">
+
+                    <input type="number" id="precio_producto" placeholder="Precio Compra" step="0.01" min="0.01" max="999999" oninput="this.value = this.value.replace('-', '')"
+                        style="flex:1;">
+
+                    <button type="button" class="btn-primary" onclick="agregarProductoCompra()" style="padding:0 15px;">
+
+                        <i class="fas fa-plus"></i>
+
+                    </button>
+
+                </div>
+
+                <!-- TABLA -->
+                <div class="table-container" style="margin-top:15px;max-height:200px;overflow-y:auto;">
+
+                    <table style="font-size:0.85rem;">
+
+                        <thead>
+                            <tr style="background:#f8f9fa;">
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="lista-detalles-compra">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer" style="margin-top:20px;">
+
+                <div style="margin-right:auto;font-size:1.2rem;">
+
+                    <strong>TOTAL:</strong>
+
+                    <span id="total-compra" style="color:var(--rosa-principal);font-weight:bold;">
+
+                        $0.00
+
+                    </span>
+
+                </div>
+
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalCompra')">
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Finalizar Ingreso
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
+
+<!-- ========================================= -->
+<!-- MODAL PROVEEDOR -->
+<!-- ========================================= -->
+
+<div id="modalProveedor" class="modal-overlay">
+
+    <div class="modal-content" style="max-width:700px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-truck-field"></i>
+                Registro de Proveedor
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalProveedor')">&times;</button>
+
+        </div>
+
+        <form class="modal-form" id="formProveedor" method="POST" action="{% url 'crear_proveedor' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+
+                <!-- EMPRESA -->
+                <div class="form-group">
+
+                    <label>Nombre de la Empresa</label>
+
+                    <input type="text" name="nombre" placeholder="Nombre Legal o Comercial" required>
+
+                </div>
+
+                <!-- CONTACTO -->
+                <div class="form-group">
+
+                    <label>Persona de Contacto</label>
+
+                    <input type="text" name="contacto" placeholder="Nombre del agente">
+
+                </div>
+
+                <!-- CORREO -->
+                <div class="form-group" style="grid-column:span 2;">
+
+                    <label>Correo Electrónico</label>
+
+                    <input type="email" name="correo" placeholder="contacto@empresa.com">
+
+                </div>
+
+                <!-- TELEFONOS -->
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-phone-volume"></i>
+                        Números de Contacto
+                    </label>
+
+                    <div id="lista-telefonos-prov" class="dynamic-list">
+
+                        <div class="dynamic-row telefono-row">
+
+                            <input type="text" class="telefono_numero" name="numero" placeholder="Número"
+                                style="flex:2;">
+
+                            <select class="telefono_operadora" name="operadora" style="flex:1;">
+
+                                <option value="">Operadora</option>
+                                <option value="Tigo">Tigo</option>
+                                <option value="Claro">Claro</option>
+                                <option value="Convencional">Convencional</option>
+
+                            </select>
+
+                            <select class="telefono_tipo" name="tipo" style="flex:1;">
+
+                                <option value="Ventas">Ventas</option>
+                                <option value="Cobros">Cobros</option>
+                                <option value="Bodega">Bodega</option>
+
+                            </select>
+
+                            <button type="button" class="btn-add-small" onclick="agregarTelefono()">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- DIRECCION -->
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Dirección
+                    </label>
+
+                    <div class="dynamic-list">
+
+                        <div class="dynamic-row direccion-row">
+
+                            <input type="text" id="pais_proveedor" name="pais" placeholder="País" style="flex:1;"
+                                required>
+
+                            <input type="text" id="departamento_proveedor" name="departamento"
+                                placeholder="Departamento" style="flex:1;" required>
+
+                            <input type="text" id="ciudad_proveedor" name="ciudad" placeholder="Ciudad" style="flex:1;"
+                                required>
+
+                            <input type="text" id="detalle_proveedor" name="detalle"
+                                placeholder="Detalle (Calle, casa...)" style="flex:2;" required>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalProveedor')">
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Registrar Proveedor
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+<script>
+
+    let detallesCompra = [];
+
+    // =====================================
+    // SELECT2 PRODUCTOS
+    // =====================================
+    $(document).ready(function () {
+
+    $('#producto_busqueda').select2({
+
+        dropdownParent: $('#modalCompra'),
+
+        placeholder: "Buscar producto por código o nombre",
+
+        minimumInputLength: 1,
+
+        width: '100%',
+
+        ajax: {
+
+            url: "{% url 'buscar_productos_compra' %}",
+
+            dataType: 'json',
+
+            delay: 250,
+
+            data: function (params) {
+
+                return {
+                    term: params.term
+                };
+
+            },
+
+            processResults: function (data) {
+
+                return {
+                    results: data
+                };
+
+            }
+
+        }
+
+    });
+
+});
+
+// =====================================
+    // AGREGAR PRODUCTO
+    // =====================================
+    function agregarProductoCompra() {
+
+        let producto = $('#producto_busqueda').select2('data')[0];
+
+        let cantidad = parseInt(
+            document.getElementById('cantidad_producto').value
+        );
+
+        let precio = parseFloat(
+            document.getElementById('precio_producto').value
+        );
+
+        // VALIDACIONES
+        if (!producto) {
+
+            alert("Seleccione un producto");
+            return;
+
+        }
+
+        if (isNaN(cantidad) || cantidad <= 0 || cantidad > 9999) {
+
+            alert("Cantidad inválida");
+            return;
+
+        }
+
+        if (isNaN(precio) || precio <= 0 || precio > 999999) {
+
+            alert("Precio inválido");
+            return;
+
+        }
+
+        // BUSCAR SI YA EXISTE
+        let existente = detallesCompra.find(
+            p => p.producto_id == producto.id
+        );
+
+        if (existente) {
+
+            existente.cantidad += cantidad;
+            existente.precio = precio;
+
+        } else {
+
+            detallesCompra.push({
+
+                producto_id: producto.id,
+                nombre: producto.text,
+                cantidad: cantidad,
+                precio: precio
+
+            });
+
+        }
+
+        renderTablaCompra();
+
+        // LIMPIAR
+        $('#producto_busqueda').val(null).trigger('change');
+
+        document.getElementById('cantidad_producto').value = '';
+        document.getElementById('precio_producto').value = '';
+
+    }
+
+    // =====================================
+    // RENDER TABLA
+    // =====================================
+    function renderTablaCompra() {
+
+        let tbody = document.getElementById(
+            'lista-detalles-compra'
+        );
+
+        tbody.innerHTML = '';
+
+        let total = 0;
+
+        detallesCompra.forEach((item, index) => {
+
+            let subtotal = item.cantidad * item.precio;
+
+            total += subtotal;
+
+            tbody.innerHTML += `
+
+            <tr>
+
+                <td>${item.nombre}</td>
+
+                <td>
+
+                    <input type="number"
+                           value="${item.cantidad}"
+                           min="1"
+                           onchange="cambiarCantidadCompra(${index}, this.value)">
+
+                </td>
+
+                <td>
+
+                    <input type="number"
+                           value="${item.precio}"
+                           min="0.01"
+                           step="0.01"
+                           onchange="cambiarPrecioCompra(${index}, this.value)">
+
+                </td>
+
+                <td>
+                    $${subtotal.toFixed(2)}
+                </td>
+
+                <td>
+
+                    <button type="button"
+                            onclick="eliminarProductoCompra(${index})"
+                            style="color:red;border:none;background:none;cursor:pointer;">
+
+                        <i class="fas fa-trash"></i>
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        });
+
+        document.getElementById('total-compra').innerText =
+            '$' + total.toFixed(2);
+
+    }
+
+    // =====================================
+    // ELIMINAR PRODUCTO
+    // =====================================
+    function eliminarProductoCompra(index) {
+
+        detallesCompra.splice(index, 1);
+
+        renderTablaCompra();
+
+    }
+
+    // =====================================
+    // CAMBIAR CANTIDAD
+    // =====================================
+    function cambiarCantidadCompra(index, valor) {
+
+        valor = parseInt(valor);
+
+        if (isNaN(valor) || valor <= 0) {
+
+            alert("Cantidad inválida");
+
+            renderTablaCompra();
+
+            return;
+
+        }
+
+        detallesCompra[index].cantidad = valor;
+
+        renderTablaCompra();
+
+    }
+
+    // =====================================
+    // CAMBIAR PRECIO
+    // =====================================
+    function cambiarPrecioCompra(index, valor) {
+
+        valor = parseFloat(valor);
+
+        if (isNaN(valor) || valor <= 0) {
+
+            alert("Precio inválido");
+
+            renderTablaCompra();
+
+            return;
+
+        }
+
+        detallesCompra[index].precio = valor;
+
+        renderTablaCompra();
+
+    }
+
+    // =====================================
+    // AGREGAR TELEFONO
+    // =====================================
+    function agregarTelefono() {
+
+        let container = document.getElementById(
+            'lista-telefonos-prov'
+        );
+
+        let div = document.createElement('div');
+
+        div.classList.add('dynamic-row');
+        div.classList.add('telefono-row');
+
+        div.innerHTML = `
+
+        <input type="text"
+               class="telefono_numero"
+               placeholder="Número"
+               style="flex:2;">
+
+        <select class="telefono_operadora"
+                style="flex:1;">
+
+            <option value="">Operadora</option>
+            <option value="Tigo">Tigo</option>
+            <option value="Claro">Claro</option>
+            <option value="Convencional">Convencional</option>
+
+        </select>
+
+        <select class="telefono_tipo"
+                style="flex:1;">
+
+            <option value="Ventas">Ventas</option>
+            <option value="Cobros">Cobros</option>
+            <option value="Bodega">Bodega</option>
+
+        </select>
+
+        <button type="button"
+                onclick="this.parentElement.remove()"
+                style="background:red;color:white;border:none;padding:5px 10px;border-radius:5px;">
+
+            <i class="fas fa-trash"></i>
+
+        </button>
+
+    `;
+
+        container.appendChild(div);
+
+    }
+
+    // =====================================
+    // GUARDAR COMPRA
+    // =====================================
+    document.getElementById('formCompra')
+        .addEventListener('submit', function (e) {
+
+            e.preventDefault();
+
+            let proveedor = document.getElementById(
+                'proveedor_id'
+            ).value;
+
+            let ubicacion = document.getElementById(
+                'ubicacion_id'
+            ).value;
+
+            let empleado = document.getElementById(
+                'compra_empleado'
+            ).value;
+
+            // VALIDACIONES
+            if (!proveedor) {
+
+                alert("Seleccione proveedor");
+                return;
+
+            }
+
+            if (!ubicacion) {
+
+                alert("Seleccione ubicación");
+                return;
+
+            }
+
+            if (detallesCompra.length === 0) {
+
+                alert("Agregue productos");
+                return;
+
+            }
+
+            fetch("{% url 'crear_compra' %}", {
+
+                method: 'POST',
+
+                headers: {
+
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+
+                },
+
+                body: JSON.stringify({
+
+                    proveedor: proveedor,
+                    ubicacion: ubicacion,
+                    empleado: empleado,
+                    productos: detallesCompra
+
+                })
+
+            })
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    if (data.status === 'ok') {
+
+                        alert("Compra registrada");
+
+                        detallesCompra = [];
+
+                        location.reload();
+
+                    } else {
+
+                        alert(data.error);
+
+                    }
+
+                });
+
+        });
+
+
+</script>
 
 {% endblock %}

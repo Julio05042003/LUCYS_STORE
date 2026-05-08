@@ -27,8 +27,8 @@ class Producto(models.Model):
 
     nombre = models.CharField(max_length=100, db_column='Nombre')
     codigo = models.CharField(max_length=50, unique=True, db_column='Codigo')
-    descripcion = models.CharField(max_length=100, db_column='Descripcion')
-    precio_c = models.DecimalField(max_digits=10, decimal_places=2, db_column='Precio_C')
+    descripcion = models.TextField(max_length=100, db_column='Descripcion')
+    precio_c = models.DecimalField(max_digits=10, decimal_places=2, db_column='Precio_C', default=0)
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True, db_column='Imagen')
 
     class Meta:
@@ -36,7 +36,13 @@ class Producto(models.Model):
 
     @property
     def precio_venta(self):
-        return (self.precio_c * Decimal('1.20')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        if not self.precio_c:
+            return Decimal('0.00')
+
+        return (self.precio_c * Decimal('1.20')).quantize(
+            Decimal('0.01'),
+            rounding=ROUND_HALF_UP
+    )
 
 
 

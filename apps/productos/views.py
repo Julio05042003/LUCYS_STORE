@@ -4,6 +4,7 @@ from django.db.models import Sum
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 
 from apps.productos.models import Producto, Categoria, Marca
 from apps.inventario.models import Inventario
@@ -11,12 +12,23 @@ from apps.usuarios.models import Estado, Empleado
 
 # 🔐 función simple de roles (ajústala a tu lógica real)
 def es_admin_o_bodega(user):
-    return hasattr(user, 'empleado') and user.empleado.rol in ['ADMIN', 'GERENTE', 'BODEGA']
+    try:
+        empleado = Empleado.objects.select_related('rol').get(user=user)
+        return empleado.rol.nombre.lower() in ['admin', 'gerente', 'bodega']
+    except Empleado.DoesNotExist:
+        return False
 
 
-def catalogo(request):
-    productos = Producto.objects.all()
-    return render(request, 'tienda/index.html', {'productos': productos})
+def tienda_view(request):
+
+    productos = Producto.objects.select_related(
+        'marca',
+        'categoria'
+    ).all()
+
+    return render(request, 'tienda/index.html', {
+        'productos': productos
+    })
 
 
 # 🔹 CREAR PRODUCTO
@@ -92,8 +104,13 @@ def editar_categoria(request, id):
 def crear_marca(request):
 
     if request.method == 'POST':
-        Marca.objects.create(nombre=request.POST['nombre'])
-        messages.success(request, "Marca creada")
+        nombre = request.POST.get('nombre')
+
+        if nombre:
+            Marca.objects.create(nombre=nombre)
+            messages.success(request, "Marca creada correctamente")
+        else:
+            messages.error(request, "El nombre es obligatorio")
 
     return redirect('inventario')
 
@@ -117,13 +134,25 @@ def producto_detalle_json(request, id):
 
     inventarios = Inventario.objects.select_related('ubicacion').filter(producto=producto)
 
+    # 🔥 obtener rol correctamente
+    empleado = Empleado.objects.select_related('rol').get(user=request.user)
+    rol = empleado.rol.nombre
+
     data = {
         'codigo': producto.codigo,
         'nombre': producto.nombre,
         'categoria': producto.categoria.nombre,
         'marca': producto.marca.nombre,
-        'estado': producto.estado.nombre,
+        'descripcion': producto.descripcion or "",
+        'imagen': producto.imagen.url if producto.imagen else "",
+
+        'precio_costo': float(producto.precio_c or 0),
+        'precio_venta': float(producto.precio_venta or 0),
+
+        'rol': rol,
+
         'stock': inventarios.aggregate(total=Sum('stock'))['total'] or 0,
+
         'inventarios': [
             {
                 'ubicacion': i.ubicacion.nombre,
@@ -145,11 +174,59 @@ def cambiar_estado_producto(request, id):
 
     producto = get_object_or_404(Producto, pk=id)
 
-    if producto.estado.nombre == "Activo":
-        producto.estado = Estado.objects.get(nombre="Inactivo")
+    if producto.estado.nombre.strip().lower() == "activo":
+        nuevo_estado = Estado.objects.get(nombre__iexact="Inactivo")
     else:
-        producto.estado = Estado.objects.get(nombre="Activo")
+        nuevo_estado = Estado.objects.get(nombre__iexact="Activo")
 
+    producto.estado = nuevo_estado
     producto.save()
 
     return JsonResponse({'ok': True})
+
+
+def buscar_productos(request):
+    term = request.GET.get('term', '')
+
+    productos = Producto.objects.filter(
+        nombre__icontains=term
+    )[:10]
+
+    data = []
+
+    for p in productos:
+        data.append({
+            'id': p.producto_id,
+            'text': f"{p.nombre} - ${p.precio_venta}",
+            'precio': float(p.precio_venta),
+            'nombre': p.nombre
+        })
+
+    return JsonResponse(data, safe=False)
+
+def buscar_productos_compra(request):
+
+    term = request.GET.get('term', '')
+
+    productos = Producto.objects.filter(
+
+        Q(nombre__icontains=term) |
+        Q(codigo__icontains=term)
+
+    )[:10]
+
+    data = []
+
+    for p in productos:
+
+        data.append({
+
+            'id': p.producto_id,
+
+            'text': f"{p.codigo} - {p.nombre}",
+
+            'nombre': p.nombre
+
+        })
+
+    return JsonResponse(data, safe=False)

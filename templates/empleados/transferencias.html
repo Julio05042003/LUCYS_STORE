@@ -120,36 +120,73 @@
 let detalles = []
 
 function agregarProducto(){
+
     let p = document.getElementById('producto').value
     let c = document.getElementById('cantidad').value
 
-    detalles.push({producto:p, cantidad:c})
+    if(p === '' || c === ''){
+        alert("Complete producto y cantidad")
+        return
+    }
 
-    document.getElementById('detalle-body').innerHTML += `
-        <tr>
-            <td>${p}</td>
-            <td>${c}</td>
-            <td><button onclick="this.closest('tr').remove()">X</button></td>
-        </tr>
-    `
-
-    document.getElementById('detalles').value = JSON.stringify(detalles)
-}
-
-function aprobar(id){
-    fetch(`/transferencias/aprobar/${id}/`)
-    .then(()=> location.reload())
-}
-
-function verDetalle(id){
-
-    fetch(`/transferencias/detalle/${id}/`)
-    .then(res => res.json())
-    .then(data => {
-        console.log(data)
-        alert("Ver consola para detalles") // aquí luego puedes hacer un modal bonito
+    detalles.push({
+        producto: parseInt(p),
+        cantidad: parseInt(c)
     })
+
+    renderTabla()
+
+    document.getElementById('producto').value = ''
+    document.getElementById('cantidad').value = 1
 }
+
+function renderTabla(){
+
+    let body = document.getElementById('detalle-body')
+
+    body.innerHTML = ''
+
+    detalles.forEach((d, index)=>{
+
+        body.innerHTML += `
+            <tr>
+                <td>${d.producto}</td>
+                <td>${d.cantidad}</td>
+                <td>
+                    <button type="button" onclick="eliminarProducto(${index})">
+                        X
+                    </button>
+                </td>
+            </tr>
+        `
+    })
+
+    // ACTUALIZAR INPUT HIDDEN
+    document.getElementById('detalles').value =
+        JSON.stringify(detalles)
+}
+
+function eliminarProducto(index){
+
+    detalles.splice(index,1)
+
+    renderTabla()
+}
+
+document.querySelector('form').addEventListener('submit', function(e){
+
+    if(detalles.length === 0){
+
+        e.preventDefault()
+
+        alert("Debe agregar productos")
+
+        return
+    }
+
+    document.getElementById('detalles').value =
+        JSON.stringify(detalles)
+})
 </script>
 
 {% endblock %}

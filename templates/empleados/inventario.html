@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 
 <div class="main-container">
+    <div id="sidebar-container"></div>
     <main class="content">
         <div class="inventory-wrapper">
 
@@ -80,14 +81,11 @@
                                 {% if rol != "Vendedor" %}
 
                                 <!-- ✏ EDITAR -->
-                                <button class="btn-row edit" onclick="editarProducto(
-                            '{{ p.producto_id }}',
-                            '{{ p.codigo }}',
-                            '{{ p.nombre }}',
-                            '{{ p.descripcion }}',
-                            '{{ p.categoria_id }}',
-                            '{{ p.marca_id }}')
-                            " title="Editar">
+                                <button class="btn-editar" data-id="{{ p.id }}" data-codigo="{{ p.codigo }}"
+                                    data-nombre="{{ p.nombre }}" data-descripcion="{{ p.descripcion|escapejs }}"
+                                    data-categoria="{{ p.categoria_id }}" data-marca="{{ p.marca_id }}"
+                                    data-imagen="{{ p.imagen|default:'/static/img/no-image.png' }}" title="Editar">
+
                                     <i class="fas fa-edit"></i>
                                 </button>
 
@@ -164,24 +162,25 @@
             <!-- ⚡ ACCIONES -->
             {% if rol != "Vendedor" %}
             <div class="action-footer">
-                <button class="btn-primary" onclick="abrirModal('modalProducto')">Agregar Producto</button>
-                <button class="btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
+                <button class="btn-primary" id="formProducto"
+                    onclick="abrirModal('modalProducto')"">Agregar Producto</button>
+                <button class=" btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
                 <button class="btn-primary" onclick="abrirModal('modalMarca')">Agregar Marca</button>
             </div>
             {% endif %}
 
-            
+
 
         </div>
     </main>
 </div>
 
-<!-- 🟣 MODAL PRODUCTO -->
+<!--- modal producto-->
 <div id="modalProducto" class="modal-overlay">
     <div class="modal-content" style="max-width: 600px;">
 
         <div class="modal-header">
-            <h3>Nuevo Producto</h3>
+            <h3><i class="fas fa-plus-circle"></i>Nuevo Producto</h3>
             <button class="close-btn" onclick="cerrarModal('modalProducto')">&times;</button>
         </div>
 
@@ -192,54 +191,57 @@
                     <label> Codigo</label>
                     <input type="text" name="codigo" id="codigo" placeholder="Código" required>
                 </div>
-            </div>
 
-            <div class="from-group">
-                <label>Nombre</label>
-                <input type="text" name="nombre" id="nombre" placeholder="Nombre" required>
-            </div>
+                <div class="from-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" id="nombre" placeholder="Nombre" required>
+                </div>
 
-            <div class="form-gruop">
-                <label>Categoria</label>
-                <select name="categoria" id="categoria">
-                    {% for c in categorias %}
-                    <option value="{{ c.categoria_id }}">{{ c.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <div class="form-gruop">
+                    <label>Categoria</label>
+                    <select name="categoria" id="categoria">
+                        {% for c in categorias %}
+                        <option value="{{ c.categoria_id }}">{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-gruop">
-                <label>Marca</label>
-                <select name="marca" id="marca">
-                    {% for m in marcas %}
-                    <option value="{{ m.marca_id }}">{{ m.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+                <div class="form-gruop">
+                    <label>Marca</label>
+                    <select name="marca" id="marca">
+                        {% for m in marcas %}
+                        <option value="{{ m.marca_id }}">{{ m.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="from-gruop" style="grid-column: span 2;">
-                <label>Imagen</label>
-                <div class="image-upload-container">
-                    <div class="image-preview" id="imagePreview">
-                        <i class="fas fa-camera"></i>
-                        <img src="" alt="Vista previa" style="display: none;">
+                <div class="from-gruop" style="grid-column: span 2;">
+                    <label>Imagen</label>
+                    <div class="image-upload-container">
+                        <div class="image-preview" id="imagePreview">
+                            <i class="fas fa-camera"></i>
+                            <img src="" alt="Vista previa" style="display: none;">
+                        </div>
+                        <div class="image-controls">
+                            <input type="file" name="imagen" id="subirImagen" accept="image/*" style="display: none;"
+                                onchange="previsualizarImagen(event)">
+                            <button type="button" class="btn-secondary"
+                                onclick="document.getElementById('subirImagen').click()">
+                                <i class="fas fa-upload"></i> Seleccionar Imagen
+                            </button>
+                            <small>Formatos: JPG, PNG. Máx 2MB</small>
+                        </div>
                     </div>
-                    <div class="image-controls">
-                        <input type="file" name="imagen" id="subirImagen" accept="image/*" style="display: none;"
-                            onchange="previsualizarImagen(event)">
-                        <button type="button" class="btn-secondary"
-                            onclick="document.getElementById('subirImagen').click()">
-                            <i class="fas fa-upload"></i> Seleccionar Imagen
-                        </button>
-                        <small>Formatos: JPG, PNG. Máx 2MB</small>
-                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Descripción Larga (Opcional)</label>
+                    <textarea name="descripcion" rows="2"
+                        placeholder="Detalles de tela, tallas disponibles..."></textarea>
                 </div>
             </div>
 
-            <div class="form-group" style="grid-column: span 2;">
-                <label>Descripción Larga (Opcional)</label>
-                <textarea name="descripcion" rows="2" placeholder="Detalles de tela, tallas disponibles..."></textarea>
-            </div>
+
 
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="cerrarModal('modalProducto')">Cancelar</button>
@@ -249,6 +251,203 @@
     </div>
 </div>
 
+<!----editar-->
+<div id="modalProductoEditar" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> Editar Producto</h3>
+            <button class="close-btn" onclick="cerrarModal('modalProductoEditar')">&times;</button>
+        </div>
+
+        <form id="formEditarProducto" class="modal-form" method="POST" action="" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <div class="form-grid">
+
+                <!-- ID oculto -->
+                <input type="hidden" name="id" id="producto_id_edit">
+
+                <div class="form-group">
+                    <label>Código</label>
+                    <input type="text" name="codigo" id="codigo_edit" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" id="nombre_edit" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select name="categoria" id="categoria_edit">
+                        {% for c in categorias %}
+                        <option value="{{ c.categoria_id }}">{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Marca</label>
+                    <select name="marca" id="marca_edit">
+                        {% for m in marcas %}
+                        <option value="{{ m.marca_id }}">{{ m.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- IMAGEN -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Imagen</label>
+
+                    <div class="image-upload-container">
+                        <div class="image-preview" id="imagePreviewEdit">
+                            <i class="fas fa-camera"></i>
+                            <img src="" style="display:none; max-width:100%;">
+                        </div>
+
+                        <div class="image-controls">
+                            <input type="file" name="imagen" id="subirImagenEdit" accept="image/*" style="display:none;"
+                                onchange="previsualizarImagenEdit(event)">
+
+                            <button type="button" onclick="document.getElementById('subirImagenEdit').click()">
+                                <i class="fas fa-upload"></i> Seleccionar Imagen
+                            </button>
+
+                            <small>JPG / PNG - Máx 2MB</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" id="descripcion_edit" rows="2"></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" onclick="cerrarModal('modalProductoEditar')">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                    Actualizar
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="modalMarca" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-tag"></i> Nueva Marca</h3>
+            <button class="close-btn" onclick="cerrarModal('modalMarca')">&times;</button>
+        </div>
+        <form class="modal-form" action="{% url 'crear_marca' %}" method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Nombre de la Marca</label>
+                <input type="text" name="nombre" placeholder="Ej. Zara, Gucci..." required>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalMarca')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar Marca</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalCategoria" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-th-large"></i> Nueva Categoría</h3>
+            <button class="close-btn" onclick="cerrarModal('modalCategoria')">&times;</button>
+        </div>
+        <form class="modal-form" action="{% url 'crear_categoria' %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nombre de la Categoría</label>
+                <input type="text" name="nombre" placeholder="Ej. Vestidos de Noche, Calzado..." required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalCategoria')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar Categoría</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalVerProducto" class="modal-overlay">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-info-circle"></i> Ficha Técnica del Producto</h3>
+            <button class="close-btn" onclick="cerrarModal('modalVerProducto')">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="product-detail-grid">
+                <div class="detail-image">
+                    <img src="https://via.placeholder.com/200" id="view_img">
+                </div>
+
+                <div class="detail-info">
+                    <div class="info-item"><strong>SKU:</strong> <span id="v_sku"></span></div>
+                    <div class="info-item"><strong>Nombre:</strong> <span id="v_nombre"></span></div>
+                    <div class="info-item"><strong>Categoría:</strong> <span id="v_cat"></span></div>
+                    <div class="info-item"><strong>Marca:</strong> <span id="v_marca"></span></div>
+                    <div class="info-item"><strong>Stock Actual:</strong> <span class="badge-stock"></span></div>
+
+                    <div class="info-item">
+                        <strong>Precio Costo:</strong>
+                        <span id="v_precio_costo"></span>
+                    </div>
+
+                    <div class="info-item">
+                        <strong>Precio Venta (Sugerido):</strong>
+                        <span id="v_precio_venta"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-description">
+                <strong>Descripción Larga:</strong>
+                <p id="v_desc"></p>
+            </div>
+
+            <!-- 🔥 TABLA UBICACIONES -->
+            <div class="detail-description">
+                <strong>Ubicaciones de Inventario:</strong>
+
+                <div class="table-container" style="margin-top:10px;">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Ubicación</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla_ubicaciones">
+                            <tr>
+                                <td colspan="2">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="cerrarModal('modalVerProducto')">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 {% endif %}
 

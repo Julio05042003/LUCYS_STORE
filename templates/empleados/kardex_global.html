@@ -1,0 +1,198 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="inventory-wrapper">
+
+    <!-- 🔷 HEADER -->
+    <div class="header-section">
+        <h2><i class="fas fa-chart-line"></i> Kardex Global</h2>
+    </div>
+
+    <!-- 🔎 FILTROS -->
+    <form method="GET" class="filters-card">
+
+        <!-- BUSQUEDA POR NOMBRE O CODIGO -->
+        <div class="field">
+            <label>Buscar Producto</label>
+            <input 
+                type="text" 
+                name="busqueda" 
+                placeholder="Nombre o código..."
+                value="{{ busqueda }}"
+            >
+        </div>
+
+        <!-- TIPO -->
+        <div class="field">
+            <label>Tipo</label>
+            <select name="tipo">
+                <option value="TODOS" {% if tipo == "TODOS" %}selected{% endif %}>Todos</option>
+                <option value="ENTRADA" {% if tipo == "ENTRADA" %}selected{% endif %}>Entradas</option>
+                <option value="SALIDA" {% if tipo == "SALIDA" %}selected{% endif %}>Salidas</option>
+            </select>
+        </div>
+
+        <!-- FECHA DESDE -->
+        <div class="field">
+            <label>Desde</label>
+            <input type="date" name="desde" value="{{ desde }}">
+        </div>
+
+        <!-- FECHA HASTA -->
+        <div class="field">
+            <label>Hasta</label>
+            <input type="date" name="hasta" value="{{ hasta }}">
+        </div>
+
+        <!-- BOTONES -->
+        <div class="field buttons">
+
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+
+            <a href="{% url 'kardex_global_view' %}" class="btn-secondary">
+                <i class="fas fa-broom"></i> Limpiar
+            </a>
+
+        </div>
+
+    </form>
+
+    <!-- 📊 TABLA KARDEX -->
+    <div class="table-container">
+
+        <table class="table-modern kardex-table">
+
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Código</th>
+                    <th>Ubicación</th>
+                    <th>Tipo</th>
+                    <th>Documento</th>
+                    <th>Cantidad</th>
+                    <th>Valor</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for m in movimientos %}
+                <tr>
+
+                    <td>{{ m.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>{{ m.producto }}</td>
+                    <td>{{ m.codigo }}</td>
+                    <td>{{ m.ubicacion }}</td>
+
+                    <td>
+                        <span class="{% if m.tipo == 'ENTRADA' %}badge-activo{% else %}badge-inactivo{% endif %}">
+                            {{ m.tipo }}
+                        </span>
+                    </td>
+
+                    <td>{{ m.documento }}</td>
+                    <td>{{ m.cantidad }}</td>
+                    <td>${{ m.valor }}</td>
+                    <td>{{ m.saldo }}</td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">
+                        No hay movimientos registrados
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- 🎨 ESTILOS EXTRA -->
+<style>
+
+.filters-card {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.filters-card .field label {
+    font-size: 12px;
+    color: #888;
+}
+
+.filters-card .field input,
+.filters-card .field select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.buttons {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: #e91e63;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: #c2185b;
+}
+
+.btn-secondary:hover {
+    background: #222;
+}
+
+.kardex-table tbody td {
+    text-align: center;
+}
+
+.kardex-table thead th {
+    text-align: center;
+}
+
+.kardex-table tbody tr:hover {
+    background: #f5f5f5;
+}
+
+</style>
+
+{% endblock %}

@@ -41,6 +41,7 @@ class Ubicacion(models.Model):
     direccion = models.ForeignKey(Direccion, on_delete=models.CASCADE, db_column='Direccion_id')
 
     nombre = models.CharField(max_length=100, db_column='Nombre')
+    codigo = models.CharField(max_length=5, unique=True)
     tipo = models.CharField(max_length=20, db_column='Tipo')
     nivel = models.CharField(max_length=20, db_column='Nivel')
 
@@ -79,6 +80,7 @@ class Empleado(models.Model):
 
     class Meta:
         db_table = 'Empleados'
+
 
 
 class Cliente(models.Model):

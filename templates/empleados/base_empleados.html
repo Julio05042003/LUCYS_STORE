@@ -59,6 +59,7 @@
             {% if rol_usuario == "administrador" or rol_usuario == "gerente" %}
 
                 <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
+                <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-boxes-stacked"></i> Kardex</a></li>
                 <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
                 <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>
                 <li><a href="{% url 'clientes' %}"><i class="fas fa-users"></i> Clientes</a></li>
@@ -78,9 +79,9 @@
             <!-- BODEGA -->
             {% if rol_usuario == "bodega" %}
                 <li><a href="{% url 'inventario' %}">Inventario</a></li>
+                <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-boxes-stacked"></i> Kardex</a></li>
                 <li><a href="{% url 'transferencias' %}">Traslados</a></li>
                 <li><a href="{% url 'compras' %}">Compras</a></li>
-                <li><a href="{% url 'proveedores' %}">Proveedores</a></li>
             {% endif %}
 
             <!-- CAJA -->

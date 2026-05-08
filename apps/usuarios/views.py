@@ -7,6 +7,7 @@ from apps.usuarios.models import *
 from django.db import transaction
 from django.utils import timezone
 import re
+from django.http import JsonResponse
 
 # VALIDACIONES
 # =========================
@@ -449,3 +450,21 @@ def desbloquear_usuario(request, user_id):
 
     messages.success(request, "Usuario desbloqueado")
     return redirect('usuarios')
+
+
+def buscar_clientes(request):
+    term = request.GET.get('term', '')
+
+    clientes = Cliente.objects.filter(
+        nombre__icontains=term
+    )[:10]
+
+    data = []
+
+    for c in clientes:
+        data.append({
+            'id': c.cliente_id,
+            'text': str(c)  # usa tu __str__()
+        })
+
+    return JsonResponse(data, safe=False)
