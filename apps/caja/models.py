@@ -48,36 +48,24 @@ class MovimientoCaja(models.Model):
 
 
 class ArqueoCaja(models.Model):
-    arqueo_id = models.AutoField(primary_key=True, db_column='Arqueo_id')
+    id = models.AutoField(db_column='Arqueo_id', primary_key=True)
+    apertura = models.ForeignKey(AperturaCaja, on_delete=models.CASCADE)
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
 
-    apertura = models.ForeignKey(
-        AperturaCaja,
-        on_delete=models.CASCADE,
-        db_column='Apertura_id'
-    )
+    monto_sistema = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_fisico = models.DecimalField(max_digits=10, decimal_places=2)
 
-    empleado = models.ForeignKey(
-        Empleado,
-        on_delete=models.CASCADE,
-        db_column='Empleado_id'
-    )
+    @property
+    def diferencia(self):
+        return self.monto_fisico - self.monto_sistema
 
-    fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
+    observacion = models.CharField(max_length=255, null=True, blank=True)
+    justificacion = models.CharField(max_length=255, null=True, blank=True)
 
-    saldo_sistema = models.DecimalField(max_digits=10, decimal_places=2)
-    saldo_real = models.DecimalField(max_digits=10, decimal_places=2)
-    diferencia = models.DecimalField(max_digits=10, decimal_places=2)
-
-    justificacion = models.TextField(null=True, blank=True)
-
-    estado = models.ForeignKey(
-        Estado,
-        on_delete=models.CASCADE,
-        db_column='Estado_id'
-    )
+    fecha = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'Arqueos_Caja'
+        db_table = "Arqueos_Caja"
 
     def __str__(self):
-        return f"Arqueo {self.arqueo_id} - Dif: {self.diferencia}"
+        return f"Arqueo {self.id}"

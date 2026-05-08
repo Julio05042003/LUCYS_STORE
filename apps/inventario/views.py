@@ -246,11 +246,27 @@ def transferencias_view(request):
         Q(destino=empleado.ubicacion)
     ).order_by('-id')
 
+    # 🔥 PRODUCTOS PARA AUTOCOMPLETE (NO AFECTA OTRAS VISTAS)
+    productos = Producto.objects.all()
+
+    productos_data = [
+        {
+            "id": p.producto_id,
+            "codigo": p.codigo,
+            "nombre": p.nombre
+        }
+        for p in productos
+    ]
+
     return render(request, 'empleados/transferencias.html', {
         'ubicaciones': ubicaciones,
         'transferencias': transferencias,
-        'empleado': empleado
+        'empleado': empleado,
+
+        # 🔥 IMPORTANTE
+        'productos_json': json.dumps(productos_data)
     })
+
 
 @login_required
 def detalle_transferencia(request, id):

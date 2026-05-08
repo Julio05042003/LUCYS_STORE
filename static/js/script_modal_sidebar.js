@@ -64,49 +64,7 @@ window.onclick = function (event) {
     }
 }
 
-// --- LÓGICA DE CAJA LUCY'S SYSTEM ---
 
-document.addEventListener("DOMContentLoaded", function () {
-    // 1. Verificar si la caja ya está abierta al cargar
-    const cajaAbierta = localStorage.getItem('cajaAbierta');
-
-    if (cajaAbierta !== 'true') {
-        abrirModal('modalApertura');
-    } else {
-        // Si ya está abierta, cargamos el monto en la tarjeta de "Efectivo Inicial"
-        const montoGuardado = localStorage.getItem('montoInicial');
-        document.querySelector('.cash-card.income h3').innerText = `$${montoGuardado}`;
-    }
-});
-
-// Función para Abrir Caja
-function confirmarApertura(event) {
-    event.preventDefault();
-    const monto = document.getElementById('monto-apertura').value;
-
-    if (monto && monto > 0) {
-        localStorage.setItem('cajaAbierta', 'true');
-        localStorage.setItem('montoInicial', monto);
-
-        // Actualizar la interfaz sin recargar
-        document.querySelector('.cash-card.income h3').innerText = `$${parseFloat(monto).toFixed(2)}`;
-        cerrarModal('modalApertura');
-        alert("¡Caja abierta exitosamente!");
-    }
-}
-
-// Función para Cerrar Caja y mostrar Ticket
-function confirmarCierre() {
-    // 1. Cerramos el modal de entrada de datos
-    cerrarModal('modalCierre');
-
-    // 2. Mostramos el ticket final
-    abrirModal('modalTicket');
-
-    // 3. Limpiamos el estado para el día siguiente
-    localStorage.removeItem('cajaAbierta');
-    localStorage.removeItem('montoInicial');
-}
 
 // Función para WhatsApp
 function enviarWhatsApp() {

@@ -352,7 +352,7 @@
     width: 95%; /* Ocupa casi todo el ancho en móviles */
     margin: 20px auto;
     max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
-    overflow-y: auto; /* Permite scroll interno si el contenido es largo */
+    /*overflow-y: visible;*/ /* Permite scroll interno si el contenido es largo */
 }
 
 /* Ajuste de la cuadrícula de denominaciones */
@@ -402,3 +402,15 @@
 }
 
 
+/*agregado */
+html,
+body {
+    overflow-x: hidden;
+}
+
+.content,
+.main-container,
+.inventory-wrapper {
+    overflow: visible !important;
+    height: auto !important;
+}

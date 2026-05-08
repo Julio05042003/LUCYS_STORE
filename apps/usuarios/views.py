@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -255,15 +256,6 @@ def clientes_view(request):
     })
 
 
-
-def clientes_view(request):
-    clientes = Cliente.objects.all().order_by('-id')
-
-    return render(request, 'empleados/clientes.html', {
-        'clientes': clientes
-    })
-
-
 def crear_cliente(request):
 
     if request.method == 'POST':
@@ -376,75 +368,113 @@ def crear_cliente(request):
 
     return render(request, 'empleados/clientes.html')
 
+# =========================
+# LISTAR USUARIOS
+# =========================
 @login_required
 def usuarios_view(request):
 
-    empleado_actual = Empleado.objects.get(user=request.user)
+    empleado_actual = Empleado.objects.select_related(
+        'rol', 'ubicacion', 'user'
+    ).get(user=request.user)
 
-    # 🔒 FILTRO POR UBICACIÓN
+    # 🔒 FILTRO POR ROL
     if empleado_actual.rol.nombre.lower() == "administrador":
-        empleados = Empleado.objects.select_related('user','rol','ubicacion').all()
-        ubicaciones = Ubicacion.objects.all()
+        empleados = Empleado.objects.select_related('user', 'rol', 'ubicacion', 'estado').all()
     else:
-        empleados = Empleado.objects.select_related('user','rol','ubicacion').filter(
+        empleados = Empleado.objects.select_related('user', 'rol', 'ubicacion', 'estado').filter(
             ubicacion=empleado_actual.ubicacion
         )
-        ubicaciones = Ubicacion.objects.filter(id=empleado_actual.ubicacion.id)
+
+    # ❌ excluir roles administrativos
+    roles = Rol.objects.exclude(nombre__icontains="administrador").exclude(nombre__icontains="gerente")
+
+    # ubicaciones completas (filtrado en frontend)
+    ubicaciones = Ubicacion.objects.all()
+
+    # solo activos/inactivos (seguro contra mayúsculas)
+    estados = Estado.objects.filter(nombre__iexact="Activo") | Estado.objects.filter(nombre__iexact="Inactivo")
 
     return render(request, 'empleados/usuarios.html', {
         'empleados': empleados,
-        'roles': Rol.objects.all(),
-        'estados': Estado.objects.all(),
-        'ubicaciones': ubicaciones
+        'roles': roles,
+        'ubicaciones': ubicaciones,
+        'estados': estados
     })
 
+
+
+# =========================
+# CREAR USUARIO
+# =========================
 @login_required
 def crear_usuario(request):
 
-    if request.method == 'POST':
-        try:
-            with transaction.atomic():
+    if request.method != "POST":
+        return redirect('usuarios')
 
-                username = request.POST.get('username')
-                email = request.POST.get('email')
-                password = request.POST.get('password')
-                nombre = request.POST.get('nombre')
-                apellido = request.POST.get('apellido')
+    email = request.POST.get('email', '').strip()
+    username = request.POST.get('username', '').strip()
 
-                rol_id = request.POST.get('rol_id')
-                estado_id = request.POST.get('estado_id')
-                ubicacion_id = request.POST.get('ubicacion_id')
+    # validación duplicados
+    if User.objects.filter(email=email).exists():
+        messages.error(request, "El email ya existe")
+        return redirect('usuarios')
 
-                if User.objects.filter(username=username).exists():
-                    messages.error(request, "Usuario ya existe")
-                    return redirect('usuarios')
+    if User.objects.filter(username=username).exists():
+        messages.error(request, "El usuario ya existe")
+        return redirect('usuarios')
 
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    password=password,
-                    first_name=nombre,
-                    last_name=apellido
-                )
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=request.POST.get('password'),
+        first_name=request.POST.get('nombre'),
+        last_name=request.POST.get('apellido')
+    )
 
-                Empleado.objects.create(
-                    user=user,
-                    rol_id=rol_id,
-                    estado_id=estado_id,
-                    ubicacion_id=ubicacion_id
-                )
+    # estado fijo activo (según tu lógica)
+    estado_activo = Estado.objects.get(nombre__iexact="Activo")
 
-                messages.success(request, "Usuario creado")
-                return redirect('usuarios')
+    Empleado.objects.create(
+        user=user,
+        rol_id=request.POST.get('rol_id'),
+        ubicacion_id=request.POST.get('ubicacion_id'),
+        estado=estado_activo
+    )
 
-        except Exception as e:
-            messages.error(request, str(e))
-            return redirect('usuarios')
-        
+    messages.success(request, "Usuario creado correctamente")
+    return redirect('usuarios')
+
+
+# =========================
+# BLOQUEAR USUARIO
+# =========================
+@login_required
+def bloquear_usuario(request, user_id):
+
+    user = get_object_or_404(User, id=user_id)
+
+    # evitar auto-bloqueo
+    if request.user.id == user.id:
+        messages.warning(request, "No puedes bloquearte a ti mismo")
+        return redirect('usuarios')
+
+    user.is_active = False
+    user.save()
+
+    messages.success(request, "Usuario bloqueado")
+    return redirect('usuarios')
+
+
+# =========================
+# DESBLOQUEAR USUARIO
+# =========================
 @login_required
 def desbloquear_usuario(request, user_id):
 
-    user = User.objects.get(id=user_id)
+    user = get_object_or_404(User, id=user_id)
+
     user.is_active = True
     user.save()
 
@@ -452,19 +482,63 @@ def desbloquear_usuario(request, user_id):
     return redirect('usuarios')
 
 
+# =========================
+# EDITAR USUARIO
+# =========================
+@login_required
+def editar_usuario(request):
+
+    if request.method != "POST":
+        return redirect('usuarios')
+
+    user_id = request.POST.get('user_id')
+    user = get_object_or_404(User, id=user_id)
+
+    email = request.POST.get('email', '').strip()
+    username = request.POST.get('username', '').strip()
+
+    # validación duplicados excluyendo actual
+    if User.objects.exclude(id=user_id).filter(email=email).exists():
+        messages.error(request, "El email ya existe")
+        return redirect('usuarios')
+
+    if User.objects.exclude(id=user_id).filter(username=username).exists():
+        messages.error(request, "El usuario ya existe")
+        return redirect('usuarios')
+
+    # actualizar user
+    user.email = email
+    user.username = username
+    user.first_name = request.POST.get('nombre')
+    user.last_name = request.POST.get('apellido')
+    user.save()
+
+    # actualizar empleado
+    emp = get_object_or_404(Empleado, user=user)
+
+    emp.rol_id = request.POST.get('rol_id')
+    emp.ubicacion_id = request.POST.get('ubicacion_id')
+    emp.save()
+
+    messages.success(request, "Usuario actualizado correctamente")
+    return redirect('usuarios')
+
+
+# =========================
+# AUTOCOMPLETE CLIENTES
+# =========================
 def buscar_clientes(request):
+
     term = request.GET.get('term', '')
 
-    clientes = Cliente.objects.filter(
-        nombre__icontains=term
-    )[:10]
+    clientes = Cliente.objects.filter(nombre__icontains=term)[:10]
 
-    data = []
-
-    for c in clientes:
-        data.append({
+    data = [
+        {
             'id': c.cliente_id,
-            'text': str(c)  # usa tu __str__()
-        })
+            'text': str(c)
+        }
+        for c in clientes
+    ]
 
     return JsonResponse(data, safe=False)

@@ -1,97 +1,134 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
-from .models import Caja, AperturaCaja, MovimientoCaja, ArqueoCaja
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.contrib import messages
+from decimal import Decimal
+from django.utils import timezone
+
+from .models import *
 from apps.usuarios.models import Estado, Empleado
 
 
 # ============================================
-# 🧩 VISTA PRINCIPAL DE CAJA
-# ============================================
-def caja_view(request):
-    empleado = request.user.empleado
-    user = request.user
-
-    apertura = AperturaCaja.objects.filter(
-        empleado=empleado,
-        caja__ubicacion=empleado.ubicacion,
-        estado__nombre='ABIERTA'
-    ).last()
-
-    cajas = Caja.objects.filter(ubicacion=empleado.ubicacion)
-
-    movimientos = []
-    ingresos = 0
-    egresos = 0
-
-    if apertura:
-        movimientos = MovimientoCaja.objects.filter(apertura=apertura)
-
-        ingresos = movimientos.filter(tipo='INGRESO').aggregate(Sum('monto'))['monto__sum'] or 0
-        egresos = movimientos.filter(tipo='EGRESO').aggregate(Sum('monto'))['monto__sum'] or 0
-
-    total = (apertura.saldo_inicial if apertura else 0) + ingresos - egresos
-
-    return render(request, 'empleados/caja.html', {
-        'empleado': empleado,
-        'user': user,
-        'apertura': apertura,
-        'movimientos': movimientos,
-        'ingresos': ingresos,
-        'egresos': egresos,
-        'total': total,
-        'cajas': cajas
-    })
-
-# ============================================
-# 🧩 CREAR CAJA (SOLO GERENTE)
+# CREAR CAJA
 # ============================================
 def crear_caja(request):
+
     empleado = request.user.empleado
 
     if empleado.rol.nombre != "Gerente":
         return redirect('caja')
 
     if request.method == "POST":
+        nombre = request.POST.get('nombre')
 
-        cajero_id = request.POST.get("cajero_id")
-
-        cajero = Empleado.objects.filter(pk=cajero_id).first()
-
-        if not cajero:
-            return redirect('caja')
-
-        if cajero.rol.nombre != "Caja":
-            return redirect('caja')
-
-        # SOLO UNA CAJA POR UBICACIÓN
-        if Caja.objects.filter(ubicacion=empleado.ubicacion).exists():
-            return redirect('caja')
-
-        Caja.objects.create(
-            nombre=f"Caja {empleado.ubicacion.nombre}",
-            ubicacion=empleado.ubicacion
-        )
+        if nombre:
+            Caja.objects.create(
+                nombre=nombre,
+                ubicacion=empleado.ubicacion
+            )
 
     return redirect('caja')
 
+
 # ============================================
-# 🧩 ABRIR CAJA
+# VISTA PRINCIPAL
+# ============================================
+def caja_view(request):
+
+    empleado = request.user.empleado
+    user = request.user
+
+    cajas = Caja.objects.filter(ubicacion=empleado.ubicacion)
+
+    aperturas = AperturaCaja.objects.filter(
+        caja__ubicacion=empleado.ubicacion,
+        estado__nombre__in=['Abierta', 'En arqueo']
+    ).select_related('caja', 'empleado', 'estado')
+
+    total_ingresos = Decimal('0')
+    total_egresos = Decimal('0')
+
+    for apertura in aperturas:
+
+        movimientos = MovimientoCaja.objects.filter(apertura=apertura)
+
+        ingresos = movimientos.filter(tipo='INGRESO').aggregate(
+            total=Sum('monto')
+        )['total'] or Decimal('0')
+
+        egresos = movimientos.filter(tipo='EGRESO').aggregate(
+            total=Sum('monto')
+        )['total'] or Decimal('0')
+
+        apertura.ingresos = ingresos
+        apertura.egresos = egresos
+        apertura.total = apertura.saldo_inicial + ingresos - egresos
+
+        total_ingresos += ingresos
+        total_egresos += egresos
+
+    contexto = {
+        'empleado': empleado,
+        'user': user,
+        'cajas': cajas,
+        'aperturas': aperturas,
+        'total_ingresos': total_ingresos,
+        'total_egresos': total_egresos,
+        'total_general': total_ingresos - total_egresos,
+    }
+
+    if empleado.rol.nombre == "Gerente":
+        return render(request, 'empleados/caja_gerente.html', contexto)
+
+    apertura = AperturaCaja.objects.filter(
+        empleado=empleado,
+        estado__nombre__in=['Abierta', 'En arqueo']
+    ).order_by('-id').first()
+
+    movimientos = []
+    ingresos = Decimal('0')
+    egresos = Decimal('0')
+
+    if apertura:
+        movimientos = MovimientoCaja.objects.filter(apertura=apertura)
+
+        ingresos = movimientos.filter(tipo='INGRESO').aggregate(
+            total=Sum('monto')
+        )['total'] or Decimal('0')
+
+        egresos = movimientos.filter(tipo='EGRESO').aggregate(
+            total=Sum('monto')
+        )['total'] or Decimal('0')
+
+    total = (apertura.saldo_inicial if apertura else 0) + ingresos - egresos
+
+    contexto.update({
+        'apertura': apertura,
+        'movimientos': movimientos,
+        'ingresos': ingresos,
+        'egresos': egresos,
+        'total': total
+    })
+
+    return render(request, 'empleados/caja.html', contexto)
+
+
+# ============================================
+# ABRIR CAJA
 # ============================================
 def abrir_caja(request):
+
     empleado = request.user.empleado
 
-    # ✔️ rol correcto
     if empleado.rol.nombre != "Cajero":
         return redirect('caja')
 
     if request.method == "POST":
 
         caja_id = request.POST.get("caja_id")
-        saldo_inicial = request.POST.get("saldo_inicial")
-
-        # 🔴 VALIDACIÓN 1: caja obligatoria
-        if not caja_id:
-            return redirect('caja')
+        saldo_inicial = Decimal(request.POST.get("saldo_inicial") or 0)
 
         caja = Caja.objects.filter(
             id=caja_id,
@@ -101,17 +138,9 @@ def abrir_caja(request):
         if not caja:
             return redirect('caja')
 
-        # 🔴 VALIDACIÓN 2: evitar doble apertura de la misma caja
         if AperturaCaja.objects.filter(
             caja=caja,
-            estado__nombre='ABIERTA'
-        ).exists():
-            return redirect('caja')
-
-        # 🔴 VALIDACIÓN 3: el cajero solo puede tener 1 caja abierta
-        if AperturaCaja.objects.filter(
-            empleado=empleado,
-            estado__nombre='ABIERTA'
+            estado__nombre='Abierta'
         ).exists():
             return redirect('caja')
 
@@ -121,111 +150,142 @@ def abrir_caja(request):
             caja=caja,
             empleado=empleado,
             estado=estado,
-            saldo_inicial=float(saldo_inicial or 0)
+            saldo_inicial=saldo_inicial
         )
 
     return redirect('caja')
 
+
 # ============================================
-# 🧩 CREAR MOVIMIENTO (MANUAL)
+# MOVIMIENTO
 # ============================================
 def crear_movimiento(request):
+
     empleado = request.user.empleado
 
-    if empleado.rol.nombre != "Caja":
-        return redirect('caja')
+    if empleado.rol.nombre != "Cajero":
+        return JsonResponse({'status': 'error'})
 
-    if request.method == "POST":
+    apertura = AperturaCaja.objects.filter(
+        empleado=empleado,
+        estado__nombre__in=['Abierta', 'En arqueo']
+    ).order_by('-id').first()
 
-        apertura = AperturaCaja.objects.filter(
-            empleado=empleado,
-            estado__nombre='ABIERTA'
-        ).last()
+    if not apertura:
+        return JsonResponse({'status': 'error'})
 
-        if not apertura:
-            return redirect('caja')
+    MovimientoCaja.objects.create(
+        apertura=apertura,
+        tipo=request.POST.get('tipo'),
+        monto=Decimal(request.POST.get('monto') or 0),
+        descripcion=request.POST.get('descripcion')
+    )
 
-        monto = float(request.POST.get('monto', 0))
+    return JsonResponse({'status': 'success'})
 
-        if monto <= 0:
-            return redirect('caja')
-
-        MovimientoCaja.objects.create(
-            apertura=apertura,
-            tipo=request.POST['tipo'],
-            monto=monto,
-            descripcion=request.POST['descripcion']
-        )
-
-    return redirect('caja')
 
 # ============================================
-# 🧩 CREAR ARQUEO
+# INICIAR ARQUEO
+# ============================================
+@require_POST
+def iniciar_arqueo(request):
+
+    empleado = request.user.empleado
+
+    apertura = AperturaCaja.objects.filter(
+        empleado=empleado,
+        estado__nombre='Abierta'
+    ).order_by('-id').first()
+
+    if not apertura:
+        return JsonResponse({"status": "error"})
+
+    estado = Estado.objects.get(nombre='En arqueo')
+
+    apertura.estado = estado
+    apertura.save()
+
+    return JsonResponse({"status": "ok"})
+
+
+# ============================================
+# CREAR ARQUEO (CORREGIDO)
 # ============================================
 def crear_arqueo(request):
-    empleado = request.user.empleado
-
-    if empleado.rol.nombre != "Caja":
-        return redirect('caja')
 
     if request.method == "POST":
 
-        apertura = AperturaCaja.objects.filter(
-            empleado=empleado,
-            estado__nombre='ABIERTA'
-        ).last()
+        apertura = get_object_or_404(
+            AperturaCaja,
+            id=request.POST.get("apertura_id")
+        )
 
-        if not apertura:
-            return redirect('caja')
+        efectivo_real = Decimal(request.POST.get("efectivo_real") or 0)
 
-        efectivo_real = float(request.POST.get('efectivo_real', 0))
+        ingresos = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            tipo="INGRESO"
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
 
-        movimientos = MovimientoCaja.objects.filter(apertura=apertura)
+        egresos = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            tipo="EGRESO"
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
 
-        ingresos = movimientos.filter(tipo='INGRESO').aggregate(Sum('monto'))['monto__sum'] or 0
-        egresos = movimientos.filter(tipo='EGRESO').aggregate(Sum('monto'))['monto__sum'] or 0
-
-        esperado = float(apertura.saldo_inicial) + ingresos - egresos
-        diferencia = efectivo_real - esperado
+        monto_sistema = apertura.saldo_inicial + ingresos - egresos
 
         ArqueoCaja.objects.create(
             apertura=apertura,
-            empleado=empleado,
-            saldo_sistema=esperado,
-            saldo_real=efectivo_real,
-            diferencia=diferencia,
-            justificacion=request.POST.get('justificacion', ''),
-            estado=Estado.objects.get(nombre='REGISTRADO')
+            empleado=request.user.empleado,
+            monto_sistema=monto_sistema,
+            monto_fisico=efectivo_real,
+            observacion=request.POST.get("observacion"),
+            justificacion=request.POST.get("justificacion")
         )
 
-    return redirect('caja')
+        # 🔥 AQUÍ ESTABA TU ERROR
+        # después de generar arqueo → vuelve a ABIERTO
+        apertura.estado = Estado.objects.get(nombre='Abierta')
+        apertura.save()
+
+        messages.success(request, "Arqueo registrado correctamente")
+
+        return redirect("caja")
+
 
 # ============================================
-# 🧩 CERRAR CAJA
+# CERRAR CAJA
 # ============================================
 def cerrar_caja(request):
+
     empleado = request.user.empleado
 
     if request.method == "POST":
 
         apertura = AperturaCaja.objects.filter(
             empleado=empleado,
-            estado__nombre='ABIERTA'
-        ).last()
+            estado__nombre__in=['Abierta', 'En arqueo']
+        ).order_by('-id').first()
 
         if not apertura:
+            messages.error(request, "No hay caja activa")
             return redirect('caja')
 
-        arqueo = ArqueoCaja.objects.filter(apertura=apertura).last()
+        arqueo = ArqueoCaja.objects.filter(
+            apertura=apertura
+        ).order_by('-id').last()
 
         if not arqueo:
+            messages.error(request, "Debe realizar arqueo antes de cerrar")
             return redirect('caja')
 
-        estado = Estado.objects.get(nombre='CERRADA')
+        estado_cerrada = Estado.objects.get(nombre='Cerrada')
 
-        apertura.estado = estado
-        apertura.saldo_final = arqueo.saldo_real
+        apertura.estado = estado_cerrada
+        apertura.saldo_final = arqueo.monto_fisico
+        apertura.fecha_cierre = timezone.now()
         apertura.save()
 
-    return redirect('caja')
+        messages.success(request, "Caja cerrada correctamente")
 
+    return redirect('caja')

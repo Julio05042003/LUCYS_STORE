@@ -1,0 +1,269 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+<link rel="stylesheet" href="{% static 'css/style-caja.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="inventory-wrapper">
+
+    <!-- HEADER -->
+    <div class="header-section" style="display:flex;justify-content:space-between;align-items:center;">
+
+        <h2>
+            <i class="fas fa-cash-register"></i>
+            Administración de Cajas
+        </h2>
+
+        <button class="btn-action open" onclick="abrirModal('modalCaja')">
+
+            <i class="fas fa-plus"></i>
+            Nueva Caja
+        </button>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="caja-stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon income">
+                <i class="fas fa-cash-register"></i>
+            </div>
+
+            <div class="stat-info">
+                <span class="stat-label">
+                    Cajas Abiertas
+                </span>
+
+                <strong class="stat-value">
+                    {{ total_cajas }}
+                </strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon total-income">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+
+            <div class="stat-info">
+                <span class="stat-label">
+                    Ingresos
+                </span>
+
+                <strong class="stat-value text-green">
+                    ${{ total_ingresos }}
+                </strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon expense">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+
+            <div class="stat-info">
+                <span class="stat-label">
+                    Egresos
+                </span>
+
+                <strong class="stat-value text-red">
+                    ${{ total_egresos }}
+                </strong>
+            </div>
+        </div>
+
+        <div class="stat-card highlighted">
+            <div class="stat-info">
+
+                <span class="stat-label">
+                    Balance General
+                </span>
+
+                <strong class="stat-value large">
+                    ${{ total_general }}
+                </strong>
+
+            </div>
+
+            <i class="fas fa-wallet bg-icon"></i>
+        </div>
+
+    </div>
+
+    <!-- FILTRO -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:10px;">
+
+        <div class="search-box" style="flex:1;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="filtroCaja" placeholder="Buscar por caja, cajero o estado..."
+                style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;">
+        </div>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+
+        <div class="table-header">
+            <h3>
+                <i class="fas fa-list"></i>
+                Cajas de la Sucursal
+            </h3>
+        </div>
+
+        <table class="table-modern">
+
+            <thead>
+                <tr>
+                    <th>Caja</th>
+                    <th>Cajero</th>
+                    <th>Estado</th>
+                    <th>Apertura</th>
+                    <th>Ingresos</th>
+                    <th>Egresos</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for a in aperturas %}
+
+                <tr>
+
+                    <td>{{ a.caja.nombre }}</td>
+
+                    <td>
+                        {{ a.empleado.user.first_name }}
+                        {{ a.empleado.user.last_name }}
+                    </td>
+
+                    <td>
+                        <span class="badge badge-success">
+                            {{ a.estado.nombre }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ a.fecha_apertura|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td class="text-green">
+                        ${{ a.ingresos }}
+                    </td>
+
+                    <td class="text-red">
+                        ${{ a.egresos }}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${{ a.total }}
+                        </strong>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7">
+                        No hay cajas abiertas
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- MODAL NUEVA CAJA -->
+
+<div id="modalCaja" class="modal-overlay">
+
+    <div class="modal-content" style="max-width:450px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-plus-circle"></i>
+                Nueva Caja
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalCaja')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <form method="POST" action="{% url 'crear_caja' %}" class="modal-form">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+
+                <label>Nombre Caja</label>
+
+                <input type="text" name="nombre" placeholder="Ej: Caja Principal" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Ubicación</label>
+
+                <input type="text" value="{{ empleado.ubicacion.nombre }}" disabled>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="submit" class="btn-primary">
+
+                    Crear Caja
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+<script>
+document.getElementById("filtroCaja").addEventListener("keyup", function () {
+
+    let filtro = this.value.toLowerCase();
+
+    let filas = document.querySelectorAll("tbody tr");
+
+    filas.forEach(fila => {
+
+        let texto = fila.textContent.toLowerCase();
+
+        if (texto.includes(filtro)) {
+            fila.style.display = "";
+        } else {
+            fila.style.display = "none";
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}

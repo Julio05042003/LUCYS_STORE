@@ -18,4 +18,5 @@ urlpatterns = [
 
     # Arqueo
     path('arqueo/', crear_arqueo, name='crear_arqueo'),
+    path('iniciar-arqueo/', iniciar_arqueo, name='iniciar_arqueo'),
 ]

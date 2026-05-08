@@ -4,14 +4,11 @@
 {% block content %}
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 <link rel="stylesheet" href="{% static 'css/style-caja.css' %}">
 
-<div class="inventory-wrapper">
 
-    <div class="header-section">
-        <h2><i class="fas fa-wallet"></i> Control de Caja</h2>
-    </div>
+
+<div class="inventory-wrapper">
 
     <!-- 📊 RESUMEN -->
     <div class="main-container">
@@ -37,7 +34,7 @@
                         <div class="stat-icon income"><i class="fas fa-arrow-down"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Saldo Inicial</span>
-                            <strong class="stat-value">${{ apertura.saldo_inicial|default:"0.00" }}</strong>
+                            <strong class="stat-value">C${{ apertura.saldo_inicial|default:"0.00" }}</strong>
                         </div>
                     </div>
 
@@ -45,7 +42,7 @@
                         <div class="stat-icon total-income"><i class="fas fa-plus"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Ingresos</span>
-                            <strong class="stat-value text-green">${{ ingresos|default:"0.00" }}</strong>
+                            <strong class="stat-value text-green">C${{ ingresos|default:"0.00" }}</strong>
                         </div>
                     </div>
 
@@ -53,14 +50,14 @@
                         <div class="stat-icon expense"><i class="fas fa-minus"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Egresos</span>
-                            <strong class="stat-value text-red">${{ egresos|default:"0.00" }}</strong>
+                            <strong class="stat-value text-red">C${{ egresos|default:"0.00" }}</strong>
                         </div>
                     </div>
 
                     <div class="stat-card highlighted">
                         <div class="stat-info">
                             <span class="stat-label">Total</span>
-                            <strong class="stat-value large">${{ total|default:"0.00" }}</strong>
+                            <strong class="stat-value large">C${{ total|default:"0.00" }}</strong>
                         </div>
                         <i class="fas fa-money-bill-wave bg-icon"></i>
                     </div>
@@ -70,28 +67,57 @@
                 <!-- 🎯 ACCIONES -->
                 <div class="caja-actions">
 
-                    {% if empleado.rol.nombre == "Gerente" %}
-                    <form method="POST" action="{% url 'crear_caja' %}">
-                        {% csrf_token %}
-                        <button class="btn-action open">
-                            <i class="fas fa-plus"></i> Crear Caja
-                        </button>
-                    </form>
-                    {% endif %}
+                    {% if empleado.rol.nombre|lower == "cajero" %}
 
-                    {% if empleado.rol.nombre == "Cajero" %}
+                    {% if apertura and apertura.estado.nombre|lower == "abierta" %}
+
+                    <button class="btn-action open" disabled style="opacity:0.6; cursor:not-allowed;">
+
+                        <i class="fas fa-lock"></i>
+                        Caja Ya Abierta
+
+                    </button>
+
+                    {% else %}
 
                     <button class="btn-action open" onclick="abrirModal('modalApertura')">
-                        <i class="fas fa-door-open"></i> Abrir Caja
+
+                        <i class="fas fa-door-open"></i>
+                        Abrir Caja
+
                     </button>
+
+                    {% endif %}
+
+                    {% if apertura and apertura.estado.nombre|lower == "abierta" %}
 
                     <button class="btn-action move" onclick="abrirModal('modalMovimiento')">
-                        <i class="fas fa-exchange-alt"></i> Movimiento
+
+                        <i class="fas fa-exchange-alt"></i>
+                        Movimiento
                     </button>
 
-                    <button class="btn-action close" onclick="abrirModal('modalCierre')">
-                        <i class="fas fa-door-closed"></i> Cerrar Caja
+                    <button class="btn-action close" onclick="iniciarArqueo()">
+
+                        <i class="fas fa-door-closed"></i>
+                        Arqueo
                     </button>
+
+                    {% else %}
+
+                    <button class="btn-action move" disabled style="opacity:0.6; cursor:not-allowed;">
+
+                        <i class="fas fa-exchange-alt"></i>
+                        Movimiento
+                    </button>
+
+                    <button class="btn-action close" disabled style="opacity:0.6; cursor:not-allowed;">
+
+                        <i class="fas fa-door-closed"></i>
+                        Arqueo
+                    </button>
+
+                    {% endif %}
 
                     {% endif %}
 
@@ -161,7 +187,7 @@
                     <label>Seleccionar Caja</label>
                     <select name="caja_id" required>
                         {% for c in cajas %}
-                            <option value="{{ c.id }}">{{ c.nombre }}</option>
+                        <option value="{{ c.id }}">{{ c.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -275,7 +301,7 @@
             <button class="close-btn" onclick="cerrarModal('modalMovimiento')">&times;</button>
         </div>
 
-        <form method="POST" action="{% url 'crear_movimiento' %}" class="modal-form">
+        <form method="POST" class="modal-form" id="formMovimiento">
             {% csrf_token %}
 
             <div class="form-group">
@@ -303,54 +329,81 @@
     </div>
 </div>
 
+
 <!-- =========================
- MODAL CIERRE
+ MODAL Arqueo
 ========================= -->
 <div id="modalCierre" class="modal-overlay">
+
     <div class="modal-content" style="max-width: 450px;">
+
         <div class="modal-header" style="background: var(--rosa-principal)">
-            <h3><i class="fas fa-file-invoice-dollar"></i> Cierre de Caja</h3>
-            <button class="close-btn" onclick="cerrarModal('modalCierre')">&times;</button>
+            <h3>
+                <i class="fas fa-file-invoice-dollar"></i>
+                Arqueo de Caja
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalCierre')">
+                &times;
+            </button>
         </div>
-        <div class="modal-form">
-            <div class="resumen-cierre" style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span>(+) Fondo Inicial:</span> <strong>$50.00</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span>(+) Ventas Totales:</span> <strong>$420.00</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span>(-) Salidas/Gastos:</span> <strong style="color: #e74c3c;">$15.00</strong>
-                </div>
-                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
-                <div style="display: flex; justify-content: space-between; font-size: 1.1rem;">
-                    <span>Esperado en Caja:</span> <span style="color: var(--rosa-principal); font-weight: 700;">$455.00</span>
-                </div>
+
+        <!-- FORM ARQUEO -->
+        <form method="POST" action="{% url 'crear_arqueo' %}" class="modal-form">
+
+            {% csrf_token %}
+            {% if apertura %}
+            <input type="hidden" name="apertura_id" value="{{ apertura.id }}">
+            {% endif %}
+
+            <div class="resumen-cierre">
+                <div>Fondo Inicial: C${{ apertura.saldo_inicial }}</div>
+                <div>Ingresos: C${{ ingresos }}</div>
+                <div>Egresos: C${{ egresos }}</div>
+                <hr>
+                <div>Esperado: C${{ total }}</div>
             </div>
 
-                <div class="form-group">
-                    <label>Efectivo Real en Físico ($)</label>
-                    <input type="number" step="0.01" placeholder="Cuente el dinero de la gaveta..." id="efectivo-real">
-                </div>
-            
-                <div class="form-group" style="margin-top: 15px;">
-                    <label>Observaciones del Cierre</label>
-                    <textarea rows="2" placeholder="Ej: Faltaron $0.50 por falta de cambio..."></textarea>
-                </div>
-
-                <div class="modal-footer" style="flex-direction: column;">
-                    <button class="btn-primary" onclick="confirmarCierre()" style="width: 100%; background: #27ae60; margin-bottom: 10px;">
-                        FINALIZAR Y CERRAR CAJA
-                    </button>
-                    <button type="button" class="btn-clear" onclick="cerrarModal('modalCierre')" style="width: 100%;">
-                        CONTINUAR VENDIENDO
-                    </button>
-                </div>
+            <div class="form-group">
+                <label>Efectivo Real</label>
+                <input type="number" name="efectivo_real" min="0" step="0.01" required>
             </div>
-        </div>
-        
+
+            <div class="form-group">
+                <label>Diferencia</label>
+                <input type="text" id="diferenciaCaja" disabled>
+            </div>
+
+            <div class="form-group">
+                <label>Observación</label>
+                <textarea name="observacion"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Justificación</label>
+                <textarea name="justificacion"></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%;">
+                GENERAR ARQUEO
+            </button>
+
+        </form>
+
+        <!-- 🔴 SOLO SI QUIERES CIERRE FINAL -->
+        <form method="POST" action="{% url 'cerrar_caja' %}" style="padding:15px;">
+
+            {% csrf_token %}
+
+            <button type="submit" class="btn-action close" style="width:100%;">
+                <i class="fas fa-lock"></i>
+                CERRAR CAJA FINAL
+            </button>
+
+        </form>
+
     </div>
+</div>
 
 <!-- =========================
  FILTRO JS
@@ -358,23 +411,153 @@
 
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
 <script>
-function calcularApertura() {
-    let total = 0;
 
+    // =========================
+    // INICIAR ARQUEO
+    // =========================
+    function iniciarArqueo() {
+
+        fetch("{% url 'iniciar_arqueo' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.status === "ok") {
+                    abrirModal('modalCierre');
+                } else {
+                    alert("No se pudo iniciar el arqueo");
+                }
+
+            })
+            .catch(error => {
+                console.error("Error iniciar arqueo:", error);
+                alert("Error de conexión");
+            });
+    }
+
+
+    // =========================
+    // VALIDAR ARQUEO
+    // =========================
+    function validarArqueo() {
+        const input = document.querySelector('input[name="efectivo_real"]');
+
+        if (!input) return false;
+
+        const efectivo = parseFloat(input.value || 0);
+
+        if (isNaN(efectivo) || efectivo < 0) {
+            alert("Ingrese un monto válido");
+            return false;
+        }
+
+        return true;
+    }
+
+
+    // =========================
+    // CALCULAR APERTURA
+    // =========================
+    function calcularApertura() {
+
+        let total = 0;
+
+        document.querySelectorAll('.denom-input').forEach(input => {
+
+            let valor = parseFloat(input.dataset.value || 0);
+            let cantidad = parseInt(input.value || 0);
+
+            if (!isNaN(valor) && !isNaN(cantidad)) {
+                total += valor * cantidad;
+            }
+
+        });
+
+        const label = document.getElementById('labelTotalApertura');
+        const hidden = document.getElementById('inputSaldoInicial');
+
+        if (label) label.value = "$" + total.toFixed(2);
+        if (hidden) hidden.value = total.toFixed(2);
+    }
+
+
+    // =========================
+    // EVENTOS DENOMINACIONES
+    // =========================
     document.querySelectorAll('.denom-input').forEach(input => {
-        let valor = parseFloat(input.dataset.value);
-        let cantidad = parseInt(input.value || 0);
-
-        total += valor * cantidad;
+        input.addEventListener('input', calcularApertura);
     });
 
-    document.getElementById('labelTotalApertura').value = "$" + total.toFixed(2);
-    document.getElementById('inputSaldoInicial').value = total.toFixed(2);
-}
 
-document.querySelectorAll('.denom-input').forEach(input => {
-    input.addEventListener('input', calcularApertura);
-});
+    // =========================
+    // MOVIMIENTO CAJA (AJAX)
+    // =========================
+    const formMovimiento = document.getElementById('formMovimiento');
+
+    if (formMovimiento) {
+
+        formMovimiento.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+
+            fetch("{% url 'crear_movimiento' %}", {
+                method: "POST",
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.status === 'success') {
+                        alert("Movimiento registrado correctamente");
+                        location.reload();
+                    } else {
+                        alert("Error al registrar movimiento");
+                    }
+
+                })
+                .catch(error => {
+                    console.error("Error movimiento:", error);
+                    alert("Error en la petición");
+                });
+
+        });
+
+    }
+
+
+    // =========================
+    // CALCULAR DIFERENCIA CAJA
+    // =========================
+    const inputEfectivo = document.querySelector('input[name="efectivo_real"]');
+
+    if (inputEfectivo) {
+
+        inputEfectivo.addEventListener('input', function () {
+
+            let efectivoReal = parseFloat(this.value || 0);
+
+            let esperado = parseFloat("{{ total|default:'0' }}") || 0;
+
+            let diferencia = efectivoReal - esperado;
+
+            const dif = document.getElementById("diferenciaCaja");
+
+            if (dif) {
+                dif.value = "C$ " + diferencia.toFixed(2);
+            }
+
+        });
+
+    }
+
 </script>
 
 {% endblock %}

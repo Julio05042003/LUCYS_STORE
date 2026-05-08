@@ -1,14 +1,16 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from apps.ventas.models import *
 from apps.productos.models import Producto
 from apps.usuarios.models import Cliente, Empleado, Estado
 from apps.ventas.models import MetodoPago
-from apps.caja.models import AperturaCaja
+from apps.caja.models import AperturaCaja, MovimientoCaja
 from django.http import JsonResponse
 import json
 from django.utils import timezone
 from apps.inventario.models import Inventario
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 def generar_numero_factura(empleado):
     ubicacion = empleado.ubicacion
@@ -31,28 +33,51 @@ def generar_numero_factura(empleado):
     return f"{prefijo}-{str(nuevo_num).zfill(6)}"
 
 
+@login_required
 def vista_ventas(request):
-    empleado = request.user.empleado
 
-    # 🔒 FILTRO POR ROL
-    if empleado.rol.nombre.lower() in ["gerente", "administrador"]:
-        ventas = Venta.objects.select_related(
-            'cliente', 'empleado', 'metodo'
-        ).filter(
+    empleado = request.user.empleado
+    rol = empleado.rol.nombre.lower()
+
+    ventas = Venta.objects.select_related(
+        'cliente',
+        'empleado',
+        'metodo',
+        'estado',
+        'apertura'
+    )
+
+    # =========================
+    # GERENTE / ADMINISTRADOR
+    # =========================
+    if rol in ['gerente', 'administrador']:
+
+        ventas = ventas.filter(
             empleado__ubicacion=empleado.ubicacion
         )
-    elif empleado.rol.nombre.lower() == "cajero":
-        ventas = Venta.objects.filter(
-            apertura__caja__ubicacion=empleado.ubicacion,
-            estado__nombre="Pendiente"
-)
+
+    # =========================
+    # CAJERO
+    # SOLO FACTURAS PENDIENTES
+    # =========================
+    elif rol == 'cajero':
+
+        ventas = ventas.filter(
+            empleado__ubicacion=empleado.ubicacion,
+            estado__nombre='Pendiente'
+        )
+
+    # =========================
+    # VENDEDOR
+    # SOLO SUS FACTURAS
+    # =========================
     else:
-        # 👨‍💼 vendedor solo ve sus ventas
-        ventas = Venta.objects.select_related(
-            'cliente', 'empleado', 'metodo'
-        ).filter(
+
+        ventas = ventas.filter(
             empleado=empleado
         )
+
+    ventas = ventas.order_by('-fecha')
 
     clientes = Cliente.objects.all()
     metodos = MetodoPago.objects.all()
@@ -61,8 +86,138 @@ def vista_ventas(request):
         'ventas': ventas,
         'clientes': clientes,
         'metodos': metodos,
-        'numero_factura': generar_numero_factura(request.user.empleado)
+        'numero_factura': generar_numero_factura(empleado)
     })
+
+@login_required
+def anular_venta(request, venta_id):
+
+    empleado = request.user.empleado
+    rol = empleado.rol.nombre.lower()
+
+    venta = get_object_or_404(
+        Venta.objects.select_related(
+            'estado',
+            'metodo',
+            'apertura',
+            'empleado'
+        ),
+        venta_id=venta_id
+    )
+
+    # =========================
+    # SOLO POST
+    # =========================
+    if request.method != 'POST':
+
+        return redirect('ventas')
+
+    # =========================
+    # VALIDAR ROL
+    # =========================
+    if rol not in ['gerente', 'administrador']:
+
+        messages.error(
+            request,
+            'No tienes permisos para anular ventas.'
+        )
+
+        return redirect('ventas')
+
+    # =========================
+    # VALIDAR SUCURSAL
+    # =========================
+    if venta.empleado.ubicacion != empleado.ubicacion:
+
+        messages.error(
+            request,
+            'No puedes anular ventas de otra sucursal.'
+        )
+
+        return redirect('ventas')
+
+    # =========================
+    # YA ANULADA
+    # =========================
+    if venta.estado.nombre == 'Anulada':
+
+        messages.error(
+            request,
+            'La factura ya está anulada.'
+        )
+
+        return redirect('ventas')
+
+    # =========================
+    # SI ESTÁ PAGADA
+    # =========================
+    if venta.estado.nombre == 'Pagada':
+
+        # =========================
+        # SOLO EFECTIVO AFECTA CAJA
+        # =========================
+        if venta.metodo.nombre.lower() == 'efectivo':
+
+            apertura = venta.apertura
+
+            # validar apertura
+            if not apertura:
+
+                messages.error(
+                    request,
+                    'La venta no tiene apertura de caja.'
+                )
+
+                return redirect('ventas')
+
+            # validar caja abierta
+            if apertura.estado.nombre != 'Abierta':
+
+                messages.error(
+                    request,
+                    'No se puede anular porque la caja está cerrada.'
+                )
+
+                return redirect('ventas')
+
+            # =========================
+            # MOVIMIENTO CAJA
+            # =========================
+            MovimientoCaja.objects.create(
+                apertura=apertura,
+                tipo='EGRESO',
+                monto=venta.total,
+                descripcion=f'ANULACIÓN FACTURA #{venta.numero_factura}'
+            )
+
+            # =========================
+            # ACTUALIZAR SALDO
+            # =========================
+            apertura.saldo_final -= venta.total
+            apertura.save()
+
+    # =========================
+    # CAMBIAR ESTADO
+    # =========================
+    estado_anulada = Estado.objects.get(
+        nombre='Anulada'
+    )
+
+    venta.estado = estado_anulada
+    venta.save()
+
+    # =========================
+    # EL TRIGGER MANEJA:
+    # - STOCK
+    # - KARDEX
+    # =========================
+
+    messages.success(
+        request,
+        f'Factura #{venta.numero_factura} anulada correctamente.'
+    )
+
+    return redirect('ventas')
 
 
 @csrf_exempt
@@ -76,9 +231,9 @@ def crear_venta(request):
             empleado = Empleado.objects.get(pk=data['empleado'])
 
             apertura = AperturaCaja.objects.filter(
-                empleado=empleado,
-                estado__nombre__iexact='ABIERTA'
-            ).last()
+                caja__ubicacion=empleado.ubicacion,
+                estado__nombre__iexact='Abierta'
+            ).order_by('-fecha_apertura').first()
 
             if not apertura:
                 return JsonResponse({'error': 'Caja no abierta'})
@@ -166,3 +321,30 @@ def crear_venta(request):
             return JsonResponse({'error': str(e)})
 
     return JsonResponse({'error': 'Método no permitido'})
+
+@login_required
+def cobrar_venta(request):
+
+    if request.method == 'POST':
+
+        venta_id = request.POST.get('venta_id')
+
+        venta = get_object_or_404(
+            Venta,
+            pk=venta_id
+        )
+
+        estado_pagada = Estado.objects.get(
+            nombre='Pagada'
+        )
+
+        venta.estado = estado_pagada
+        venta.save()
+
+        messages.success(
+            request,
+            'Venta cobrada correctamente.'
+        )
+
+    return redirect('ventas')
+

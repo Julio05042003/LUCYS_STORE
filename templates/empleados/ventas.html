@@ -48,6 +48,7 @@
                             <th>Vendedor</th>
                             <th>Total</th>
                             <th>Metodo de pago</th>
+                            <th>Estado</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -62,15 +63,51 @@
                             <td>
                                 <span class="badge-pago">{{ v.metodo.nombre }}</span>
                             </td>
+                            <td>
+                                <span class="badge-pago">
+                                    {{ v.estado.nombre }}
+                                </span>
+                            </td>
                             <td class="text-center">
                                 <div class="row-actions">
+
+                                    <!-- TODOS -->
                                     <button class="btn-row view" onclick="verVenta('{{ v.venta_id }}')">
                                         <i class="fas fa-eye"></i>
                                     </button>
 
-                                    <button class="btn-row status" onclick="toggleEstadoVenta('{{ v.venta_id }}')">
-                                        <i class="fas fa-toggle-on"></i>
+                                    <!-- GERENTE -->
+                                    {% if empleado.rol.nombre == "Gerente" %}
+
+                                    {% if v.estado.nombre != "Anulada" %}
+                                    <form method="POST" action="{% url 'anular_venta' v.venta_id %}"
+                                        style="display:inline;">
+
+                                        {% csrf_token %}
+
+                                        <button class="btn-row status"
+                                            onclick="return confirm('¿Desea anular esta factura?')">
+
+                                            <i class="fas fa-ban"></i>
+
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% endif %}
+
+                                    <!-- CAJERO -->
+                                    {% if empleado.rol.nombre == "Cajero" %}
+
+                                    {% if v.estado.nombre == "Pendiente" %}
+                                    <button class="btn-row edit"
+                                        onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}')">
+                                        <i class="fas fa-cash-register"></i>
                                     </button>
+                                    {% endif %}
+
+                                    {% endif %}
+
                                 </div>
                             </td>
                         </tr>
@@ -79,6 +116,7 @@
                 </table>
             </div>
 
+            {% if empleado.rol.nombre == "Vendedor" %}
             <div class="action-footer">
                 <button class="btn-primary" onclick="abrirModalVenta()">
                     <i class="fas fa-plus"></i> Registrar Nueva Venta
@@ -87,6 +125,7 @@
                     <i class="fas fa-users"></i> Registrar Nuevo Cliente
                 </button>
             </div>
+            {% endif %}
         </div>
     </main>
 </div>
@@ -194,6 +233,60 @@
     </div>
 </div>
 <!--model agregar venta fin-->
+
+<!--Modal de cobro-->
+<div id="modalCobro" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 450px;">
+
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-cash-register"></i>
+                Cobrar Venta
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalCobro')">
+                &times;
+            </button>
+        </div>
+
+        <form method="POST" id="formCobro" action="{% url 'cobrar_venta' %}">
+            {% csrf_token %}
+
+            <div class="modal-form">
+
+                <input type="hidden" name="venta_id" id="venta_id_cobro">
+
+                <div class="form-group">
+                    <label>Total</label>
+                    <input type="text" id="totalCobro" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Monto recibido</label>
+                    <input type="number" step="0.01" id="montoRecibido" oninput="calcularVuelto()">
+                </div>
+
+                <div class="form-group">
+                    <label>Vuelto</label>
+                    <input type="text" id="vuelto" readonly>
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit" class="btn-primary">
+                        Confirmar Cobro
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 <!--Recibo digital-->
 <div id="modalTicket" class="modal-overlay">
@@ -643,6 +736,31 @@
                     alert(data.error);
                 }
             });
+    }
+
+    function abrirModalCobro(id, total) {
+
+        document.getElementById('modalCobro').style.display = 'flex';
+
+        document.getElementById('venta_id_cobro').value = id;
+
+        document.getElementById('totalCobro').value = total;
+    }
+
+    function calcularVuelto() {
+
+        let total = parseFloat(
+            document.getElementById('totalCobro').value
+        );
+
+        let recibido = parseFloat(
+            document.getElementById('montoRecibido').value || 0
+        );
+
+        let vuelto = recibido - total;
+
+        document.getElementById('vuelto').value =
+            "C$ " + vuelto.toFixed(2);
     }
 </script>
 {% endblock %}

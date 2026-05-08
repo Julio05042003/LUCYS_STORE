@@ -14,8 +14,9 @@
         {% csrf_token %}
 
         <div class="filters-card">
+
             <div class="field">
-                <label><i class="fas fa-arrow-up"></i> Origen:</label>
+                <label>Origen:</label>
                 <select name="origen_id" required>
                     {% for u in ubicaciones %}
                         <option value="{{ u.ubicacion_id }}">{{ u.nombre }}</option>
@@ -24,7 +25,7 @@
             </div>
 
             <div class="field">
-                <label><i class="fas fa-arrow-down"></i> Destino:</label>
+                <label>Destino:</label>
                 <select name="destino_id" required>
                     {% for u in ubicaciones %}
                         <option value="{{ u.ubicacion_id }}">{{ u.nombre }}</option>
@@ -33,17 +34,35 @@
             </div>
 
             <div class="field">
-                <label>Referencia / Nota:</label>
+                <label>Nota:</label>
                 <input type="text" name="nota">
             </div>
+
         </div>
 
-        <div class="filters-card" style="background: #fff5f7;">
-            <input type="text" id="producto" placeholder="Producto ID">
-            <input type="number" id="cantidad" value="1">
-            <button type="button" onclick="agregarProducto()">Añadir</button>
+        <!-- PRODUCTOS -->
+        <div class="filters-card" style="background:#fff5f7; position:relative;">
+
+            <input type="text"
+                   id="producto"
+                   placeholder="Buscar producto por código o nombre">
+
+            <input type="number"
+                   id="cantidad"
+                   value="1"
+                   min="1">
+
+            <button type="button" onclick="agregarProducto()">
+                Añadir
+            </button>
+
+            <!-- SUGERENCIAS -->
+            <div id="sugerencias"
+                 style="position:absolute;width:100%;background:#fff;z-index:999;border:1px solid #ddd;"></div>
+
         </div>
 
+        <!-- TABLA -->
         <div class="table-container">
             <table>
                 <thead>
@@ -60,36 +79,45 @@
         <input type="hidden" name="detalles" id="detalles">
 
         <div class="action-footer">
+
             <button type="submit" class="btn-primary">
-                <i class="fas fa-check-circle"></i> PROCESAR TRASLADO
+                PROCESAR TRASLADO
             </button>
 
-            <button type="button" class="btn-secondary" onclick="abrirModal('modalHistorial')">
-                <i class="fas fa-history"></i> Ver Historial
+            <button type="button" class="btn-secondary"
+                    onclick="abrirModal('modalHistorial')">
+                Ver Historial
             </button>
+
         </div>
+
     </form>
 </div>
 
-<!-- ================= HISTORIAL ================= -->
+<!-- HISTORIAL -->
 <div id="modalHistorial" class="modal-overlay">
+
     <div class="modal-content">
+
         <div class="modal-header">
             <h3>Historial</h3>
             <button onclick="cerrarModal('modalHistorial')">&times;</button>
         </div>
 
         <div class="table-container">
+
             <table>
+
                 <thead>
                     <tr>
                         <th>Fecha</th>
                         <th>Origen</th>
                         <th>Destino</th>
                         <th>Estado</th>
-                        <th>👁</th>
+                        <th></th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for t in transferencias %}
                     <tr>
@@ -97,96 +125,145 @@
                         <td>{{ t.origen.nombre }}</td>
                         <td>{{ t.destino.nombre }}</td>
                         <td>{{ t.estado.nombre }}</td>
-                        <td>
-                            <button onclick="verDetalle('{{ t.id }}')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-
-                            {% if empleado.ubicacion.nivel == 'CENTRAL' and t.estado.nombre == 'Pendiente' %}
-                            <button onclick="aprobar('{{ t.id }}')">
-                                ✔
-                            </button>
-                            {% endif %}
-                        </td>
+                        <td>👁</td>
                     </tr>
                     {% endfor %}
                 </tbody>
+
             </table>
+
         </div>
+
     </div>
+
 </div>
 
+<script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+
 <script>
-let detalles = []
 
-function agregarProducto(){
+/* =========================
+   PRODUCTOS DESDE DJANGO
+========================= */
+let productos = JSON.parse('{{ productos_json|escapejs }}');
 
-    let p = document.getElementById('producto').value
-    let c = document.getElementById('cantidad').value
+let detalles = [];
+let seleccionado = null;
 
-    if(p === '' || c === ''){
-        alert("Complete producto y cantidad")
-        return
+/* =========================
+   AUTOCOMPLETE
+========================= */
+document.getElementById('producto').addEventListener('input', function () {
+
+    let val = this.value.toLowerCase();
+    let box = document.getElementById('sugerencias');
+
+    box.innerHTML = '';
+
+    if (val.length < 1) return;
+
+    let filtrados = productos.filter(p =>
+        p.nombre.toLowerCase().includes(val) ||
+        p.codigo.toLowerCase().includes(val)
+    );
+
+    filtrados.forEach(p => {
+
+        let div = document.createElement('div');
+
+        div.textContent = `${p.codigo} - ${p.nombre}`;
+        div.style.padding = "6px";
+        div.style.cursor = "pointer";
+        div.style.borderBottom = "1px solid #eee";
+
+        div.onclick = function () {
+
+            seleccionado = p;
+
+            document.getElementById('producto').value =
+                `${p.codigo} - ${p.nombre}`;
+
+            box.innerHTML = '';
+        };
+
+        box.appendChild(div);
+    });
+
+});
+
+/* =========================
+   AGREGAR PRODUCTO
+========================= */
+function agregarProducto() {
+
+    let cantidad = document.getElementById('cantidad').value;
+
+    if (!seleccionado) {
+        alert("Seleccione un producto");
+        return;
     }
 
     detalles.push({
-        producto: parseInt(p),
-        cantidad: parseInt(c)
-    })
+        producto: seleccionado.id,
+        nombre: seleccionado.nombre,
+        cantidad: parseInt(cantidad)
+    });
 
-    renderTabla()
+    render();
 
-    document.getElementById('producto').value = ''
-    document.getElementById('cantidad').value = 1
+    seleccionado = null;
+    document.getElementById('producto').value = '';
+    document.getElementById('cantidad').value = 1;
 }
 
-function renderTabla(){
+/* =========================
+   RENDER
+========================= */
+function render() {
 
-    let body = document.getElementById('detalle-body')
+    let body = document.getElementById('detalle-body');
 
-    body.innerHTML = ''
+    body.innerHTML = '';
 
-    detalles.forEach((d, index)=>{
+    detalles.forEach((d, i) => {
 
         body.innerHTML += `
             <tr>
-                <td>${d.producto}</td>
+                <td>${d.nombre}</td>
                 <td>${d.cantidad}</td>
                 <td>
-                    <button type="button" onclick="eliminarProducto(${index})">
-                        X
-                    </button>
+                    <button type="button" onclick="del(${i})">X</button>
                 </td>
             </tr>
-        `
-    })
+        `;
+    });
 
-    // ACTUALIZAR INPUT HIDDEN
     document.getElementById('detalles').value =
-        JSON.stringify(detalles)
+        JSON.stringify(detalles);
 }
 
-function eliminarProducto(index){
-
-    detalles.splice(index,1)
-
-    renderTabla()
+/* =========================
+   ELIMINAR
+========================= */
+function del(i) {
+    detalles.splice(i, 1);
+    render();
 }
 
-document.querySelector('form').addEventListener('submit', function(e){
+/* =========================
+   SUBMIT
+========================= */
+document.querySelector('form').addEventListener('submit', function (e) {
 
-    if(detalles.length === 0){
-
-        e.preventDefault()
-
-        alert("Debe agregar productos")
-
-        return
+    if (detalles.length === 0) {
+        e.preventDefault();
+        alert("Agrega productos");
     }
 
     document.getElementById('detalles').value =
-        JSON.stringify(detalles)
-})
+        JSON.stringify(detalles);
+});
+
 </script>
 
 {% endblock %}

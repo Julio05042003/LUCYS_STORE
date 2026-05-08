@@ -7,46 +7,119 @@ Lucy’s Store | Tienda Online
 
 {% block content %}
 
-<!-- NAV EXTRA -->
+<!-- ====================================== -->
+<!-- HERO -->
+<!-- ====================================== -->
+<section class="shop-hero">
+
+    <div class="hero-content">
+
+        <span class="hero-mini">
+            ✨ NUEVA COLECCIÓN
+        </span>
+
+        <h1>
+            Lucy’s Boutique
+        </h1>
+
+        <p>
+            Moda elegante, moderna y exclusiva para ti.
+        </p>
+
+    </div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- NAV SUPERIOR -->
+<!-- ====================================== -->
 <div class="nav-container">
 
     <div class="nav-left">
-        <h3>¡Elige lo que más te guste!</h3>
+
+        <h3>
+            ¡Elige lo que más te guste!
+        </h3>
+
     </div>
 
     <div class="nav-right">
 
-        <div class="cart-icon" onclick="abrirCarrito()">
+        <div class="cart-icon"
+             onclick="abrirCarrito()">
+
             <i class="fas fa-shopping-bag"></i>
 
-            <span class="cart-count" id="contador-carrito">
+            <span class="cart-count"
+                  id="contador-carrito">
+
                 0
+
             </span>
+
         </div>
 
     </div>
 
 </div>
 
-<!-- =============================== -->
+<!-- ====================================== -->
+<!-- CATEGORÍAS -->
+<!-- ====================================== -->
+<div class="category-nav">
+
+    <div class="category-scroll">
+
+        <a href="{% url 'tienda' %}"
+           class="cat-item {% if not request.GET.categoria %}active{% endif %}">
+
+            Todo
+
+        </a>
+
+        {% for c in categorias %}
+
+        <a href="?categoria={{ c.categoria_id }}"
+           class="cat-item {% if request.GET.categoria == c.categoria_id|stringformat:'s' %}active{% endif %}">
+
+            {{ c.nombre }}
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<!-- ====================================== -->
 <!-- CARRITO -->
-<!-- =============================== -->
-<div id="cart-sidebar" class="cart-sidebar">
+<!-- ====================================== -->
+<div id="cart-sidebar"
+     class="cart-sidebar">
 
     <div class="cart-header">
 
-        <h3>TU CARRITO</h3>
+        <h3>
+            TU CARRITO
+        </h3>
 
-        <button class="close-cart" onclick="cerrarCarrito()">
+        <button class="close-cart"
+                onclick="cerrarCarrito()">
+
             &times;
+
         </button>
 
     </div>
 
-    <div id="items-carrito" class="cart-items">
+    <div id="items-carrito"
+         class="cart-items">
 
         <p class="empty-msg">
+
             No hay productos aún.
+
         </p>
 
     </div>
@@ -54,10 +127,14 @@ Lucy’s Store | Tienda Online
     <div class="cart-footer">
 
         <div class="total-cart">
+
             Subtotal:
             <span id="subtotal-carrito">
-                $0.00
+
+                C$0.00
+
             </span>
+
         </div>
 
         <button class="btn-checkout-total"
@@ -71,18 +148,10 @@ Lucy’s Store | Tienda Online
 
 </div>
 
-<!-- =============================== -->
+<!-- ====================================== -->
 <!-- PRODUCTOS -->
-<!-- =============================== -->
+<!-- ====================================== -->
 <main class="store-container">
-
-    <div class="section-title">
-
-        <h2>NUEVA COLECCIÓN</h2>
-
-        <div class="underline"></div>
-
-    </div>
 
     <section class="products-grid">
 
@@ -91,50 +160,111 @@ Lucy’s Store | Tienda Online
         <div class="product-card">
 
             <!-- IMAGEN -->
-            {% if producto.imagen %}
+            <div class="product-image">
+
+                {% if producto.imagen %}
 
                 <img src="{{ producto.imagen.url }}"
                      alt="{{ producto.nombre }}">
 
-            {% else %}
+                {% else %}
 
                 <img src="{% static 'img/no-image.png' %}"
                      alt="Sin imagen">
 
-            {% endif %}
+                {% endif %}
 
-            <!-- NOMBRE -->
-            <h3>{{ producto.nombre }}</h3>
+                <!-- OVERLAY -->
+                <div class="image-overlay">
 
-            <!-- PRECIO -->
-            <p class="price">
-                C$ {{ producto.precio_venta }}
-            </p>
+                    <button class="quick-add"
+                            onclick="agregarAlCarrito(
+                                '{{ producto.producto_id }}',
+                                '{{ producto.nombre|escapejs }}',
+                                '{{ producto.precio_venta }}'
+                            )">
 
-            <!-- BOTÓN AGREGAR -->
-            <button class="btn_agregar"
-                    data-id="{{ producto.producto_id }}"
-                    data-nombre="{{ producto.nombre|escapejs }}"
-                    data-precio="{{ producto.precio_venta|floatformat:2 }}">
+                        AGREGAR
 
-                Agregar al carrito
+                    </button>
 
-            </button>
+                </div>
 
-            <!-- VER MÁS -->
-            <button onclick="verProducto(
-                '{{ producto.nombre|escapejs }}',
-                '{{ producto.descripcion|escapejs }}',
-                '{{ producto.precio_venta }}',
-                '{{ producto.codigo }}',
-                '{{ producto.marca.nombre|escapejs }}',
-                '{{ producto.categoria.nombre|escapejs }}',
-                '{% if producto.imagen %}{{ producto.imagen.url }}{% endif %}'
-            )">
+            </div>
 
-                Ver más
+            <!-- DETALLES -->
+            <div class="product-details">
 
-            </button>
+                <span class="category">
+
+                    {{ producto.categoria.nombre }}
+
+                </span>
+
+                <h4>
+
+                    {{ producto.nombre }}
+
+                </h4>
+
+                <p class="price">
+
+                    C$ {{ producto.precio_venta }}
+
+                </p>
+
+                {% if producto.stock > 0 %}
+
+                <div class="stock-ok">
+
+                    Disponible: {{ producto.stock }}
+
+                </div>
+
+                {% else %}
+
+                <div class="stock-bad">
+
+                    Agotado
+
+                </div>
+
+                {% endif %}
+
+                <!-- BOTONES -->
+                <div class="product-actions">
+
+                    <button class="btn-primary"
+                            onclick="agregarAlCarrito(
+                                '{{ producto.producto_id }}',
+                                '{{ producto.nombre|escapejs }}',
+                                '{{ producto.precio_venta }}'
+                            )">
+
+                        Agregar
+
+                    </button>
+
+                    <button class="btn-secondary"
+                            onclick="verProducto(
+                                '{{ producto.producto_id }}',
+                                '{{ producto.nombre|escapejs }}',
+                                '{{ producto.descripcion|escapejs }}',
+                                '{{ producto.precio_venta }}',
+                                '{{ producto.codigo }}',
+                                '{{ producto.marca.nombre|escapejs }}',
+                                '{{ producto.categoria.nombre|escapejs }}',
+                                '{{ producto.stock }}',
+                                '{% if producto.imagen %}{{ producto.imagen.url }}{% endif %}'
+                            )">
+
+                        Ver más
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -142,7 +272,9 @@ Lucy’s Store | Tienda Online
 
         <div class="empty-products">
 
-            <h3>No hay productos disponibles.</h3>
+            <h2>
+                No hay productos disponibles
+            </h2>
 
         </div>
 
@@ -152,16 +284,19 @@ Lucy’s Store | Tienda Online
 
 </main>
 
-<!-- =============================== -->
+<!-- ====================================== -->
 <!-- CHECKOUT -->
-<!-- =============================== -->
-<div id="modalCheckout" class="modal-overlay">
+<!-- ====================================== -->
+<div id="modalCheckout"
+     class="modal-overlay">
 
     <div class="modal-content checkout-modal">
 
         <div class="modal-header">
 
-            <h3>DATOS DEL PEDIDO</h3>
+            <h3>
+                FINALIZAR PEDIDO
+            </h3>
 
             <button class="close-btn"
                     onclick="cerrarCheckout()">
@@ -174,30 +309,39 @@ Lucy’s Store | Tienda Online
 
         <div class="checkout-body">
 
-            <!-- FORM -->
             <div class="checkout-form">
 
-                <label>Nombre Completo</label>
+                <label>
+                    Nombre Completo
+                </label>
 
                 <input type="text"
                        id="cliente-nombre"
-                       placeholder="Tu nombre...">
+                       placeholder="Ingresa tu nombre">
 
-                <label>Ubicación de Envío</label>
+                <label>
+                    Ubicación de envío
+                </label>
 
                 <select id="ubicacion"
                         onchange="actualizarTarifa()">
 
                     <option value="0">
-                        Seleccionar ciudad...
+
+                        Selecciona ubicación
+
                     </option>
 
                     <option value="5">
-                        Managua - $5
+
+                        Managua - C$5
+
                     </option>
 
                     <option value="10">
-                        Departamentos - $10
+
+                        Departamentos - C$10
+
                     </option>
 
                 </select>
@@ -208,17 +352,25 @@ Lucy’s Store | Tienda Online
             <div class="checkout-summary">
 
                 <p>
+
                     Subtotal:
                     <span id="resumen-subtotal">
-                        $0.00
+
+                        C$0.00
+
                     </span>
+
                 </p>
 
                 <p>
+
                     Envío:
                     <span id="envio-costo">
-                        $0.00
+
+                        C$0.00
+
                     </span>
+
                 </p>
 
                 <hr>
@@ -227,15 +379,17 @@ Lucy’s Store | Tienda Online
 
                     Total:
                     <span id="total-final">
-                        $0.00
+
+                        C$0.00
+
                     </span>
 
                 </p>
 
                 <button class="btn-confirm"
-                        onclick="enviarPedido()">
+                        onclick="confirmarPedido()">
 
-                    CONFIRMAR POR WHATSAPP
+                    CONFIRMAR PEDIDO
 
                 </button>
 
@@ -247,10 +401,11 @@ Lucy’s Store | Tienda Online
 
 </div>
 
-<!-- =============================== -->
+<!-- ====================================== -->
 <!-- MODAL PRODUCTO -->
-<!-- =============================== -->
-<div id="modalVerProducto" class="modal-overlay">
+<!-- ====================================== -->
+<div id="modalVerProducto"
+     class="modal-overlay">
 
     <div class="modal-content shop-preview-modal">
 
@@ -261,46 +416,78 @@ Lucy’s Store | Tienda Online
 
         </button>
 
-        <div class="shop-modal-body">
+        <div class="shop-grid">
 
-            <div class="shop-grid">
+            <!-- IMG -->
+            <div class="shop-image-side">
 
-                <!-- IMAGEN -->
-                <div class="shop-image-side">
+                <img id="view_img"
+                     src=""
+                     alt="Producto">
 
-                    <img id="view_img"
-                         alt="Producto">
+            </div>
 
-                </div>
+            <!-- INFO -->
+            <div class="shop-info-side">
 
-                <!-- INFO -->
-                <div class="shop-info-side">
+                <span class="shop-tag"
+                      id="v_cat">
 
-                    <span id="v_cat"></span>
+                </span>
 
-                    <h2 id="v_nombre"></h2>
+                <h2 id="v_nombre"></h2>
+
+                <div class="shop-price-tag">
 
                     <span id="v_precio_venta"></span>
 
+                </div>
+
+                <div class="shop-divider"></div>
+
+                <div class="shop-meta">
+
                     <p>
+
                         <strong>SKU:</strong>
                         <span id="v_sku"></span>
+
                     </p>
 
                     <p>
+
                         <strong>Marca:</strong>
                         <span id="v_marca"></span>
+
                     </p>
+
+                    <p>
+
+                        <strong>Stock:</strong>
+                        <span id="v_stock"></span>
+
+                    </p>
+
+                </div>
+
+                <div class="shop-description-area">
+
+                    <h4>
+                        Detalles
+                    </h4>
 
                     <p id="v_desc"></p>
 
-                    <button onclick="agregarAlCarritoDesdeModal()">
-
-                        Añadir al carrito
-
-                    </button>
-
                 </div>
+
+                <button class="btn-add-to-cart-big"
+                        id="btnAgregarModal">
+
+                    <i class="fas fa-shopping-bag"></i>
+
+                    AÑADIR AL CARRITO
+
+                </button>
 
             </div>
 
@@ -313,6 +500,10 @@ Lucy’s Store | Tienda Online
 {% endblock %}
 
 {% block extra_js %}
+
+<script>
+    const URL_CREAR_PEDIDO = "{% url 'crear_pedido' %}";
+</script>
 
 <script src="{% static 'js/tienda-logic.js' %}"></script>
 

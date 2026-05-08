@@ -19,17 +19,38 @@ def es_admin_o_bodega(user):
         return False
 
 
-def tienda_view(request):
+def tienda(request):
+
+    categoria_id = request.GET.get('categoria')
 
     productos = Producto.objects.select_related(
+        'categoria',
         'marca',
-        'categoria'
-    ).all()
+        'estado'
+    ).filter(
+        estado__nombre='Activo'
+    )
+
+    if categoria_id:
+        productos = productos.filter(
+            categoria_id=categoria_id
+        )
+
+    # STOCK TOTAL
+    for p in productos:
+
+        p.stock = Inventario.objects.filter(
+            producto=p
+        ).aggregate(
+            total=Sum('stock')
+        )['total'] or 0
+
+    categorias = Categoria.objects.all()
 
     return render(request, 'tienda/index.html', {
-        'productos': productos
+        'productos': productos,
+        'categorias': categorias
     })
-
 
 # 🔹 CREAR PRODUCTO
 @login_required
