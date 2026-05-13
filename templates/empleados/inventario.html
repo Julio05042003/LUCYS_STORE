@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 
 <div class="main-container">
-    <div id="sidebar-container"></div>
     <main class="content">
         <div class="inventory-wrapper">
 
@@ -31,7 +30,8 @@
 
             <!-- 📊 TABLA PRODUCTOS -->
             <div class="table-container">
-                <table class="table-modern">
+                <div class="table-scroll">
+                    <table class="table-modern">
                     <thead>
                         <tr>
                             <th>Imagen</th>
@@ -106,12 +106,14 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- 📦 TABLA CATEGORÍAS -->
             {% if rol != "Vendedor" %}
-            <div class="table-container" style="margin-top:20px;">
-                <table class="table-modern">
+            <div class="table-container small-table" style="margin-top:20px;">
+                <div class="table-scroll">
+                    <table class="table-modern">
                     <thead>
                         <tr>
                             <th>Categoría</th>
@@ -132,11 +134,13 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- 🏷 MARCAS -->
-            <div class="table-container" style="margin-top:20px;">
-                <table class="table-modern">
+            <div class="table-container small-table" style="margin-top:20px;">
+                <div class="table-scroll">
+                    <table class="table-modern">
                     <thead>
                         <tr>
                             <th>Marca</th>
@@ -157,6 +161,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
             <br>
             <!-- ⚡ ACCIONES -->

@@ -1,76 +1,1007 @@
 {% extends 'empleados/base_empleados.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Clientes - Lucy's System</title>
+{% block content %}
 
-    <link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
-</head>
+<link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<body>
 
-    <header class="topbar">
-        <span>Clientes</span>
-    </header>
 
-    <div class="main-container">
 
-        <button onclick="abrirModal('modalCliente')">
-            Registrar Cliente
-        </button>
+<div class="main-container">
+    <main class="content">
+        <div class="inventory-wapper">
+            <div class="header-section">
+                <h2><i class="fas fa-address-book"></i> Gestión de Clientes</h2>
+            </div>
 
-    </div>
+            <div class="filters-card">
+                <div class="field" style="flex: 2;">
+                    <label>Buscar Cliente:</label>
+                    <input type="text" placeholder="Nombre, teléfono o correo...">
+                </div>
+                <div class="field">
+                    <label>Tipo:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>Fisico</option>
+                        <option>Online</option>
+                    </select>
+                </div>
+                <button class="btn-clear">Limpiar</button>
+            </div>
 
-    <!-- MODAL -->
-    <div id="modalCliente" class="modal-overlay">
-        <div class="modal-content">
+            <!-- TABLA -->
+            <div class="tabla-container">
 
-            <h3>Registro Cliente</h3>
+                <table class="tabla-clientes">
 
-            <form method="POST" action="{% url 'registro_cliente' %}">
-                {% csrf_token %}
+                    <thead>
 
-                <!-- DATOS -->
-                <input type="text" name="identificacion" placeholder="Cédula" required>
-                <input type="text" name="nombre" placeholder="Nombre" required>
-                <input type="text" name="apellido" placeholder="Apellido" required>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Usuario</th>
+                            <th>Identificación</th>
+                            <th>Tipo</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
 
-                <!-- TELÉFONOS -->
-                <h4>Teléfonos</h4>
-                <input type="text" name="telefono[]" placeholder="Número">
-                <input type="text" name="operadora[]" placeholder="Operadora">
-                <input type="text" name="tipo_tel[]" placeholder="Tipo">
+                    </thead>
 
-                <!-- DIRECCIÓN -->
-                <h4>Dirección</h4>
-                <input type="text" name="pais[]" placeholder="País">
-                <input type="text" name="departamento[]" placeholder="Departamento">
-                <input type="text" name="ciudad[]" placeholder="Ciudad">
-                <input type="text" name="detalle[]" placeholder="Detalle">
+                    <tbody>
 
-                <button type="submit">Guardar</button>
+                        {% for cliente in clientes %}
 
-            </form>
+                        <tr>
+
+                            <td>
+                                #{{ cliente.cliente_id }}
+                            </td>
+
+                            <td>
+
+                                <div class="cliente-info">
+
+                                    <div class="cliente-avatar">
+
+                                        {{ cliente.nombre|first|upper }}
+
+                                    </div>
+
+                                    <div>
+
+                                        <strong>
+                                            {{ cliente.nombre }} {{ cliente.apellido }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                            <td>
+
+                                {% if cliente.user %}
+                                {{ cliente.user.username }}
+                                {% else %}
+                                <span class="text-muted">
+                                    Sin cuenta
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ cliente.identificacion }}
+                            </td>
+
+                            <td>
+
+                                {% if cliente.user %}
+
+                                <span class="badge-online">
+                                    <i class="fas fa-globe"></i>
+                                    Online
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge-fisico">
+                                    <i class="fas fa-store"></i>
+                                    Físico
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ cliente.fecha_registro|date:"d/m/Y" }}
+                            </td>
+
+                            <td>
+
+                                <div class="acciones-tabla">
+
+                                    <!-- VER -->
+                                    <button class="btn-table btn-view"
+                                        onclick="abrirModal('verCliente{{ cliente.cliente_id }}')">
+
+                                        <i class="fas fa-eye"></i>
+
+                                    </button>
+
+                                    <!-- EDITAR -->
+                                    <button class="btn-table btn-edit"
+                                        onclick="abrirModal('editarCliente{{ cliente.cliente_id }}')">
+
+                                        <i class="fas fa-edit"></i>
+
+                                    </button>
+
+                                    <!-- CREAR USER -->
+                                    {% if request.session.rol|lower == "gerente" and not cliente.user %}
+
+                                    <button class="btn-table btn-user"
+                                        onclick="abrirModal('crearUser{{ cliente.cliente_id }}')">
+
+                                        <i class="fas fa-user-cog"></i>
+
+                                    </button>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="7" class="empty-table">
+
+                                <i class="fas fa-users"></i>
+
+                                <p>No hay clientes registrados</p>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="action-footer">
+                <button class="btn-primary" onclick="abrirModal('modalCliente')">
+                    <i class="fas fa-user-plus"></i>
+                    Registrar Cliente
+                </button>
+            </div>
 
         </div>
+    </main>
+</div>
+
+<!-- ===================================================== -->
+<!-- MODAL CREAR CLIENTE -->
+<!-- ===================================================== -->
+
+<!-- ======================================== -->
+<!-- MODAL CREAR CLIENTE -->
+<!-- ======================================== -->
+
+<div id="modalCliente" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 950px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-user-plus"></i>
+                Nuevo Cliente Físico
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalCliente')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <form class="modal-form" method="POST" action="{% url 'crear_cliente' %}">
+
+            {% csrf_token %}
+
+            <div class="form-grid">
+
+                <!-- ========================= -->
+                <!-- DATOS PERSONALES -->
+                <!-- ========================= -->
+
+                <div class="form-group">
+
+                    <label>Identificación</label>
+
+                    <input type="text" name="identificacion" placeholder="001-000000-0000A" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Nombres</label>
+
+                    <input type="text" name="nombre" placeholder="Nombres" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Apellidos</label>
+
+                    <input type="text" name="apellido" placeholder="Apellidos" required>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- TELÉFONOS -->
+                <!-- ========================= -->
+
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-phone"></i>
+                        Teléfonos Registrados
+                    </label>
+
+                    <div id="lista-telefonos" class="dynamic-list">
+
+                        <div class="dynamic-row telefono-row">
+
+                            <input type="text" name="telefono[]" placeholder="Número" style="flex:2;">
+
+                            <select name="operadora[]" style="flex:1;">
+
+                                <option value="">Operadora</option>
+                                <option value="Tigo">Tigo</option>
+                                <option value="Claro">Claro</option>
+
+                            </select>
+
+                            <select name="tipo_tel[]" style="flex:1;">
+
+                                <option value="Personal">Personal</option>
+                                <option value="Trabajo">Trabajo</option>
+
+                            </select>
+
+                            <button type="button" class="btn-add-small" onclick="agregarTelefono('lista-telefonos')">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- DIRECCIONES -->
+                <!-- ========================= -->
+
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Direcciones
+                    </label>
+
+                    <div id="lista-direcciones" class="dynamic-list">
+
+                        <div class="dynamic-row direccion-row">
+
+                            <input type="text" name="pais[]" placeholder="País" style="flex:1;">
+
+                            <input type="text" name="departamento[]" placeholder="Departamento" style="flex:1;">
+
+                            <input type="text" name="ciudad[]" placeholder="Ciudad" style="flex:1;">
+
+                            <input type="text" name="detalle[]" placeholder="Detalle" style="flex:2;">
+
+                            <select name="tipo_direccion[]" style="flex:1;">
+
+                                <option value="Principal">Principal</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Oficina">Oficina</option>
+                                <option value="Entrega">Entrega</option>
+
+                            </select>
+
+                            <button type="button" class="btn-add-small" onclick="agregarDireccion('lista-direcciones')">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ========================= -->
+            <!-- BOTONES -->
+            <!-- ========================= -->
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalCliente')">
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Guardar Cliente
+
+                </button>
+
+            </div>
+
+        </form>
+
     </div>
 
-    <script>
+</div>
 
-        /* MODALES */
-        function abrirModal(id) {
-            document.getElementById(id).style.display = 'flex';
+<!-- ===================================================== -->
+<!-- MODALES CLIENTES -->
+<!-- ===================================================== -->
+
+{% for cliente in clientes %}
+
+<!-- ==================================== -->
+<!-- VER CLIENTE -->
+<!-- ==================================== -->
+
+<div id="verCliente{{ cliente.cliente_id }}" class="modal-overlay">
+
+    <div class="modal-content modal-large">
+
+        <div class="modal-header">
+
+            <h3>
+                Información Cliente
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('verCliente{{ cliente.cliente_id }}')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <div class="info-cliente-grid">
+
+            <div class="info-card">
+
+                <h4>
+                    Datos Personales
+                </h4>
+
+                <p>
+                    <strong>ID:</strong>
+                    {{ cliente.cliente_id }}
+                </p>
+
+                <p>
+                    <strong>Nombre:</strong>
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                </p>
+
+                <p>
+                    <strong>Identificación:</strong>
+                    {{ cliente.identificacion }}
+                </p>
+
+                <p>
+
+                    <strong>Usuario:</strong>
+
+                    {% if cliente.user %}
+                    {{ cliente.user.username }}
+                    {% else %}
+                    Sin cuenta online
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+            <div class="info-card">
+
+                <h4>
+                    Teléfonos
+                </h4>
+
+                {% for tel in cliente.telefonocliente_set.all %}
+
+                {% if tel.estado.nombre|lower != "eliminado" %}
+
+                <div class="item-info">
+
+                    <strong>{{ tel.numero }}</strong>
+
+                    <span>
+                        {{ tel.operadora }}
+                        -
+                        {{ tel.tipo }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+                {% empty %}
+
+                <p>No hay teléfonos</p>
+
+                {% endfor %}
+
+            </div>
+
+            <div class="info-card full-width">
+
+                <h4>
+                    Direcciones
+                </h4>
+
+                {% for dir in cliente.clientedireccion_set.all %}
+
+                {% if dir.estado.nombre|lower != "eliminado" %}
+
+                <div class="direccion-card">
+
+                    <div>
+
+                        <strong>
+                            {{ dir.tipo }}
+                        </strong>
+
+                        <p>
+
+                            {{ dir.direccion.pais }},
+                            {{ dir.direccion.departamento }},
+                            {{ dir.direccion.ciudad }}
+
+                        </p>
+
+                        <small>
+                            {{ dir.direccion.detalle }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+                {% empty %}
+
+                <p>No hay direcciones</p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==================================== -->
+<!-- EDITAR CLIENTE -->
+<!-- ==================================== -->
+
+<div id="editarCliente{{ cliente.cliente_id }}" class="modal-overlay">
+
+    <div class="modal-content" style="max-width: 950px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-user-edit"></i>
+                Editar Cliente
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('editarCliente{{ cliente.cliente_id }}')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <form class="modal-form" method="POST" action="{% url 'editar_cliente' %}">
+
+            {% csrf_token %}
+
+            <input type="hidden" name="cliente_id" value="{{ cliente.cliente_id }}">
+
+            <div class="form-grid">
+
+                <!-- DATOS -->
+
+                <div class="form-group">
+
+                    <label>Identificación</label>
+
+                    <input type="text" name="identificacion" value="{{ cliente.identificacion }}" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Nombres</label>
+
+                    <input type="text" name="nombre" value="{{ cliente.nombre }}" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Apellidos</label>
+
+                    <input type="text" name="apellido" value="{{ cliente.apellido }}" required>
+
+                </div>
+
+                <!-- TELÉFONOS -->
+
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-phone"></i>
+                        Teléfonos
+                    </label>
+
+                    <div id="telefonosEdit{{ cliente.cliente_id }}" class="dynamic-list">
+
+                        {% for tel in cliente.telefonocliente_set.all %}
+
+                        {% if tel.estado.nombre|lower == "activo" %}
+
+                        <div class="dynamic-row telefono-row">
+
+                            <input type="hidden" name="telefono_id[]" value="{{ tel.telefono_id }}">
+
+                            <input type="text" name="telefono[]" value="{{ tel.numero }}" style="flex:2;">
+
+                            <select name="operadora[]" style="flex:1;">
+
+                                <option value="">Operadora</option>
+
+                                <option value="Claro" {% if tel.operadora == "Claro" %} selected {% endif %}>
+                                    Claro
+                                </option>
+
+                                <option value="Tigo" {% if tel.operadora == "Tigo" %} selected {% endif %}>
+                                    Tigo
+                                </option>
+
+                            </select>
+
+                            <select name="tipo_tel[]" style="flex:1;">
+
+                                <option value="Personal" {% if tel.tipo == "Personal" %} selected {% endif %}>
+                                    Personal
+                                </option>
+
+                                <option value="Trabajo" {% if tel.tipo == "Trabajo" %} selected {% endif %}>
+                                    Trabajo
+                                </option>
+
+                            </select>
+
+                            <input type="hidden" name="telefono_eliminar[]" value="0" class="delete-input">
+
+                            <button type="button" class="btn-delete-small" onclick="eliminarTelefono(this)">
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+                        </div>
+
+                        {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="button" class="btn-add"
+                        onclick="agregarTelefono('telefonosEdit{{ cliente.cliente_id }}')">
+
+                        <i class="fas fa-plus"></i>
+                        Agregar Teléfono
+
+                    </button>
+
+                </div>
+
+                <!-- DIRECCIONES -->
+
+                <div class="form-section-full">
+
+                    <label>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Direcciones
+                    </label>
+
+                    <div id="direccionesEdit{{ cliente.cliente_id }}" class="dynamic-list">
+
+                        {% for dir in cliente.clientedireccion_set.all %}
+
+                        {% if dir.estado.nombre|lower == "activo" %}
+
+                        <div class="dynamic-row direccion-row">
+
+                            <input type="hidden" name="direccion_id[]" value="{{ dir.cliente_direccion_id }}">
+
+                            <input type="text" name="pais[]" value="{{ dir.direccion.pais }}" style="flex:1;">
+
+                            <input type="text" name="departamento[]" value="{{ dir.direccion.departamento }}"
+                                style="flex:1;">
+
+                            <input type="text" name="ciudad[]" value="{{ dir.direccion.ciudad }}" style="flex:1;">
+
+                            <input type="text" name="detalle[]" value="{{ dir.direccion.detalle }}" style="flex:2;">
+
+                            <select name="tipo_direccion[]" style="flex:1;">
+
+                                <option value="Principal" {% if dir.tipo == "Principal" %} selected {% endif %}>
+                                    Principal
+                                </option>
+
+                                <option value="Casa" {% if dir.tipo == "Casa" %} selected {% endif %}>
+                                    Casa
+                                </option>
+
+                                <option value="Oficina" {% if dir.tipo == "Oficina" %} selected {% endif %}>
+                                    Oficina
+                                </option>
+
+                                <option value="Entrega" {% if dir.tipo == "Entrega" %} selected {% endif %}>
+                                    Entrega
+                                </option>
+
+                            </select>
+
+                            <input type="hidden" name="direccion_eliminar[]" value="0" class="delete-input">
+
+                            <button type="button" class="btn-delete-small" onclick="eliminarDireccion(this)">
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+
+                        </div>
+
+                        {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="button" class="btn-add"
+                        onclick="agregarDireccion('direccionesEdit{{ cliente.cliente_id }}')">
+
+                        <i class="fas fa-plus"></i>
+                        Agregar Dirección
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn-secondary"
+                    onclick="cerrarModal('editarCliente{{ cliente.cliente_id }}')">
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Guardar Cambios
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ==================================== -->
+<!-- CREAR USER -->
+<!-- ==================================== -->
+
+{% if request.session.rol|lower == "gerente" and not cliente.user %}
+
+<div id="crearUser{{ cliente.cliente_id }}" class="modal-overlay">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h3>
+                Crear Cuenta Online
+            </h3>
+
+            <button class="close-btn" onclick="cerrarModal('crearUser{{ cliente.cliente_id }}')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <form method="POST" action="{% url 'crear_user_cliente' %}">
+
+            {% csrf_token %}
+
+            <input type="hidden" name="cliente_id" value="{{ cliente.cliente_id }}">
+
+            <div class="form-group">
+
+                <label>Correo</label>
+
+                <input type="email" name="email" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Usuario</label>
+
+                <input type="text" name="username" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Contraseña</label>
+
+                <input type="password" name="password" required>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="submit" class="btn-primary">
+
+                    Crear Cuenta
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endfor %}
+
+<script>
+
+    function abrirModal(id) {
+
+        document.getElementById(id).style.display = 'flex';
+
+    }
+
+    function cerrarModal(id) {
+
+        document.getElementById(id).style.display = 'none';
+
+    }
+
+    // =========================================
+    // ELIMINAR TELÉFONO
+    // =========================================
+
+    function eliminarTelefono(btn) {
+
+        const row = btn.closest('.telefono-row');
+
+        const deleteInput = row.querySelector('.delete-input');
+
+        // EXISTENTE EN BD
+        if (deleteInput) {
+
+            deleteInput.value = "1";
+
+            row.style.display = "none";
+
         }
 
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
+        // NUEVO
+        else {
+
+            row.remove();
+
         }
 
-    </script>
+    }
 
-</body>
+    // =========================================
+    // ELIMINAR DIRECCIÓN
+    // =========================================
 
-</html>
+    function eliminarDireccion(btn) {
+
+        const row = btn.closest('.direccion-row');
+
+        const deleteInput = row.querySelector('.delete-input');
+
+        // EXISTENTE EN BD
+        if (deleteInput) {
+
+            deleteInput.value = "1";
+
+            row.style.display = "none";
+
+        }
+
+        // NUEVA
+        else {
+
+            row.remove();
+
+        }
+
+    }
+
+    // =========================================
+    // AGREGAR TELÉFONO
+    // =========================================
+
+    function agregarTelefono(contenedorId) {
+
+        const contenedor = document.getElementById(contenedorId);
+
+        const div = document.createElement('div');
+
+        div.classList.add('dynamic-row', 'telefono-row');
+
+        div.innerHTML = `
+
+        <input type="hidden" name="telefono_id[]" value="">
+
+        <input type="text"
+               name="telefono[]"
+               placeholder="Número"
+               style="flex:2;">
+
+        <select name="operadora[]"
+                style="flex:1;">
+
+            <option value="">Operadora</option>
+            <option value="Claro">Claro</option>
+            <option value="Tigo">Tigo</option>
+
+        </select>
+
+        <select name="tipo_tel[]"
+                style="flex:1;">
+
+            <option value="Personal">Personal</option>
+            <option value="Trabajo">Trabajo</option>
+
+        </select>
+
+        <button type="button"
+                class="btn-delete-small"
+                onclick="eliminarTelefono(this)">
+
+            <i class="fas fa-trash"></i>
+
+        </button>
+
+        `;
+
+        contenedor.appendChild(div);
+
+    }
+
+    // =========================================
+    // AGREGAR DIRECCIÓN
+    // =========================================
+
+    function agregarDireccion(contenedorId) {
+
+        const contenedor = document.getElementById(contenedorId);
+
+        const div = document.createElement('div');
+
+        div.classList.add('dynamic-row', 'direccion-row');
+
+        div.innerHTML = `
+
+        <input type="hidden" name="direccion_id[]" value="">
+
+        <input type="text"
+               name="pais[]"
+               placeholder="País"
+               style="flex:1;">
+
+        <input type="text"
+               name="departamento[]"
+               placeholder="Departamento"
+               style="flex:1;">
+
+        <input type="text"
+               name="ciudad[]"
+               placeholder="Ciudad"
+               style="flex:1;">
+
+        <input type="text"
+               name="detalle[]"
+               placeholder="Detalle"
+               style="flex:2;">
+
+        <select name="tipo_direccion[]"
+                style="flex:1;">
+
+            <option value="Principal">Principal</option>
+            <option value="Casa">Casa</option>
+            <option value="Oficina">Oficina</option>
+            <option value="Entrega">Entrega</option>
+
+        </select>
+
+        <button type="button"
+                class="btn-delete-small"
+                onclick="eliminarDireccion(this)">
+
+            <i class="fas fa-trash"></i>
+
+        </button>
+
+        `;
+
+        contenedor.appendChild(div);
+
+    }
+
+</script>
+
+{% endblock %}

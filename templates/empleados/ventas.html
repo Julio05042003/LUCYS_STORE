@@ -360,70 +360,159 @@
 
 <!-- ========================= MODAL CLIENTE ========================= -->
 <div id="modalCliente" class="modal-overlay">
-    <div class="modal-content" style="max-width: 700px;">
+
+    <div class="modal-content" style="max-width: 900px;">
+
         <div class="modal-header">
-            <h3>Nuevo Cliente</h3>
-            <button class="close-btn" onclick="cerrarModal('modalCliente')">&times;</button>
+            <h3>Nuevo Cliente Físico</h3>
+
+            <button class="close-btn" onclick="cerrarModal('modalCliente')">
+                &times;
+            </button>
         </div>
 
         <form class="modal-form" method="POST" action="{% url 'crear_cliente' %}">
+
             {% csrf_token %}
+
             <div class="form-grid">
+
+                <!-- ========================= -->
+                <!-- DATOS PERSONALES -->
+                <!-- ========================= -->
+
                 <div class="form-group">
-                    <label>identificacion</label>
-                    <input type="text" name="identificacion" placeholder="001-000000-0000A">
-                </div>
-                <div class="form-group">
-                    <label>Nombres</label>
-                    <input type="text" name="nombre" placeholder="Nombres">
-                </div>
-                <div class="form-group">
-                    <label>Apellidos</label>
-                    <input type="text" name="apellido" placeholder="Apellidos">
+                    <label>Identificación</label>
+
+                    <input type="text" name="identificacion" placeholder="001-000000-0000A" required>
                 </div>
 
+                <div class="form-group">
+                    <label>Nombres</label>
+
+                    <input type="text" name="nombre" placeholder="Nombres" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Apellidos</label>
+
+                    <input type="text" name="apellido" placeholder="Apellidos" required>
+                </div>
+
+                <!-- ========================= -->
+                <!-- TELÉFONOS -->
+                <!-- ========================= -->
+
                 <div class="form-section-full">
-                    <label><i class="fas fa-phone"></i> Teléfonos Registrados</label>
+
+                    <label>
+                        <i class="fas fa-phone"></i>
+                        Teléfonos Registrados
+                    </label>
+
                     <div id="lista-telefonos" class="dynamic-list">
-                        <div class="dynamic-row">
-                            <input type="text" placeholder="Número" style="flex: 2;">
-                            <select style="flex: 1;">
+
+                        <div class="dynamic-row telefono-row">
+
+                            <input type="text" name="telefono[]" placeholder="Número" style="flex: 2;">
+
+                            <select name="operadora[]" style="flex: 1;">
+
                                 <option value="">Operadora</option>
                                 <option value="Tigo">Tigo</option>
                                 <option value="Claro">Claro</option>
+
                             </select>
-                            <select style="flex: 1;">
+
+                            <select name="tipo_tel[]" style="flex: 1;">
+
                                 <option value="Personal">Personal</option>
                                 <option value="Trabajo">Trabajo</option>
+
                             </select>
-                            <button type="button" class="btn-add-small"><i class="fas fa-plus"></i></button>
+
+                            <button type="button" class="btn-add-small" onclick="agregarTelefono()">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
                         </div>
+
                     </div>
+
                 </div>
+
+                <!-- ========================= -->
+                <!-- DIRECCIONES -->
+                <!-- ========================= -->
 
                 <div class="form-section-full">
-                    <label><i class="fas fa-map-marker-alt"></i> Direcciones de Entrega</label>
+
+                    <label>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Direcciones
+                    </label>
+
                     <div id="lista-direcciones" class="dynamic-list">
-                        <div class="dynamic-row">
-                            <input type="text" placeholder="País" style="flex: 1;">
-                            <input type="text" placeholder="Ciudad" style="flex: 1;">
-                            <input type="text" placeholder="Detalle (Calle, casa...)" style="flex: 2;">
-                            <select style="flex: 1;">
+
+                        <div class="dynamic-row direccion-row">
+
+                            <input type="text" name="pais[]" placeholder="País" style="flex: 1;">
+
+                            <input type="text" name="departamento[]" placeholder="Departamento" style="flex: 1;">
+
+                            <input type="text" name="ciudad[]" placeholder="Ciudad" style="flex: 1;">
+
+                            <input type="text" name="detalle[]" placeholder="Detalle" style="flex: 2;">
+
+                            <select name="tipo_direccion[]" style="flex: 1;">
+
+                                <option value="Principal">Principal</option>
                                 <option value="Casa">Casa</option>
                                 <option value="Oficina">Oficina</option>
+                                <option value="Entrega">Entrega</option>
+
                             </select>
-                            <button type="button" class="btn-add-small"><i class="fas fa-plus"></i></button>
+
+                            <button type="button" class="btn-add-small" onclick="agregarDireccion()">
+
+                                <i class="fas fa-plus"></i>
+
+                            </button>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
 
+            <!-- ========================= -->
+            <!-- BOTONES -->
+            <!-- ========================= -->
+
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="cerrarModal('modalCliente')">Cancelar</button>
-                <button type="submit" class="btn-primary">Guardar Cliente Completo</button>
+
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalCliente')">
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Guardar Cliente
+
+                </button>
+
             </div>
+
         </form>
+
     </div>
+
 </div>
 
 
@@ -579,7 +668,7 @@
                 producto_id: data.id,
                 nombre: data.text,
                 precio: parseFloat(data.precio),
-                cantidad: 0,
+                cantidad: 3,
                 descuento: 0
             });
         }
@@ -603,7 +692,19 @@
         let cantidad = parseInt(value);
 
         if (cantidad <= 0) {
+
             alert("Cantidad inválida");
+            renderCarrito();
+            return;
+        }
+
+        /* ==============================
+           VALIDAR MÚLTIPLO DE 3
+        ============================== */
+        if (cantidad % 3 !== 0) {
+
+            alert("La cantidad debe ser múltiplo de 3");
+
             renderCarrito();
             return;
         }
@@ -761,6 +862,69 @@
 
         document.getElementById('vuelto').value =
             "C$ " + vuelto.toFixed(2);
+    }
+
+    function agregarTelefono() {
+
+        const contenedor = document.getElementById('lista-telefonos');
+
+        const fila = document.createElement('div');
+
+        fila.classList.add('dynamic-row');
+
+        fila.innerHTML = `
+        <input type="text" name="telefono[]" placeholder="Número" style="flex: 2;">
+
+        <select name="operadora[]" style="flex: 1;">
+            <option value="">Operadora</option>
+            <option value="Tigo">Tigo</option>
+            <option value="Claro">Claro</option>
+        </select>
+
+        <select name="tipo_tel[]" style="flex: 1;">
+            <option value="Personal">Personal</option>
+            <option value="Trabajo">Trabajo</option>
+        </select>
+
+        <button type="button" class="btn-remove-small" onclick="this.parentElement.remove()">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+
+        contenedor.appendChild(fila);
+    }
+
+
+    function agregarDireccion() {
+
+        const contenedor = document.getElementById('lista-direcciones');
+
+        const fila = document.createElement('div');
+
+        fila.classList.add('dynamic-row');
+
+        fila.innerHTML = `
+        <input type="text" name="pais[]" placeholder="País" style="flex: 1;">
+
+        <input type="text" name="departamento[]" placeholder="Departamento" style="flex: 1;">
+
+        <input type="text" name="ciudad[]" placeholder="Ciudad" style="flex: 1;">
+
+        <input type="text" name="detalle[]" placeholder="Detalle" style="flex: 2;">
+
+        <select name="tipo_direccion[]" style="flex: 1;">
+            <option value="Principal">Principal</option>
+            <option value="Casa">Casa</option>
+            <option value="Oficina">Oficina</option>
+            <option value="Entrega">Entrega</option>
+        </select>
+
+        <button type="button" class="btn-remove-small" onclick="this.parentElement.remove()">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+
+        contenedor.appendChild(fila);
     }
 </script>
 {% endblock %}

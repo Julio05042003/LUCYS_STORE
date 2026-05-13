@@ -7,20 +7,136 @@
 <link rel="stylesheet" href="{% static 'css/style-caja.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<style>
+
+.alert-custom{
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
+    font-size:14px;
+    font-weight:500;
+
+    opacity:1;
+    transition:opacity .5s ease;
+}
+
+.alert-danger{
+    background:#ffe5e5;
+    color:#b30000;
+    border:1px solid #ffb3b3;
+}
+
+.ocultar-alerta{
+    opacity:0;
+}
+
+/* ALERTAS GLOBALES */
+.global-alert{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:9999;
+
+    padding:14px 18px;
+
+    border-radius:10px;
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    font-size:14px;
+    font-weight:600;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
+
+    animation:slideIn .3s ease;
+    transition:opacity .5s ease;
+}
+
+.success-alert{
+    background:#22c55e;
+    color:white;
+}
+
+@keyframes slideIn{
+
+    from{
+        transform:translateX(100%);
+        opacity:0;
+    }
+
+    to{
+        transform:translateX(0);
+        opacity:1;
+    }
+
+}
+
+/* BOTÓN HISTORIAL */
+.btn-history{
+    border:none;
+    background:#2563eb;
+    color:white;
+
+    width:36px;
+    height:36px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    transition:.2s ease;
+}
+
+.btn-history:hover{
+    transform:scale(1.05);
+}
+
+</style>
+
 <div class="inventory-wrapper">
 
+    <!-- ALERTAS GLOBALES -->
+    {% if messages %}
+
+        {% for message in messages %}
+
+            {% if message.tags == 'success' %}
+
+                <div class="global-alert success-alert">
+
+                    <i class="fas fa-check-circle"></i>
+
+                    {{ message }}
+
+                </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+    {% endif %}
+
     <!-- HEADER -->
-    <div class="header-section" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="header-section"
+         style="display:flex;
+                justify-content:space-between;
+                align-items:center;">
 
         <h2>
+
             <i class="fas fa-cash-register"></i>
             Administración de Cajas
+
         </h2>
 
-        <button class="btn-action open" onclick="abrirModal('modalCaja')">
+        <button class="btn-action open"
+                onclick="abrirModal('modalCaja')">
 
             <i class="fas fa-plus"></i>
             Nueva Caja
+
         </button>
 
     </div>
@@ -29,78 +145,130 @@
     <div class="caja-stats-grid">
 
         <div class="stat-card">
+
             <div class="stat-icon income">
+
                 <i class="fas fa-cash-register"></i>
+
             </div>
 
             <div class="stat-info">
+
                 <span class="stat-label">
-                    Cajas Abiertas
+
+                    Cajas Registradas
+
                 </span>
 
                 <strong class="stat-value">
+
                     {{ total_cajas }}
+
                 </strong>
+
             </div>
+
         </div>
 
         <div class="stat-card">
+
             <div class="stat-icon total-income">
+
                 <i class="fas fa-arrow-down"></i>
+
             </div>
 
             <div class="stat-info">
+
                 <span class="stat-label">
+
                     Ingresos
+
                 </span>
 
                 <strong class="stat-value text-green">
+
                     ${{ total_ingresos }}
+
                 </strong>
+
             </div>
+
         </div>
 
         <div class="stat-card">
+
             <div class="stat-icon expense">
+
                 <i class="fas fa-arrow-up"></i>
+
             </div>
 
             <div class="stat-info">
+
                 <span class="stat-label">
+
                     Egresos
+
                 </span>
 
                 <strong class="stat-value text-red">
+
                     ${{ total_egresos }}
+
                 </strong>
+
             </div>
+
         </div>
 
         <div class="stat-card highlighted">
+
             <div class="stat-info">
 
                 <span class="stat-label">
+
                     Balance General
+
                 </span>
 
                 <strong class="stat-value large">
+
                     ${{ total_general }}
+
                 </strong>
 
             </div>
 
             <i class="fas fa-wallet bg-icon"></i>
+
         </div>
 
     </div>
 
     <!-- FILTRO -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:10px;">
+    <div style="display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:15px;
+                gap:10px;">
 
-        <div class="search-box" style="flex:1;display:flex;align-items:center;gap:8px;">
+        <div class="search-box"
+             style="flex:1;
+                    display:flex;
+                    align-items:center;
+                    gap:8px;">
+
             <i class="fas fa-search"></i>
-            <input type="text" id="filtroCaja" placeholder="Buscar por caja, cajero o estado..."
-                style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;">
+
+            <input type="text"
+                   id="filtroCaja"
+                   placeholder="Buscar por caja, cajero o estado..."
+                   style="width:100%;
+                          padding:10px;
+                          border-radius:8px;
+                          border:1px solid #ddd;">
+
         </div>
 
     </div>
@@ -109,61 +277,169 @@
     <div class="table-container">
 
         <div class="table-header">
+
             <h3>
+
                 <i class="fas fa-list"></i>
-                Cajas de la Sucursal
+                Estado Actual de las Cajas
+
             </h3>
+
         </div>
 
         <table class="table-modern">
 
             <thead>
+
                 <tr>
+
                     <th>Caja</th>
                     <th>Cajero</th>
                     <th>Estado</th>
                     <th>Apertura</th>
+                    <th>Saldo Inicial</th>
                     <th>Ingresos</th>
                     <th>Egresos</th>
                     <th>Total</th>
+                    <th>Acciones</th>
+
                 </tr>
+
             </thead>
 
             <tbody>
 
-                {% for a in aperturas %}
+                {% for caja in cajas %}
 
                 <tr>
 
-                    <td>{{ a.caja.nombre }}</td>
-
+                    <!-- CAJA -->
                     <td>
-                        {{ a.empleado.user.first_name }}
-                        {{ a.empleado.user.last_name }}
-                    </td>
 
-                    <td>
-                        <span class="badge badge-success">
-                            {{ a.estado.nombre }}
-                        </span>
-                    </td>
-
-                    <td>
-                        {{ a.fecha_apertura|date:"d/m/Y H:i" }}
-                    </td>
-
-                    <td class="text-green">
-                        ${{ a.ingresos }}
-                    </td>
-
-                    <td class="text-red">
-                        ${{ a.egresos }}
-                    </td>
-
-                    <td>
                         <strong>
-                            ${{ a.total }}
+
+                            {{ caja.nombre }}
+
                         </strong>
+
+                    </td>
+
+                    <!-- CAJERO -->
+                    <td>
+
+                        {% if caja.apertura_actual %}
+
+                            {{ caja.apertura_actual.empleado.user.first_name }}
+                            {{ caja.apertura_actual.empleado.user.last_name }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- ESTADO -->
+                    <td>
+
+                        {% if caja.apertura_actual %}
+
+                            {% if caja.apertura_actual.estado.nombre == 'Abierta' %}
+
+                                <span class="badge badge-success">
+
+                                    Abierta
+
+                                </span>
+
+                            {% elif caja.apertura_actual.estado.nombre == 'En arqueo' %}
+
+                                <span class="badge badge-warning">
+
+                                    En arqueo
+
+                                </span>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <span class="badge badge-secondary">
+
+                                Disponible
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- FECHA -->
+                    <td>
+
+                        {% if caja.apertura_actual %}
+
+                            {{ caja.apertura_actual.fecha_apertura|date:"d/m/Y H:i" }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- SALDO -->
+                    <td>
+
+                        {% if caja.apertura_actual %}
+
+                            ${{ caja.apertura_actual.saldo_inicial }}
+
+                        {% else %}
+
+                            —
+
+                        {% endif %}
+
+                    </td>
+
+                    <!-- INGRESOS -->
+                    <td class="text-green">
+
+                        ${{ caja.ingresos }}
+
+                    </td>
+
+                    <!-- EGRESOS -->
+                    <td class="text-red">
+
+                        ${{ caja.egresos }}
+
+                    </td>
+
+                    <!-- TOTAL -->
+                    <td>
+
+                        <strong>
+
+                            ${{ caja.total }}
+
+                        </strong>
+
+                    </td>
+
+                    <!-- ACCIONES -->
+                    <td>
+
+                        <button class="btn-history"
+                                onclick="abrirModal('historialCaja{{ caja.id }}')">
+
+                            <i class="fas fa-clock-rotate-left"></i>
+
+                        </button>
+
                     </td>
 
                 </tr>
@@ -171,9 +447,13 @@
                 {% empty %}
 
                 <tr>
-                    <td colspan="7">
-                        No hay cajas abiertas
+
+                    <td colspan="9">
+
+                        No hay cajas registradas
+
                     </td>
+
                 </tr>
 
                 {% endfor %}
@@ -186,20 +466,26 @@
 
 </div>
 
-<!-- MODAL NUEVA CAJA -->
+<!-- MODALES HISTORIAL -->
+{% for caja in cajas %}
 
-<div id="modalCaja" class="modal-overlay">
+<div id="historialCaja{{ caja.id }}"
+     class="modal-overlay">
 
-    <div class="modal-content" style="max-width:450px;">
+    <div class="modal-content"
+         style="max-width:1100px;">
 
         <div class="modal-header">
 
             <h3>
-                <i class="fas fa-plus-circle"></i>
-                Nueva Caja
+
+                <i class="fas fa-clock-rotate-left"></i>
+                Historial - {{ caja.nombre }}
+
             </h3>
 
-            <button class="close-btn" onclick="cerrarModal('modalCaja')">
+            <button class="close-btn"
+                    onclick="cerrarModal('historialCaja{{ caja.id }}')">
 
                 &times;
 
@@ -207,29 +493,188 @@
 
         </div>
 
-        <form method="POST" action="{% url 'crear_caja' %}" class="modal-form">
+        <div class="table-container">
+
+            <table class="table-modern">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Cajero</th>
+                        <th>Estado</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th>Saldo Inicial</th>
+                        <th>Saldo Final</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for apertura in caja.aperturacaja_set.all %}
+
+                        {% if apertura.estado.nombre == 'Cerrada' %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ apertura.empleado.user.first_name }}
+                                {{ apertura.empleado.user.last_name }}
+
+                            </td>
+
+                            <td>
+
+                                <span class="badge badge-danger">
+
+                                    Cerrada
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                {{ apertura.fecha_apertura|date:"d/m/Y H:i" }}
+
+                            </td>
+
+                            <td>
+
+                                {{ apertura.fecha_cierre|date:"d/m/Y H:i" }}
+
+                            </td>
+
+                            <td>
+
+                                ${{ apertura.saldo_inicial }}
+
+                            </td>
+
+                            <td>
+
+                                ${{ apertura.saldo_final }}
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            No hay historial disponible
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+<!-- MODAL NUEVA CAJA -->
+<div id="modalCaja" class="modal-overlay">
+
+    <div class="modal-content"
+         style="max-width:450px;">
+
+        <div class="modal-header">
+
+            <h3>
+
+                <i class="fas fa-plus-circle"></i>
+                Nueva Caja
+
+            </h3>
+
+            <button class="close-btn"
+                    onclick="cerrarModal('modalCaja')">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <!-- MENSAJES ERROR -->
+        {% if messages %}
+
+            {% for message in messages %}
+
+                {% if message.tags == 'error' %}
+
+                    <div class="alert-custom alert-danger">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        {% endif %}
+
+        <!-- FORM -->
+        <form method="POST"
+              action="{% url 'crear_caja' %}"
+              class="modal-form">
 
             {% csrf_token %}
 
             <div class="form-group">
 
-                <label>Nombre Caja</label>
+                <label>
 
-                <input type="text" name="nombre" placeholder="Ej: Caja Principal" required>
+                    Nombre Caja
+
+                </label>
+
+                <input type="text"
+                       name="nombre"
+                       value="{{ request.POST.nombre }}"
+                       placeholder="Ej: Caja Principal"
+                       required>
 
             </div>
 
             <div class="form-group">
 
-                <label>Ubicación</label>
+                <label>
 
-                <input type="text" value="{{ empleado.ubicacion.nombre }}" disabled>
+                    Ubicación
+
+                </label>
+
+                <input type="text"
+                       value="{{ empleado.ubicacion.nombre }}"
+                       disabled>
 
             </div>
 
             <div class="modal-footer">
 
-                <button type="submit" class="btn-primary">
+                <button type="submit"
+                        class="btn-primary">
 
                     Crear Caja
 
@@ -244,7 +689,9 @@
 </div>
 
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+
 <script>
+
 document.getElementById("filtroCaja").addEventListener("keyup", function () {
 
     let filtro = this.value.toLowerCase();
@@ -256,14 +703,61 @@ document.getElementById("filtroCaja").addEventListener("keyup", function () {
         let texto = fila.textContent.toLowerCase();
 
         if (texto.includes(filtro)) {
+
             fila.style.display = "";
+
         } else {
+
             fila.style.display = "none";
+
         }
 
     });
 
 });
+
+// ABRIR MODAL SOLO SI HUBO ERROR
+const abrirModalCaja = "{{ abrir_modal_caja|yesno:'true,false' }}";
+
+if (abrirModalCaja === "true") {
+
+    abrirModal('modalCaja');
+
+}
+
+// OCULTAR ALERTAS
+setTimeout(() => {
+
+    const alertas = document.querySelectorAll('.alert-custom');
+
+    alertas.forEach(alerta => {
+
+        alerta.classList.add('ocultar-alerta');
+
+        setTimeout(() => {
+
+            alerta.remove();
+
+        }, 500);
+
+    });
+
+    const globales = document.querySelectorAll('.global-alert');
+
+    globales.forEach(alerta => {
+
+        alerta.style.opacity = "0";
+
+        setTimeout(() => {
+
+            alerta.remove();
+
+        }, 500);
+
+    });
+
+}, 3000);
+
 </script>
 
 {% endblock %}

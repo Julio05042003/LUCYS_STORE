@@ -3,10 +3,10 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import date
+
 from .models import *
 from apps.inventario.models import Producto
-from apps.usuarios.models import Empleado, Direccion
-
+from apps.usuarios.models import Empleado, Direccion, Estado
 
 
 # 📌 LISTAR COMPRAS
@@ -22,16 +22,21 @@ def compras_view(request):
 
     ubicaciones = Ubicacion.objects.all()
 
+    estados = Estado.objects.all()
+
     return render(request, 'empleados/compras.html', {
 
         'compras': compras,
         'proveedores': proveedores,
         'ubicaciones': ubicaciones,
+        'estados': estados,
         'today': date.today(),
 
     })
 
+
 # 📌 CREAR COMPRA (SOLO TOTAL)
+# 📌 CREAR COMPRA (SOLO UNA COMPRA POR PRODUCTO)
 @csrf_exempt
 def crear_compra(request):
 
@@ -52,6 +57,33 @@ def crear_compra(request):
             ubicacion = Ubicacion.objects.get(
                 ubicacion_id=data['ubicacion']
             )
+
+            # ====================================
+            # VALIDAR PRODUCTOS YA COMPRADOS
+            # ====================================
+
+            for item in data['productos']:
+
+                producto = Producto.objects.get(
+                    producto_id=item['producto_id']
+                )
+
+                existe = DetalleCompra.objects.filter(
+                    producto=producto
+                ).exists()
+
+                if existe:
+
+                    return JsonResponse({
+
+                        'status': 'error',
+                        'error': f'El producto "{producto.nombre}" ya fue comprado anteriormente'
+
+                    })
+
+            # ====================================
+            # CREAR COMPRA
+            # ====================================
 
             compra = Compra.objects.create(
 
@@ -97,22 +129,41 @@ def crear_compra(request):
         except Exception as e:
 
             return JsonResponse({
+
                 'status': 'error',
                 'error': str(e)
+
             })
 
     return JsonResponse({
         'status': 'error'
     })
 
+
+# 📌 CREAR PROVEEDOR
 def crear_proveedor(request):
 
     if request.method == 'POST':
 
         try:
 
+            nombre = request.POST.get('nombre', '').strip()
+
             # =========================
-            # DIRECCIÓN
+            # VALIDAR NOMBRE ÚNICO
+            # =========================
+            existe = Proveedor.objects.filter(
+                nombre__iexact=nombre
+            ).exists()
+
+            if existe:
+
+                return HttpResponse(
+                    'Error: Ya existe un proveedor con ese nombre'
+                )
+
+            # =========================
+            # CREAR DIRECCIÓN
             # =========================
             direccion = Direccion.objects.create(
 
@@ -124,29 +175,37 @@ def crear_proveedor(request):
             )
 
             # =========================
-            # PROVEEDOR
+            # CREAR PROVEEDOR
             # =========================
             proveedor = Proveedor.objects.create(
 
                 direccion=direccion,
-                nombre=request.POST.get('nombre'),
+                nombre=nombre,
                 contacto=request.POST.get('contacto'),
                 correo=request.POST.get('correo')
 
             )
 
             # =========================
-            # TELÉFONO PRINCIPAL
+            # DATOS TELÉFONO
             # =========================
             numero = request.POST.get('numero')
             operadora = request.POST.get('operadora')
             tipo = request.POST.get('tipo')
 
+            # =========================
+            # CREAR TELÉFONO
+            # =========================
             if numero and numero.strip() != '':
+
+                estado = Estado.objects.get(
+                    nombre__iexact='Activo'
+                )
 
                 TelefonoProveedor.objects.create(
 
                     proveedor=proveedor,
+                    estado=estado,
                     numero=numero,
                     operadora=operadora,
                     tipo=tipo
@@ -157,6 +216,10 @@ def crear_proveedor(request):
 
         except Exception as e:
 
-            return HttpResponse(f'Error: {str(e)}')
+            return HttpResponse(
+                f'Error: {str(e)}'
+            )
 
-    return HttpResponse('Método no permitido')
+    return HttpResponse(
+        'Método no permitido'
+    )

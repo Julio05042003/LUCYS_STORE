@@ -1,5 +1,5 @@
 from django.db import models
-from apps.usuarios.models import Direccion, Ubicacion, Empleado
+from apps.usuarios.models import Direccion, Ubicacion, Empleado, Estado
 from apps.productos.models import Producto
 
 
@@ -7,7 +7,7 @@ class Proveedor(models.Model):
     id = models.AutoField(db_column='Proveedor_id', primary_key=True)
 
     direccion = models.ForeignKey(Direccion, db_column='Direccion_id', on_delete=models.CASCADE)
-    nombre = models.CharField(db_column='Nombre', max_length=100)
+    nombre = models.CharField(db_column='Nombre', max_length=100, unique=True)
     contacto = models.CharField(db_column='Contacto', max_length=100)
     correo = models.EmailField(db_column='Correo')
 
@@ -18,22 +18,49 @@ class Proveedor(models.Model):
         return self.nombre
     
 class TelefonoProveedor(models.Model):
-    id = models.AutoField(db_column='Telefono_id', primary_key=True)
+
+    id = models.AutoField(
+        db_column='Telefono_id',
+        primary_key=True
+    )
 
     proveedor = models.ForeignKey(
         Proveedor,
         db_column='Proveedor_id',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='telefonos'
     )
 
-    numero = models.CharField(db_column='Numero', max_length=20)
-    operadora = models.CharField(db_column='Operadora', max_length=20, null=True, blank=True)
-    tipo = models.CharField(db_column='Tipo', max_length=20, null=True, blank=True)
+    estado = models.ForeignKey(
+        Estado,
+        on_delete=models.PROTECT,
+        db_column='Estado_id'
+    )
+
+    numero = models.CharField(
+        db_column='Numero',
+        max_length=20
+    )
+
+    operadora = models.CharField(
+        db_column='Operadora',
+        max_length=20,
+        null=True,
+        blank=True
+    )
+
+    tipo = models.CharField(
+        db_column='Tipo',
+        max_length=20,
+        null=True,
+        blank=True
+    )
 
     class Meta:
         db_table = 'Telefonos_Proveedores'
 
     def __str__(self):
+
         return f"{self.numero} - {self.proveedor}"
 
 

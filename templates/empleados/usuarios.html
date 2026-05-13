@@ -2,10 +2,376 @@
 {% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 <link rel="stylesheet" href="{% static 'css/style-usuarios.css' %}">
 {% endblock %}
 
+
 {% block content %}
+
+<style>
+
+    .inventory-wrapper{
+        padding:30px;
+        max-width:1400px;
+        margin:auto;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header-section{
+        margin-bottom:25px;
+    }
+
+    .header-section h2{
+        font-size:2rem;
+        font-weight:700;
+        color:#2d2d2d;
+        display:flex;
+        align-items:center;
+        gap:12px;
+    }
+
+    .header-section h2 i{
+        color:#ef7f9a;
+    }
+
+    /* =========================
+       CARD FILTROS
+    ========================= */
+
+    .filters-card{
+        background:#fff;
+        padding:25px;
+        border-radius:22px;
+        margin-bottom:30px;
+        box-shadow:0 8px 25px rgba(0,0,0,.05);
+    }
+
+    .filters-card form{
+        display:flex;
+        gap:20px;
+        align-items:end;
+        flex-wrap:wrap;
+    }
+
+    .field{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        min-width:220px;
+    }
+
+    .field label{
+        font-size:.92rem;
+        font-weight:600;
+        color:#555;
+    }
+
+    .field input,
+    .field select{
+        height:50px;
+        border:1px solid #e5e5e5;
+        border-radius:14px;
+        padding:0 16px;
+        background:#fafafa;
+        font-size:.95rem;
+        transition:.2s;
+    }
+
+    .field input:focus,
+    .field select:focus{
+        outline:none;
+        border-color:#ef7f9a;
+        background:#fff;
+        box-shadow:0 0 0 4px rgba(239,127,154,.12);
+    }
+
+    /* =========================
+       BOTONES
+    ========================= */
+
+    .btn-clear,
+    .btn-primary{
+        border:none;
+        height:50px;
+        padding:0 22px;
+        border-radius:14px;
+        background:linear-gradient(
+            135deg,
+            #ef7f9a,
+            #f59bb2
+        );
+        color:#fff;
+        font-weight:600;
+        cursor:pointer;
+        transition:.2s;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+    }
+
+    .btn-clear:hover,
+    .btn-primary:hover{
+        transform:translateY(-2px);
+        box-shadow:0 10px 20px rgba(239,127,154,.20);
+    }
+
+    /* =========================
+       TABLA
+    ========================= */
+
+    .table-container{
+        background:#fff;
+        border-radius:22px;
+        overflow:hidden;
+        box-shadow:0 8px 25px rgba(0,0,0,.05);
+    }
+
+    .table-scroll{
+        overflow-x:auto;
+    }
+
+    .table-container table{
+        width:100%;
+        border-collapse:collapse;
+        min-width:950px;
+    }
+
+    .table-container thead{
+        background:linear-gradient(
+            135deg,
+            #ef7f9a,
+            #f59bb2
+        );
+    }
+
+    .table-container thead th{
+        color:#fff;
+        padding:20px;
+        text-align:left;
+        font-size:.92rem;
+        font-weight:700;
+        letter-spacing:.3px;
+    }
+
+    .table-container tbody tr{
+        border-bottom:1px solid #f3f3f3;
+        transition:.2s;
+    }
+
+    .table-container tbody tr:hover{
+        background:#fff7f9;
+    }
+
+    .table-container tbody td{
+        padding:20px;
+        vertical-align:middle;
+        color:#444;
+        font-size:.95rem;
+    }
+
+    /* =========================
+       BADGES
+    ========================= */
+
+    .table-container tbody td span{
+        display:inline-flex;
+        align-items:center;
+        gap:7px;
+        padding:8px 14px;
+        border-radius:40px;
+        font-size:.84rem;
+        font-weight:600;
+    }
+
+    .table-container tbody td span[style*="green"]{
+        background:#e9f9ef;
+        color:#1c9c52 !important;
+    }
+
+    .table-container tbody td span[style*="red"]{
+        background:#ffe9e9;
+        color:#d63031 !important;
+    }
+
+    /* =========================
+       ACCIONES
+    ========================= */
+
+    .table-container tbody td button{
+        width:40px;
+        height:40px;
+        border:none;
+        border-radius:12px;
+        cursor:pointer;
+        margin-right:8px;
+        transition:.2s;
+        color:#fff;
+        font-size:.92rem;
+    }
+
+    .table-container tbody td button:hover{
+        transform:scale(1.08);
+    }
+
+    .fa-user-pen{
+        color:#fff;
+    }
+
+    .fa-user-slash{
+        color:#fff;
+    }
+
+    .fa-unlock{
+        color:#fff;
+    }
+
+    .table-container tbody td button:has(.fa-user-pen){
+        background:#4e73df;
+    }
+
+    .table-container tbody td button:has(.fa-user-slash){
+        background:#e74a3b;
+    }
+
+    .table-container tbody td button:has(.fa-unlock){
+        background:#1cc88a;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .action-footer{
+        display:flex;
+        justify-content:flex-end;
+        margin-top:30px;
+    }
+
+    /* =========================
+       MODALES
+    ========================= */
+
+    .modal-content{
+        border-radius:24px;
+        overflow:hidden;
+        border:none;
+        box-shadow:0 15px 40px rgba(0,0,0,.15);
+    }
+
+    .modal-header{
+        background:linear-gradient(
+            135deg,
+            #ef7f9a,
+            #f59bb2
+        );
+        color:#fff;
+        padding:20px 25px;
+    }
+
+    .modal-header h3{
+        margin:0;
+        font-size:1.2rem;
+    }
+
+    .close-btn{
+        background:none;
+        border:none;
+        color:#fff;
+        font-size:1.6rem;
+        cursor:pointer;
+    }
+
+    .form-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+        gap:20px;
+        padding:25px;
+    }
+
+    .form-group{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+    }
+
+    .form-group label{
+        font-weight:600;
+        color:#555;
+    }
+
+    .form-group input,
+    .form-group select{
+        height:48px;
+        border:1px solid #e5e5e5;
+        border-radius:14px;
+        padding:0 15px;
+        background:#fafafa;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus{
+        outline:none;
+        border-color:#ef7f9a;
+        background:#fff;
+        box-shadow:0 0 0 4px rgba(239,127,154,.12);
+    }
+
+    .modal-footer{
+        padding:20px 25px;
+        display:flex;
+        justify-content:flex-end;
+        gap:15px;
+    }
+
+    .modal-footer button{
+        height:48px;
+        padding:0 22px;
+        border:none;
+        border-radius:14px;
+        cursor:pointer;
+        font-weight:600;
+    }
+
+    .modal-footer button[type="submit"]{
+        background:linear-gradient(
+            135deg,
+            #ef7f9a,
+            #f59bb2
+        );
+        color:#fff;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media(max-width:768px){
+
+        .filters-card form{
+            flex-direction:column;
+            align-items:stretch;
+        }
+
+        .field{
+            width:100%;
+        }
+
+        .btn-clear{
+            width:100%;
+        }
+
+        .action-footer{
+            justify-content:center;
+        }
+
+    }
+
+</style>
 
 <div class="inventory-wrapper">
 
@@ -39,47 +405,48 @@
 
     <!-- TABLA -->
     <div class="table-container">
-        <table>
+        <div class="table-scroll">
+            <table>
 
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Usuario</th>
-                    <th>Rol</th>
-                    <th>Ubicación</th>
-                    <th>Acceso</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Ubicación</th>
+                        <th>Acceso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
 
-            <tbody>
+                <tbody>
 
-                {% for emp in empleados %}
-                <tr>
+                    {% for emp in empleados %}
+                    <tr>
 
-                    <td>{{ emp.user.first_name }} {{ emp.user.last_name }}</td>
-                    <td>{{ emp.user.username }}</td>
-                    <td>{{ emp.rol.nombre }}</td>
-                    <td>{{ emp.ubicacion.nombre }}</td>
+                        <td>{{ emp.user.first_name }} {{ emp.user.last_name }}</td>
+                        <td>{{ emp.user.username }}</td>
+                        <td>{{ emp.rol.nombre }}</td>
+                        <td>{{ emp.ubicacion.nombre }}</td>
 
-                    <td>
-                        {% if emp.user.is_active %}
-                        <span style="color:green;font-weight:bold;">
-                            <i class="fas fa-check-circle"></i> Activo
-                        </span>
-                        {% else %}
-                        <span style="color:red;font-weight:bold;">
-                            <i class="fas fa-ban"></i> Inactivo
-                        </span>
-                        {% endif %}
-                    </td>
+                        <td>
+                            {% if emp.user.is_active %}
+                            <span style="color:green;font-weight:bold;">
+                                <i class="fas fa-check-circle"></i> Activo
+                            </span>
+                            {% else %}
+                            <span style="color:red;font-weight:bold;">
+                                <i class="fas fa-ban"></i> Inactivo
+                            </span>
+                            {% endif %}
+                        </td>
 
-                    <td>
+                        <td>
 
-                        {% if emp.user.is_active %}
+                            {% if emp.user.is_active %}
 
-                        <!-- EDITAR -->
-                        <button type="button" onclick="abrirEditarUsuario(
+                            <!-- EDITAR -->
+                            <button type="button" onclick="abrirEditarUsuario(
                                 '{{ emp.user.id }}',
                                 '{{ emp.user.username }}',
                                 '{{ emp.user.email }}',
@@ -88,39 +455,40 @@
                                 '{{ emp.rol.rol_id }}',
                                 '{{ emp.ubicacion.ubicacion_id }}'
                             )">
-                            <i class="fas fa-user-pen"></i>
-                        </button>
-
-                        <!-- BLOQUEAR -->
-                        <a href="{% url 'bloquear_usuario' emp.user.id %}">
-                            <button type="button">
-                                <i class="fas fa-user-slash"></i>
+                                <i class="fas fa-user-pen"></i>
                             </button>
-                        </a>
 
-                        {% else %}
+                            <!-- BLOQUEAR -->
+                            <a href="{% url 'bloquear_usuario' emp.user.id %}">
+                                <button type="button">
+                                    <i class="fas fa-user-slash"></i>
+                                </button>
+                            </a>
 
-                        <!-- DESBLOQUEAR -->
-                        <a href="{% url 'desbloquear_usuario' emp.user.id %}">
-                            <button type="button">
-                                <i class="fas fa-unlock"></i>
-                            </button>
-                        </a>
+                            {% else %}
 
-                        {% endif %}
+                            <!-- DESBLOQUEAR -->
+                            <a href="{% url 'desbloquear_usuario' emp.user.id %}">
+                                <button type="button">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                            </a>
 
-                    </td>
+                            {% endif %}
 
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">No hay usuarios registrados</td>
-                </tr>
-                {% endfor %}
+                        </td>
 
-            </tbody>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No hay usuarios registrados</td>
+                    </tr>
+                    {% endfor %}
 
-        </table>
+                </tbody>
+
+            </table>
+        </div>
     </div>
 
     <!-- BOTÓN CREAR -->
@@ -281,24 +649,24 @@
 
     function filtrarUbicaciones() {
 
-    let rol = document.getElementById('rol_id');
-    let ubicacion = document.getElementById('ubicacion_id');
+        let rol = document.getElementById('rol_id');
+        let ubicacion = document.getElementById('ubicacion_id');
 
-    let texto = rol.options[rol.selectedIndex].text.toLowerCase();
+        let texto = rol.options[rol.selectedIndex].text.toLowerCase();
 
-    for (let opt of ubicacion.options) {
+        for (let opt of ubicacion.options) {
 
-        let tipo = opt.text.toLowerCase();
+            let tipo = opt.text.toLowerCase();
 
-        if (texto === "bodega") {
-            opt.style.display = tipo.includes("bodega") ? "" : "none";
-        } else {
-            opt.style.display = "";
+            if (texto === "bodega") {
+                opt.style.display = tipo.includes("bodega") ? "" : "none";
+            } else {
+                opt.style.display = "";
+            }
         }
-    }
 
-    ubicacion.value = "";
-}
+        ubicacion.value = "";
+    }
 
     function abrirEditarUsuario(id, username, email, nombre, apellido, rol, ubicacion) {
 

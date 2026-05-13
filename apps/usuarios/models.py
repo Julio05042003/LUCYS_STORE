@@ -41,7 +41,7 @@ class Ubicacion(models.Model):
     direccion = models.ForeignKey(Direccion, on_delete=models.CASCADE, db_column='Direccion_id')
 
     nombre = models.CharField(max_length=100, db_column='Nombre')
-    codigo = models.CharField(max_length=5, unique=True)
+    codigo = models.CharField(max_length=10, unique=True)
     tipo = models.CharField(max_length=20, db_column='Tipo')
     nivel = models.CharField(max_length=20, db_column='Nivel')
 
@@ -57,6 +57,7 @@ class TelefonoUbicacion(models.Model):
         db_column='Ubicacion_id',
         on_delete=models.CASCADE
     )
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
 
     numero = models.CharField(db_column='Numero', max_length=20)
     operadora = models.CharField(db_column='Operadora', max_length=20, null=True, blank=True)
@@ -107,6 +108,7 @@ class ClienteDireccion(models.Model):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, db_column='Cliente_id')
     direccion = models.ForeignKey(Direccion, on_delete=models.CASCADE, db_column='Direccion_id')
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
 
     tipo = models.CharField(max_length=20, db_column='Tipo')
 
@@ -118,6 +120,7 @@ class TelefonoCliente(models.Model):
     telefono_id = models.AutoField(primary_key=True, db_column='Telefono_id')
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, db_column='Cliente_id')
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
 
     numero = models.CharField(max_length=20, db_column='Numero')
     operadora = models.CharField(max_length=20, null=True, blank=True, db_column='Operadora')

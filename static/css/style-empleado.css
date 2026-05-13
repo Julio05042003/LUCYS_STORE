@@ -1,0 +1,322 @@
+@import url('style-inventario.css');
+
+:root {
+    --rosa-principal: #ff8fa3;
+    --rosa-claro: #fff0f3;
+    --texto-oscuro: #4a4a4a;
+    --blanco: #ffffff;
+    --sombra: rgba(0,0,0,0.08);
+}
+
+/* =========================================
+   RESET GENERAL
+========================================= */
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body{
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* 🔥 EVITA DOBLE SCROLL */
+    font-family: 'Inter', sans-serif;
+    background: var(--rosa-claro);
+}
+
+/* =========================================
+   TOPBAR
+========================================= */
+
+.topbar{
+    height: 60px;
+    background: var(--rosa-principal);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 20px;
+
+    color: white;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+
+    position: relative;
+    z-index: 1000;
+}
+
+.logo-area{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.system-name{
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.status-labels{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.status-labels span{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .9rem;
+}
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.main-container {
+    display: flex;
+    flex: 1;
+
+    width: 100%;
+    height: calc(100vh - 60px);
+
+    overflow: hidden;
+}
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.sidebar {
+    width: 240px;
+    min-width: 240px;
+
+    background-color: var(--blanco);
+    border-right: 1px solid #eee;
+
+    padding-top: 20px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    transition: 0.3s ease;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    transition: all 0.3s ease;
+}
+
+.sidebar li a{
+    padding: 15px 25px;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    color: var(--texto-oscuro);
+    text-decoration: none;
+}
+
+/* Busca esta regla en tu CSS */
+.sidebar li i {
+    margin-right: 15px;
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.sidebar li:hover {
+    background-color: var(--rosa-claro);
+    color: var(--rosa-principal);
+}
+
+.sidebar li.active {
+    border-left: 5px solid var(--rosa-principal);
+    background-color: var(--rosa-claro);
+    color: var(--rosa-principal);
+    font-weight: 600;
+}
+
+.logout {
+    margin-top: 50px;
+    color: #ff4d4d !important;
+}
+
+/*cambiar el color de fondo del elemento activo*/
+.sidebar li.active {
+    background-color: var(--sombra);
+    border-left: 5px solid var(--rosa-principal);
+}
+
+/* =========================================
+   CONTENIDO
+========================================= */
+
+/* Área de Contenido */
+.content {
+    flex: 1;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 25px;
+
+    height: 100%;
+}
+
+/* =========================================
+   BIENVENIDA
+========================================= */
+
+.welcome-screen {
+    text-align: center;
+}
+
+.big-logo {
+    max-width: 400px;
+    opacity: 0.8;
+}
+
+/* Contenedor principal de bienvenida */
+.welcome-screen-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: var(--rosa-claro);
+}
+
+/* --- SECCIÓN DEL LOGO GIGANTE --- */
+.logo-hero-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* EL TRUCO: Definir el tamaño del logo */
+.big-logo-hero {
+    object-fit: contain;
+
+    width: 90%;
+    height: 90%;
+
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* --- SECCIÓN DE TEXTO ABAJO --- */
+.welcome-text-section {
+    text-align: center;
+    padding: 20px 20px 40px 20px;
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+.welcome-text-section h1 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.welcome-text-section p {
+    font-size: 1rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* =========================================
+   OVERLAY SIDEBAR
+========================================= */
+
+.sidebar-overlay{
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.4);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: 0.3s;
+
+    z-index: 998;
+}
+
+.sidebar-overlay.active{
+    opacity: 1;
+    visibility: visible;
+}
+
+/* =========================================
+   BOTON MENU
+========================================= */
+
+.menu-toggle{
+    display: none;
+
+    background: none;
+    border: none;
+
+    color: white;
+    font-size: 1.2rem;
+
+    cursor: pointer;
+}
+
+/* =========================================
+   RESPONSIVE PARA MÓVILES
+========================================= */
+
+@media (max-width: 768px) {
+
+    .menu-toggle{
+        display: block;
+    }
+
+    .sidebar{
+        position: fixed;
+
+        top: 60px;
+        left: -240px;
+
+        height: calc(100vh - 60px);
+
+        z-index: 999;
+    }
+
+    .sidebar.active{
+        left: 0;
+    }
+
+    .status-labels{
+        display: none;
+    }
+
+    .content{
+        padding: 15px;
+    }
+
+    .big-logo-hero {
+        width: 95%;
+        height: auto;
+    }
+
+    .welcome-text-section h1 {
+        font-size: 1.2rem;
+    }
+}
