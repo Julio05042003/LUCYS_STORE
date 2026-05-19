@@ -1,0 +1,529 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts/dist/apexcharts.css">
+
+<style>
+
+/* ================================
+DASHBOARD
+================================ */
+
+.dashboard-container{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+/* ================================
+HEADER
+================================ */
+
+.dashboard-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+.dashboard-title h1{
+    font-size:30px;
+    font-weight:700;
+    color:#1e293b;
+}
+
+.dashboard-title p{
+    color:#64748b;
+    margin-top:5px;
+}
+
+/* ================================
+KPIS
+================================ */
+
+.kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:20px;
+}
+
+.kpi-card{
+    background:#fff;
+    border-radius:18px;
+    padding:22px;
+    position:relative;
+    overflow:hidden;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,.05);
+
+    transition:.3s;
+}
+
+.kpi-card:hover{
+    transform:translateY(-5px);
+}
+
+.kpi-icon{
+    width:58px;
+    height:58px;
+    border-radius:15px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:22px;
+    margin-bottom:15px;
+}
+
+.kpi-card h3{
+    font-size:14px;
+    color:#64748b;
+    margin-bottom:10px;
+}
+
+.kpi-card h2{
+    font-size:30px;
+    color:#0f172a;
+}
+
+.kpi-green .kpi-icon{
+    background:#dcfce7;
+    color:#16a34a;
+}
+
+.kpi-blue .kpi-icon{
+    background:#dbeafe;
+    color:#2563eb;
+}
+
+.kpi-red .kpi-icon{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+.kpi-purple .kpi-icon{
+    background:#f3e8ff;
+    color:#9333ea;
+}
+
+.kpi-orange .kpi-icon{
+    background:#ffedd5;
+    color:#ea580c;
+}
+
+.kpi-dark .kpi-icon{
+    background:#e2e8f0;
+    color:#0f172a;
+}
+
+/* ================================
+GRID
+================================ */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+}
+
+@media(max-width:1100px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+/* ================================
+CARDS
+================================ */
+
+.dashboard-card{
+    background:#fff;
+    border-radius:20px;
+    padding:25px;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,.05);
+}
+
+.card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.card-header h2{
+    font-size:20px;
+    color:#0f172a;
+}
+
+/* ================================
+TABLES
+================================ */
+
+.dashboard-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.dashboard-table thead{
+    background:#f8fafc;
+}
+
+.dashboard-table th{
+    padding:14px;
+    text-align:left;
+    font-size:14px;
+    color:#64748b;
+}
+
+.dashboard-table td{
+    padding:14px;
+    border-bottom:1px solid #f1f5f9;
+    color:#0f172a;
+}
+
+.dashboard-table tr:hover{
+    background:#f8fafc;
+}
+
+/* ================================
+BADGES
+================================ */
+
+.badge{
+    padding:6px 12px;
+    border-radius:50px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.badge-success{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.badge-danger{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+/* ================================
+CHART
+================================ */
+
+#ventasChart{
+    width:100%;
+    height:350px;
+}
+
+</style>
+
+<div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+
+        <div class="dashboard-title">
+
+            <h1>
+                Dashboard Gerencial
+            </h1>
+
+            <p>
+                Bienvenido {{ empleado.user.first_name }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- KPIS -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card kpi-green">
+
+            <div class="kpi-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+
+            <h3>Ventas Hoy</h3>
+
+            <h2>
+                C$ {{ kpis.ventas_hoy }}
+            </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-blue">
+
+            <div class="kpi-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+
+            <h3>Ventas Mes</h3>
+
+            <h2>
+                C$ {{ kpis.ventas_mes }}
+            </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-purple">
+
+            <div class="kpi-icon">
+                <i class="fas fa-cart-shopping"></i>
+            </div>
+
+            <h3>Compras Mes</h3>
+
+            <h2>
+                C$ {{ kpis.compras_mes }}
+            </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-orange">
+
+            <div class="kpi-icon">
+                <i class="fas fa-users"></i>
+            </div>
+
+            <h3>Clientes Nuevos</h3>
+
+            <h2>
+                {{ kpis.clientes_nuevos }}
+            </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-red">
+
+            <div class="kpi-icon">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+
+            <h3>Stock Crítico</h3>
+
+            <h2>
+                {{ kpis.stock_critico }}
+            </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-dark">
+
+            <div class="kpi-icon">
+                <i class="fas fa-cash-register"></i>
+            </div>
+
+            <h3>Cajas Abiertas</h3>
+
+            <h2>
+                {{ kpis.cajas_abiertas }}
+            </h2>
+
+        </div>
+
+    </div>
+
+    <!-- GRID -->
+    <div class="dashboard-grid">
+
+        <!-- CHART -->
+        <div class="dashboard-card">
+
+            <div class="card-header">
+
+                <h2>
+                    Ventas Últimos 7 Días
+                </h2>
+
+            </div>
+
+            <div id="ventasChart"></div>
+
+        </div>
+
+        <!-- TOP EMPLEADOS -->
+        <div class="dashboard-card">
+
+            <div class="card-header">
+
+                <h2>
+                    Mejores Empleados
+                </h2>
+
+            </div>
+
+            <table class="dashboard-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Ventas</th>
+                        <th>Total</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for emp in empleados_top %}
+
+                    <tr>
+
+                        <td>
+                            {{ emp.0 }}
+                        </td>
+
+                        <td>
+
+                            <span class="badge badge-success">
+                                {{ emp.1 }}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            C$ {{ emp.2 }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div class="dashboard-card">
+
+        <div class="card-header">
+
+            <h2>
+                Productos Más Vendidos
+            </h2>
+
+        </div>
+
+        <table class="dashboard-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Producto</th>
+                    <th>Total Vendidos</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for p in productos %}
+
+                <tr>
+
+                    <td>
+                        {{ p.0 }}
+                    </td>
+
+                    <td>
+
+                        <span class="badge badge-danger">
+                            {{ p.1 }}
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+
+const ventasLabels = JSON.parse('{{ ventas_labels|escapejs }}');
+
+const ventasData = JSON.parse('{{ ventas_data|escapejs }}');
+
+const ventasOptions = {
+
+    series: [{
+        name: 'Ventas',
+        data: ventasData
+    }],
+
+    chart: {
+        type: 'area',
+        height: 350,
+        toolbar: {
+            show: false
+        }
+    },
+
+    stroke: {
+        curve: 'smooth',
+        width: 4
+    },
+
+    dataLabels: {
+        enabled: false
+    },
+
+    xaxis: {
+        categories: ventasLabels
+    },
+
+    tooltip: {
+
+        y: {
+
+            formatter: function(val) {
+
+                return "C$ " + val;
+
+            }
+
+        }
+
+    }
+
+};
+
+const ventasChart = new ApexCharts(
+
+    document.querySelector("#ventasChart"),
+    ventasOptions
+
+);
+
+ventasChart.render();
+
+</script>
+
+{% endblock %}

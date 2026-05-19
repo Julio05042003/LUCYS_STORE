@@ -60,6 +60,7 @@ def crear_producto(request):
         Producto.objects.create(
             codigo=request.POST['codigo'],
             nombre=request.POST['nombre'],
+            descripcion=request.POST['descripcion'],
             categoria_id=request.POST['categoria'],
             marca_id=request.POST['marca'],
             estado=Estado.objects.get(pk=1),

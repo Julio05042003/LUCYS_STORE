@@ -6,33 +6,579 @@
 <link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+<style>
 
 
+
+.inventory-wapper{
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+}
+
+.header-section{
+    margin-bottom: 25px;
+}
+
+.header-section h2{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #222;
+}
+
+.header-section i{
+    color: #ff6b8b;
+}
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.filters-card{
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.field{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.field label{
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+}
+
+.field input,
+.field select,
+.form-group input,
+.form-group select{
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.field input:focus,
+.field select:focus,
+.form-group input:focus,
+.form-group select:focus{
+    outline: none;
+    border-color: #ff6b8b;
+    box-shadow: 0 0 0 3px rgba(255,107,139,0.15);
+}
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-container{
+    overflow-x: auto;
+}
+
+.tabla-clientes{
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 950px;
+}
+
+.tabla-clientes thead{
+    background: #f9f9f9;
+}
+
+.tabla-clientes th{
+    padding: 18px 16px;
+    text-align: left;
+    color: #555;
+    font-size: 14px;
+    border-bottom: 2px solid #eee;
+}
+
+.tabla-clientes td{
+    padding: 18px 16px;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: middle;
+}
+
+.tabla-clientes tbody tr{
+    transition: 0.3s;
+}
+
+.tabla-clientes tbody tr:hover{
+    background: #fafafa;
+}
+
+/* =========================================
+   CLIENTE
+========================================= */
+
+.cliente-info{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cliente-avatar{
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#ff6b8b,#ff9db2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* =========================================
+   BADGES
+========================================= */
+
+.badge-online,
+.badge-fisico{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.badge-online{
+    background: #ecfdf3;
+    color: #059669;
+}
+
+.badge-fisico{
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn-primary,
+.btn-secondary,
+.btn-clear,
+.btn-add,
+.btn-add-small,
+.btn-delete-small{
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.btn-primary{
+    background: #ff6b8b;
+    color: white;
+    padding: 12px 22px;
+}
+
+.btn-primary:hover{
+    background: #ff4f75;
+    transform: translateY(-2px);
+}
+
+.btn-secondary{
+    background: #ececec;
+    color: #333;
+    padding: 12px 22px;
+}
+
+.btn-secondary:hover{
+    background: #ddd;
+}
+
+.btn-clear{
+    background: #f1f1f1;
+    color: #444;
+    padding: 12px 18px;
+    height: 46px;
+}
+
+.btn-clear:hover{
+    background: #ddd;
+}
+
+.btn-add{
+    margin-top: 14px;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 10px 18px;
+}
+
+.btn-add:hover{
+    background: #dbeafe;
+}
+
+.btn-add-small{
+    background: #22c55e;
+    color: white;
+    width: 42px;
+    height: 42px;
+}
+
+.btn-add-small:hover{
+    background: #16a34a;
+}
+
+.btn-delete-small{
+    background: #ef4444;
+    color: white;
+    width: 42px;
+    height: 42px;
+}
+
+.btn-delete-small:hover{
+    background: #dc2626;
+}
+
+/* =========================================
+   TABLA BOTONES
+========================================= */
+
+.acciones-tabla{
+    display: flex;
+    gap: 8px;
+}
+
+.btn-table{
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-view{
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.btn-view:hover{
+    background: #2563eb;
+    color: white;
+}
+
+.btn-edit{
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.btn-edit:hover{
+    background: #d97706;
+    color: white;
+}
+
+.btn-user{
+    background: #ecfdf3;
+    color: #059669;
+}
+
+.btn-user:hover{
+    background: #059669;
+    color: white;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.action-footer{
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* =========================================
+   MODALES
+========================================= */
+
+.modal-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.modal-content{
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 650px;
+    max-height: 95vh;
+    overflow-y: auto;
+    animation: modalShow 0.25s ease;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+}
+
+.modal-large{
+    max-width: 950px;
+}
+
+@keyframes modalShow{
+    from{
+        opacity: 0;
+        transform: translateY(15px) scale(0.97);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3{
+    font-size: 24px;
+    color: #222;
+}
+
+.close-btn{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #f4f4f4;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.close-btn:hover{
+    background: #e5e5e5;
+}
+
+/* =========================================
+   FORMULARIOS
+========================================= */
+
+.modal-form{
+    padding: 25px;
+}
+
+.form-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap: 18px;
+}
+
+.form-group{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label,
+.form-section-full label{
+    font-weight: 600;
+    color: #444;
+}
+
+.form-section-full{
+    grid-column: 1 / -1;
+    margin-top: 10px;
+}
+
+.dynamic-list{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.dynamic-row{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.dynamic-row input,
+.dynamic-row select{
+    min-width: 120px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+/* =========================================
+   INFO CLIENTE
+========================================= */
+
+.info-cliente-grid{
+    padding: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    gap: 20px;
+}
+
+.info-card{
+    background: #fafafa;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #eee;
+}
+
+.info-card h4{
+    margin-bottom: 15px;
+}
+
+.item-info{
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.direccion-card{
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.full-width{
+    grid-column: 1 / -1;
+}
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.empty-table{
+    text-align: center;
+    padding: 40px !important;
+    color: #888;
+}
+
+.empty-table i{
+    font-size: 42px;
+    margin-bottom: 12px;
+    color: #bbb;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:768px){
+
+    .main-container{
+        padding: 15px;
+    }
+
+    .filters-card{
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dynamic-row{
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dynamic-row input,
+    .dynamic-row select,
+    .btn-delete-small,
+    .btn-add-small{
+        width: 100%;
+    }
+
+    .action-footer{
+        justify-content: center;
+    }
+
+}
+
+</style>
 
 <div class="main-container">
     <main class="content">
+
         <div class="inventory-wapper">
+
             <div class="header-section">
-                <h2><i class="fas fa-address-book"></i> Gestión de Clientes</h2>
+
+                <h2>
+                    <i class="fas fa-address-book"></i>
+                    Gestión de Clientes
+                </h2>
+
             </div>
 
             <div class="filters-card">
-                <div class="field" style="flex: 2;">
+
+                <div class="field" style="flex:2;">
+
                     <label>Buscar Cliente:</label>
+
                     <input type="text" placeholder="Nombre, teléfono o correo...">
+
                 </div>
+
                 <div class="field">
+
                     <label>Tipo:</label>
+
                     <select>
+
                         <option>Todos</option>
                         <option>Fisico</option>
                         <option>Online</option>
+
                     </select>
+
                 </div>
-                <button class="btn-clear">Limpiar</button>
+
+                <button class="btn-clear">
+
+                    Limpiar
+
+                </button>
+
             </div>
 
-            <!-- TABLA -->
             <div class="tabla-container">
 
                 <table class="tabla-clientes">
@@ -40,6 +586,7 @@
                     <thead>
 
                         <tr>
+
                             <th>ID</th>
                             <th>Cliente</th>
                             <th>Usuario</th>
@@ -47,6 +594,7 @@
                             <th>Tipo</th>
                             <th>Registro</th>
                             <th>Acciones</th>
+
                         </tr>
 
                     </thead>
@@ -74,7 +622,9 @@
                                     <div>
 
                                         <strong>
+
                                             {{ cliente.nombre }} {{ cliente.apellido }}
+
                                         </strong>
 
                                     </div>
@@ -96,7 +646,9 @@
                             </td>
 
                             <td>
+
                                 {{ cliente.identificacion }}
+
                             </td>
 
                             <td>
@@ -104,15 +656,19 @@
                                 {% if cliente.user %}
 
                                 <span class="badge-online">
+
                                     <i class="fas fa-globe"></i>
                                     Online
+
                                 </span>
 
                                 {% else %}
 
                                 <span class="badge-fisico">
+
                                     <i class="fas fa-store"></i>
                                     Físico
+
                                 </span>
 
                                 {% endif %}
@@ -120,14 +676,15 @@
                             </td>
 
                             <td>
+
                                 {{ cliente.fecha_registro|date:"d/m/Y" }}
+
                             </td>
 
                             <td>
 
                                 <div class="acciones-tabla">
 
-                                    <!-- VER -->
                                     <button class="btn-table btn-view"
                                         onclick="abrirModal('verCliente{{ cliente.cliente_id }}')">
 
@@ -135,7 +692,6 @@
 
                                     </button>
 
-                                    <!-- EDITAR -->
                                     <button class="btn-table btn-edit"
                                         onclick="abrirModal('editarCliente{{ cliente.cliente_id }}')">
 
@@ -143,7 +699,6 @@
 
                                     </button>
 
-                                    <!-- CREAR USER -->
                                     {% if request.session.rol|lower == "gerente" and not cliente.user %}
 
                                     <button class="btn-table btn-user"
@@ -184,23 +739,20 @@
             </div>
 
             <div class="action-footer">
+
                 <button class="btn-primary" onclick="abrirModal('modalCliente')">
+
                     <i class="fas fa-user-plus"></i>
                     Registrar Cliente
+
                 </button>
+
             </div>
 
         </div>
+
     </main>
 </div>
-
-<!-- ===================================================== -->
-<!-- MODAL CREAR CLIENTE -->
-<!-- ===================================================== -->
-
-<!-- ======================================== -->
-<!-- MODAL CREAR CLIENTE -->
-<!-- ======================================== -->
 
 <div id="modalCliente" class="modal-overlay">
 
@@ -224,6 +776,7 @@
         <form class="modal-form" method="POST" action="{% url 'crear_cliente' %}">
 
             {% csrf_token %}
+            <input type="hidden" name="origen" value="clientes">
 
             <div class="form-grid">
 
@@ -444,7 +997,7 @@
 
                 {% for tel in cliente.telefonocliente_set.all %}
 
-                {% if tel.estado.nombre|lower != "eliminado" %}
+                {% if tel.estado.nombre|lower == "activo" %}
 
                 <div class="item-info">
 
@@ -476,7 +1029,7 @@
 
                 {% for dir in cliente.clientedireccion_set.all %}
 
-                {% if dir.estado.nombre|lower != "eliminado" %}
+                {% if dir.estado.nombre|lower == "activo" %}
 
                 <div class="direccion-card">
 
@@ -822,89 +1375,100 @@
 
 <script>
 
-    function abrirModal(id) {
+function abrirModal(id){
 
-        document.getElementById(id).style.display = 'flex';
+    document.getElementById(id).style.display = 'flex';
 
-    }
+}
 
-    function cerrarModal(id) {
+function cerrarModal(id){
 
-        document.getElementById(id).style.display = 'none';
+    document.getElementById(id).style.display = 'none';
 
-    }
+}
 
-    // =========================================
-    // ELIMINAR TELÉFONO
-    // =========================================
+window.onclick = function(event){
 
-    function eliminarTelefono(btn) {
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
 
-        const row = btn.closest('.telefono-row');
+        if(event.target === modal){
 
-        const deleteInput = row.querySelector('.delete-input');
-
-        // EXISTENTE EN BD
-        if (deleteInput) {
-
-            deleteInput.value = "1";
-
-            row.style.display = "none";
+            modal.style.display = "none";
 
         }
 
-        // NUEVO
-        else {
+    });
 
-            row.remove();
+}
 
-        }
+// =========================================
+// ELIMINAR TELÉFONO
+// =========================================
 
-    }
+function eliminarTelefono(btn){
 
-    // =========================================
-    // ELIMINAR DIRECCIÓN
-    // =========================================
+    const row = btn.closest('.telefono-row');
 
-    function eliminarDireccion(btn) {
+    const deleteInput = row.querySelector('.delete-input');
 
-        const row = btn.closest('.direccion-row');
+    if(deleteInput){
 
-        const deleteInput = row.querySelector('.delete-input');
+        deleteInput.value = "1";
 
-        // EXISTENTE EN BD
-        if (deleteInput) {
+        row.style.display = "none";
 
-            deleteInput.value = "1";
+    }else{
 
-            row.style.display = "none";
-
-        }
-
-        // NUEVA
-        else {
-
-            row.remove();
-
-        }
+        row.remove();
 
     }
 
-    // =========================================
-    // AGREGAR TELÉFONO
-    // =========================================
+}
 
-    function agregarTelefono(contenedorId) {
+// =========================================
+// ELIMINAR DIRECCIÓN
+// =========================================
 
-        const contenedor = document.getElementById(contenedorId);
+function eliminarDireccion(btn){
 
-        const div = document.createElement('div');
+    const row = btn.closest('.direccion-row');
 
-        div.classList.add('dynamic-row', 'telefono-row');
+    const deleteInput = row.querySelector('.delete-input');
 
-        div.innerHTML = `
+    if(deleteInput){
 
-        <input type="hidden" name="telefono_id[]" value="">
+        deleteInput.value = "1";
+
+        row.style.display = "none";
+
+    }else{
+
+        row.remove();
+
+    }
+
+}
+
+// =========================================
+// AGREGAR TELÉFONO
+// =========================================
+
+function agregarTelefono(contenedorId){
+
+    const contenedor = document.getElementById(contenedorId);
+
+    const esEdicion = contenedorId.includes('Edit');
+
+    const div = document.createElement('div');
+
+    div.classList.add('dynamic-row','telefono-row');
+
+    div.innerHTML = `
+
+        ${esEdicion
+            ? '<input type="hidden" name="telefono_id[]" value="">'
+            : ''
+        }
 
         <input type="text"
                name="telefono[]"
@@ -928,6 +1492,11 @@
 
         </select>
 
+        ${esEdicion
+            ? '<input type="hidden" name="telefono_eliminar[]" value="0" class="delete-input">'
+            : ''
+        }
+
         <button type="button"
                 class="btn-delete-small"
                 onclick="eliminarTelefono(this)">
@@ -936,27 +1505,32 @@
 
         </button>
 
-        `;
+    `;
 
-        contenedor.appendChild(div);
+    contenedor.appendChild(div);
 
-    }
+}
 
-    // =========================================
-    // AGREGAR DIRECCIÓN
-    // =========================================
+// =========================================
+// AGREGAR DIRECCIÓN
+// =========================================
 
-    function agregarDireccion(contenedorId) {
+function agregarDireccion(contenedorId){
 
-        const contenedor = document.getElementById(contenedorId);
+    const contenedor = document.getElementById(contenedorId);
 
-        const div = document.createElement('div');
+    const esEdicion = contenedorId.includes('Edit');
 
-        div.classList.add('dynamic-row', 'direccion-row');
+    const div = document.createElement('div');
 
-        div.innerHTML = `
+    div.classList.add('dynamic-row','direccion-row');
 
-        <input type="hidden" name="direccion_id[]" value="">
+    div.innerHTML = `
+
+        ${esEdicion
+            ? '<input type="hidden" name="direccion_id[]" value="">'
+            : ''
+        }
 
         <input type="text"
                name="pais[]"
@@ -988,6 +1562,11 @@
 
         </select>
 
+        ${esEdicion
+            ? '<input type="hidden" name="direccion_eliminar[]" value="0" class="delete-input">'
+            : ''
+        }
+
         <button type="button"
                 class="btn-delete-small"
                 onclick="eliminarDireccion(this)">
@@ -996,11 +1575,11 @@
 
         </button>
 
-        `;
+    `;
 
-        contenedor.appendChild(div);
+    contenedor.appendChild(div);
 
-    }
+}
 
 </script>
 

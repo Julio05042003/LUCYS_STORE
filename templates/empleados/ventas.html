@@ -374,6 +374,7 @@
         <form class="modal-form" method="POST" action="{% url 'crear_cliente' %}">
 
             {% csrf_token %}
+            <input type="hidden" name="origen" value="ventas">
 
             <div class="form-grid">
 

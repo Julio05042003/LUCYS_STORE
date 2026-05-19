@@ -7,8 +7,98 @@ from django.contrib.auth.decorators import login_required
 from apps.usuarios.models import *
 from django.db import transaction
 from django.utils import timezone
-import re
+import re, json
 from django.http import JsonResponse
+from django.db import connection
+
+
+
+@login_required
+def dashboard_gerente(request):
+
+    empleado = Empleado.objects.select_related(
+        'rol',
+        'ubicacion',
+        'user'
+    ).get(user=request.user)
+
+    # =====================================
+    # KPIs
+    # =====================================
+    with connection.cursor() as cursor:
+
+        cursor.execute("EXEC sp_dashboard_kpis")
+
+        row = cursor.fetchone()
+
+        kpis = {
+
+            'ventas_hoy': row[0],
+            'ventas_mes': row[1],
+            'compras_mes': row[2],
+            'clientes_nuevos': row[3],
+            'stock_critico': row[4],
+            'cajas_abiertas': row[5],
+        }
+
+    # =====================================
+    # VENTAS 7 DIAS
+    # =====================================
+    with connection.cursor() as cursor:
+
+        cursor.execute("EXEC sp_dashboard_ventas_7dias")
+
+        rows = cursor.fetchall()
+
+        ventas_labels = []
+        ventas_data = []
+
+        for r in rows:
+
+            ventas_labels.append(
+                r[0].strftime('%d/%m')
+            )
+
+            ventas_data.append(
+                float(r[1])
+            )
+
+    # =====================================
+    # TOP PRODUCTOS
+    # =====================================
+    with connection.cursor() as cursor:
+
+        cursor.execute("EXEC sp_dashboard_top_productos")
+
+        productos = cursor.fetchall()
+
+    # =====================================
+    # TOP EMPLEADOS
+    # =====================================
+    with connection.cursor() as cursor:
+
+        cursor.execute("EXEC sp_dashboard_top_empleados")
+
+        empleados_top = cursor.fetchall()
+
+    context = {
+
+    'empleado': empleado,
+    'rol_usuario': empleado.rol.nombre.lower(),
+
+    'kpis': kpis,
+
+    'ventas_labels': json.dumps(ventas_labels),
+    'ventas_data': json.dumps(ventas_data),
+
+    'productos': productos,
+    'empleados_top': empleados_top,
+}
+    return render(
+        request,
+        'empleados/dashboard_gerente.html',
+        context
+    )
 
 # VALIDACIONES
 # =========================
@@ -288,10 +378,6 @@ def editar_usuario(request):
 
 
 # =========================
-# REGISTRO CLIENTE
-# =========================
-
-# =========================
 # REGISTRO CLIENTE ONLINE
 # =========================
 def registro_cliente_view(request):
@@ -557,13 +643,25 @@ def clientes_view(request):
 @login_required
 def crear_cliente(request):
 
-    if request.method != 'POST':
+    origen = request.POST.get('origen', 'clientes')
+
+    def redireccion():
+
+        if origen == 'ventas':
+            return redirect('ventas')
+
         return redirect('clientes')
+
+    if request.method != 'POST':
+        return redireccion()
 
     try:
 
         with transaction.atomic():
 
+            # =========================
+            # DATOS PERSONALES
+            # =========================
             nombre = request.POST.get(
                 'nombre',
                 ''
@@ -579,6 +677,9 @@ def crear_cliente(request):
                 ''
             ).strip()
 
+            # =========================
+            # LISTAS
+            # =========================
             paises = request.POST.getlist('pais[]')
             departamentos = request.POST.getlist('departamento[]')
             ciudades = request.POST.getlist('ciudad[]')
@@ -592,20 +693,18 @@ def crear_cliente(request):
             # =========================
             # VALIDACIONES
             # =========================
-            if not all([
-                nombre,
-                apellido,
-                identificacion
-            ]):
+            if not nombre or not apellido or not identificacion:
 
                 messages.error(
                     request,
                     "Todos los campos son obligatorios"
                 )
 
-                return redirect('clientes')
+                return redireccion()
 
-            # identificación única
+            # =========================
+            # IDENTIFICACIÓN ÚNICA
+            # =========================
             if Cliente.objects.filter(
                 identificacion=identificacion
             ).exists():
@@ -615,10 +714,12 @@ def crear_cliente(request):
                     "La identificación ya existe"
                 )
 
-                return redirect('clientes')
+                return redireccion()
 
-            # validar teléfonos
-            telefonos_validos = 0
+            # =========================
+            # VALIDAR TELÉFONOS
+            # =========================
+            telefonos_validos = []
 
             for tel in telefonos:
 
@@ -626,29 +727,45 @@ def crear_cliente(request):
 
                 if tel:
 
-                    if not tel.isdigit():
+                    telefono_limpio = tel.replace('-', '')
+
+                    if not telefono_limpio.isdigit():
 
                         messages.error(
                             request,
                             "Los teléfonos deben ser numéricos"
                         )
 
-                        return redirect('clientes')
+                        return redireccion()
 
-                    telefonos_validos += 1
+                    telefonos_validos.append(
+                        telefono_limpio
+                    )
 
-            if telefonos_validos == 0:
+            if len(telefonos_validos) == 0:
 
                 messages.error(
                     request,
                     "Debes agregar al menos un teléfono"
                 )
 
-                return redirect('clientes')
+                return redireccion()
 
-            estado_activo = Estado.objects.get(
+            # =========================
+            # ESTADO ACTIVO
+            # =========================
+            estado_activo = Estado.objects.filter(
                 nombre__iexact='Activo'
-            )
+            ).first()
+
+            if not estado_activo:
+
+                messages.error(
+                    request,
+                    "No existe el estado ACTIVO"
+                )
+
+                return redireccion()
 
             # =========================
             # CREAR CLIENTE
@@ -660,70 +777,97 @@ def crear_cliente(request):
             )
 
             # =========================
-            # DIRECCIONES
+            # GUARDAR DIRECCIONES
             # =========================
-            for i in range(len(paises)):
+            total_direcciones = min(
+                len(paises),
+                len(departamentos),
+                len(ciudades),
+                len(detalles)
+            )
+
+            for i in range(total_direcciones):
 
                 pais = paises[i].strip()
                 depto = departamentos[i].strip()
                 ciudad = ciudades[i].strip()
                 detalle = detalles[i].strip()
 
-                if pais and depto and ciudad and detalle:
+                if not all([
+                    pais,
+                    depto,
+                    ciudad,
+                    detalle
+                ]):
+                    continue
 
-                    direccion = Direccion.objects.create(
-                        pais=pais,
-                        departamento=depto,
-                        ciudad=ciudad,
-                        detalle=detalle
-                    )
+                direccion = Direccion.objects.create(
+                    pais=pais,
+                    departamento=depto,
+                    ciudad=ciudad,
+                    detalle=detalle
+                )
 
-                    ClienteDireccion.objects.create(
-                        cliente=cliente,
-                        direccion=direccion,
-                        estado=estado_activo,
-                        tipo=tipos_direccion[i]
+                ClienteDireccion.objects.create(
+                    cliente=cliente,
+                    direccion=direccion,
+                    estado=estado_activo,
+                    tipo=(
+                        tipos_direccion[i]
                         if i < len(tipos_direccion)
                         else "Casa"
                     )
+                )
 
             # =========================
-            # TELÉFONOS
+            # GUARDAR TELÉFONOS
             # =========================
             for i in range(len(telefonos)):
 
                 numero = telefonos[i].strip()
 
-                if numero:
+                if not numero:
+                    continue
 
-                    TelefonoCliente.objects.create(
-                        cliente=cliente,
-                        estado=estado_activo,
-                        numero=numero,
-                        operadora=operadoras[i]
-                        if i < len(operadoras)
-                        else "",
-                        tipo=tipos_tel[i]
-                        if i < len(tipos_tel)
-                        else ""
-                    )
+                numero = numero.replace('-', '')
+
+                operadora = (
+                    operadoras[i]
+                    if i < len(operadoras)
+                    else ""
+                )
+
+                tipo = (
+                    tipos_tel[i]
+                    if i < len(tipos_tel)
+                    else "Personal"
+                )
+
+                TelefonoCliente.objects.create(
+                    cliente=cliente,
+                    estado=estado_activo,
+                    numero=numero,
+                    operadora=operadora,
+                    tipo=tipo
+                )
 
             messages.success(
                 request,
                 "Cliente físico creado correctamente"
             )
 
-            return redirect('clientes')
+            return redireccion()
 
     except Exception as e:
+
+        print("ERROR CREAR CLIENTE:", str(e))
 
         messages.error(
             request,
             f"Error: {str(e)}"
         )
 
-        return redirect('clientes')
-
+        return redireccion()
 
 # =========================
 # EDITAR CLIENTE
@@ -814,7 +958,7 @@ def editar_cliente(request):
                 cliente.user.save()
 
             # =========================
-            # ESTADO INACTIVO
+            # ESTADOS
             # =========================
 
             estado_inactivo = Estado.objects.get(
@@ -825,36 +969,48 @@ def editar_cliente(request):
                 nombre__iexact='Activo'
             )
 
-            # =========================
+            # ==================================================
             # TELÉFONOS
-            # =========================
+            # ==================================================
 
             telefono_ids = request.POST.getlist('telefono_id[]')
             telefonos = request.POST.getlist('telefono[]')
             operadoras = request.POST.getlist('operadora[]')
             tipos_tel = request.POST.getlist('tipo_tel[]')
-            telefonos_eliminar = request.POST.getlist('telefono_eliminar[]')
+            telefonos_eliminar = request.POST.getlist(
+                'telefono_eliminar[]'
+            )
 
             for i in range(len(telefonos)):
 
-                telefono_id = telefono_ids[i]
-                numero = telefonos[i].strip()
-
-                eliminar = telefonos_eliminar[i]
-
-                telefono = TelefonoCliente.objects.get(
-                    telefono_id=telefono_id
+                telefono_id = (
+                    telefono_ids[i].strip()
+                    if i < len(telefono_ids)
+                    else ''
                 )
 
-                # ELIMINAR
-                if eliminar == '1':
+                numero = telefonos[i].strip()
 
-                    telefono.estado = estado_inactivo
-                    telefono.save()
+                eliminar = (
+                    telefonos_eliminar[i]
+                    if i < len(telefonos_eliminar)
+                    else '0'
+                )
+
+                # =========================
+                # NUEVO VACÍO
+                # =========================
+
+                if not numero:
 
                     continue
 
+                numero = numero.replace('-', '')
+
+                # =========================
                 # VALIDAR
+                # =========================
+
                 if not numero.isdigit():
 
                     messages.error(
@@ -864,17 +1020,60 @@ def editar_cliente(request):
 
                     return redirect('clientes')
 
-                # ACTUALIZAR
-                telefono.numero = numero
-                telefono.operadora = operadoras[i]
-                telefono.tipo = tipos_tel[i]
-                telefono.estado = estado_activo
+                operadora = (
+                    operadoras[i]
+                    if i < len(operadoras)
+                    else ''
+                )
 
-                telefono.save()
+                tipo = (
+                    tipos_tel[i]
+                    if i < len(tipos_tel)
+                    else 'Personal'
+                )
 
-            # =========================
+                # =========================
+                # ACTUALIZAR EXISTENTE
+                # =========================
+
+                if telefono_id:
+
+                    telefono = TelefonoCliente.objects.get(
+                        telefono_id=telefono_id
+                    )
+
+                    # ELIMINAR
+                    if eliminar == '1':
+
+                        telefono.estado = estado_inactivo
+                        telefono.save()
+
+                        continue
+
+                    telefono.numero = numero
+                    telefono.operadora = operadora
+                    telefono.tipo = tipo
+                    telefono.estado = estado_activo
+
+                    telefono.save()
+
+                # =========================
+                # CREAR NUEVO
+                # =========================
+
+                else:
+
+                    TelefonoCliente.objects.create(
+                        cliente=cliente,
+                        estado=estado_activo,
+                        numero=numero,
+                        operadora=operadora,
+                        tipo=tipo
+                    )
+
+            # ==================================================
             # DIRECCIONES
-            # =========================
+            # ==================================================
 
             direccion_ids = request.POST.getlist('direccion_id[]')
 
@@ -882,7 +1081,9 @@ def editar_cliente(request):
             departamentos = request.POST.getlist('departamento[]')
             ciudades = request.POST.getlist('ciudad[]')
             detalles = request.POST.getlist('detalle[]')
-            tipos_direccion = request.POST.getlist('tipo_direccion[]')
+            tipos_direccion = request.POST.getlist(
+                'tipo_direccion[]'
+            )
 
             direcciones_eliminar = request.POST.getlist(
                 'direccion_eliminar[]'
@@ -890,35 +1091,97 @@ def editar_cliente(request):
 
             for i in range(len(paises)):
 
-                direccion_id = direccion_ids[i]
-
-                eliminar = direcciones_eliminar[i]
-
-                cliente_direccion = ClienteDireccion.objects.get(
-                    cliente_direccion_id=direccion_id
+                direccion_id = (
+                    direccion_ids[i].strip()
+                    if i < len(direccion_ids)
+                    else ''
                 )
 
-                # ELIMINAR
-                if eliminar == '1':
+                pais = paises[i].strip()
+                depto = departamentos[i].strip()
+                ciudad = ciudades[i].strip()
+                detalle = detalles[i].strip()
 
-                    cliente_direccion.estado = estado_inactivo
-                    cliente_direccion.save()
+                eliminar = (
+                    direcciones_eliminar[i]
+                    if i < len(direcciones_eliminar)
+                    else '0'
+                )
+
+                # =========================
+                # VALIDAR VACÍOS
+                # =========================
+
+                if not all([
+                    pais,
+                    depto,
+                    ciudad,
+                    detalle
+                ]):
 
                     continue
 
-                direccion = cliente_direccion.direccion
+                tipo = (
+                    tipos_direccion[i]
+                    if i < len(tipos_direccion)
+                    else 'Casa'
+                )
 
-                direccion.pais = paises[i]
-                direccion.departamento = departamentos[i]
-                direccion.ciudad = ciudades[i]
-                direccion.detalle = detalles[i]
+                # =========================
+                # ACTUALIZAR EXISTENTE
+                # =========================
 
-                direccion.save()
+                if direccion_id:
 
-                cliente_direccion.tipo = tipos_direccion[i]
-                cliente_direccion.estado = estado_activo
+                    cliente_direccion = ClienteDireccion.objects.get(
+                        cliente_direccion_id=direccion_id
+                    )
 
-                cliente_direccion.save()
+                    # ELIMINAR
+                    if eliminar == '1':
+
+                        cliente_direccion.estado = estado_inactivo
+                        cliente_direccion.save()
+
+                        continue
+
+                    direccion = cliente_direccion.direccion
+
+                    direccion.pais = pais
+                    direccion.departamento = depto
+                    direccion.ciudad = ciudad
+                    direccion.detalle = detalle
+
+                    direccion.save()
+
+                    cliente_direccion.tipo = tipo
+                    cliente_direccion.estado = estado_activo
+
+                    cliente_direccion.save()
+
+                # =========================
+                # CREAR NUEVA
+                # =========================
+
+                else:
+
+                    direccion = Direccion.objects.create(
+                        pais=pais,
+                        departamento=depto,
+                        ciudad=ciudad,
+                        detalle=detalle
+                    )
+
+                    ClienteDireccion.objects.create(
+                        cliente=cliente,
+                        direccion=direccion,
+                        estado=estado_activo,
+                        tipo=tipo
+                    )
+
+            # =========================
+            # SUCCESS
+            # =========================
 
             messages.success(
                 request,
@@ -928,6 +1191,8 @@ def editar_cliente(request):
             return redirect('clientes')
 
     except Exception as e:
+
+        print("ERROR EDITAR CLIENTE:", str(e))
 
         messages.error(
             request,

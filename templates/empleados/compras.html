@@ -400,7 +400,7 @@
 
                     <span id="total-compra">
 
-                        $0.00
+                        C$0.00
 
                     </span>
 
@@ -451,6 +451,7 @@
 
         <form class="modal-form" id="formProveedor" method="POST" action="{% url 'crear_proveedor' %}">
             {% csrf_token %}
+            <input type="hidden" name="origen" value="compras">
             <div class="form-grid">
 
                 <!-- EMPRESA -->

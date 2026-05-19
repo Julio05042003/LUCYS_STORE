@@ -303,14 +303,14 @@ def crear_transferencia(request):
             pk=request.POST['destino_id']
         )
 
-        if origen.tipo == "SUCURSAL" and destino.tipo == "SUCURSAL":
+        """if origen.tipo == "SUCURSAL" and destino.tipo == "SUCURSAL":
             messages.error(request, "No permitido entre sucursales")
-            return redirect('transferencias')
+            return redirect('transferencias')"""
 
         if empleado.ubicacion.nivel == "CENTRAL":
             estado = Estado.objects.get(nombre="Aprobado")
         else:
-            estado = Estado.objects.get(nombre="Pendiente")
+            estado = Estado.objects.get(nombre="Aprobado")
 
         transferencia = Transferencia.objects.create(
             origen=origen,

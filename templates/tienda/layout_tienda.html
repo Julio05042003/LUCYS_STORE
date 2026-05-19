@@ -12,6 +12,278 @@
     <link rel="stylesheet" href="{% static 'css/style-footer.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <style>
+        /* =========================================
+   RESET
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#fff7fa;
+    color:#2b2b2b;
+    font-family:'Segoe UI',sans-serif;
+}
+
+/* =========================================
+   TOP ANNOUNCEMENT
+========================================= */
+
+.top-announcement{
+    width:100%;
+    background:linear-gradient(90deg,#ff7da8,#ff94b7);
+    color:#fff;
+    text-align:center;
+    padding:12px;
+    font-size:13px;
+    letter-spacing:2px;
+    font-weight:700;
+    position:sticky;
+    top:0;
+    z-index:999;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+.navbar{
+    width:100%;
+    background:#fff;
+    padding:18px 5%;
+    border-bottom:1px solid #f1d6de;
+    position:sticky;
+    top:42px;
+    z-index:998;
+    backdrop-filter:blur(12px);
+}
+
+.nav-center{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:30px;
+    flex-wrap:wrap;
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
+.nav-center img{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+    transition:.3s;
+}
+
+.nav-center img:hover{
+    transform:scale(1.05);
+}
+
+/* =========================================
+   USER ACTIONS
+========================================= */
+
+.user-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+}
+
+.user-name{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff0f5;
+    padding:12px 18px;
+    border-radius:50px;
+    color:#444;
+    font-weight:600;
+    border:1px solid #ffd2df;
+    box-shadow:0 4px 12px rgba(255,105,155,.08);
+}
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn-login{
+    text-decoration:none;
+    color:#333;
+    padding:12px 22px;
+    border-radius:50px;
+    border:2px solid #2f2f2f;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    transition:.3s;
+    background:#fff;
+}
+
+.btn-login:hover{
+    background:#ff8fb3;
+    color:#fff;
+    border-color:#ff8fb3;
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(255,105,155,.25);
+}
+
+.logout-btn{
+    background:#2f2f2f;
+    color:#fff;
+}
+
+.logout-btn:hover{
+    background:#ff5c93;
+    border-color:#ff5c93;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.shop-footer{
+    margin-top:80px;
+    background:#1f1f1f;
+    color:#fff;
+}
+
+.footer-top{
+    padding:60px 6%;
+}
+
+.footer-main-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:40px;
+}
+
+/* =========================================
+   FOOTER LOGO
+========================================= */
+
+.footer-logo{
+    width:110px;
+    margin-bottom:18px;
+    border-radius:20px;
+}
+
+.footer-text{
+    color:#ccc;
+    line-height:1.7;
+    max-width:280px;
+}
+
+/* =========================================
+   FOOTER COLS
+========================================= */
+
+.footer-col h4{
+    margin-bottom:20px;
+    color:#ff9ebd;
+    font-size:18px;
+}
+
+.footer-col ul{
+    list-style:none;
+}
+
+.footer-col ul li{
+    margin-bottom:12px;
+}
+
+.footer-col ul li a{
+    text-decoration:none;
+    color:#ddd;
+    transition:.3s;
+}
+
+.footer-col ul li a:hover{
+    color:#ff9ebd;
+    padding-left:6px;
+}
+
+.contact-col span{
+    display:block;
+    margin-bottom:12px;
+    color:#ddd;
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+    background:#ffeef4;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#ff9dbd;
+    border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#ff76a4;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:768px){
+
+    .navbar{
+        padding:18px;
+    }
+
+    .nav-center{
+        flex-direction:column;
+        justify-content:center;
+        text-align:center;
+    }
+
+    .user-actions{
+        justify-content:center;
+    }
+
+    .nav-center img{
+        width:90px;
+        height:90px;
+    }
+
+    .btn-login{
+        width:100%;
+        justify-content:center;
+    }
+
+    .user-name{
+        width:100%;
+        justify-content:center;
+    }
+
+    .footer-main-container{
+        text-align:center;
+    }
+
+    .footer-text{
+        margin:auto;
+    }
+
+}
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 

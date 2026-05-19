@@ -7,6 +7,552 @@ Lucy’s Store | Tienda Online
 
 {% block content %}
 
+<style>
+    /* ======================================
+   HERO
+====================================== */
+
+.shop-hero{
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    background:
+        linear-gradient(rgba(255,255,255,.78), rgba(255,255,255,.85)),
+        url('/static/img/banner-fashion.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 70px 20px;
+    overflow: hidden;
+}
+
+.shop-hero::before{
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: rgba(255, 105, 180, 0.08);
+    border-radius: 50%;
+    top: -200px;
+    right: -120px;
+}
+
+.shop-hero::after{
+    content: '';
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    background: rgba(255, 105, 180, 0.06);
+    border-radius: 50%;
+    bottom: -180px;
+    left: -100px;
+}
+
+.hero-content{
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+}
+
+.hero-mini{
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 50px;
+    background: #ffe4ec;
+    color: #ff4f87;
+    font-weight: 700;
+    font-size: .9rem;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.hero-content h1{
+    font-size: 4rem;
+    font-weight: 900;
+    color: #1f2937;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.hero-content p{
+    font-size: 1.2rem;
+    color: #4b5563;
+    line-height: 1.8;
+}
+
+/* ======================================
+   NAV SUPERIOR
+====================================== */
+
+.nav-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 60px;
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+}
+
+.nav-left h3{
+    font-size: 1.8rem;
+    color: #111827;
+    font-weight: 800;
+}
+
+.cart-icon{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#ff4f87,#ff7aa5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    position: relative;
+    transition: .3s ease;
+    box-shadow: 0 10px 25px rgba(255,79,135,.25);
+}
+
+.cart-icon:hover{
+    transform: translateY(-4px) scale(1.05);
+}
+
+.cart-count{
+    position: absolute;
+    top: -5px;
+    right: -3px;
+    background: #111827;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: .75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    border: 2px solid white;
+}
+
+/* ======================================
+   CATEGORÍAS
+====================================== */
+
+.category-nav{
+    width: 100%;
+    padding: 15px 30px;
+    background: #fff;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.category-scroll{
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.category-scroll::-webkit-scrollbar{
+    height: 4px;
+}
+
+.category-scroll::-webkit-scrollbar-thumb{
+    background: #ffd2e0;
+    border-radius: 10px;
+}
+
+.cat-item{
+    padding: 12px 24px;
+    border-radius: 40px;
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .3s ease;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.cat-item:hover{
+    background: #ffe4ec;
+    color: #ff4f87;
+    transform: translateY(-2px);
+}
+
+.cat-item.active{
+    background: linear-gradient(135deg,#ff4f87,#ff7aa5);
+    color: white;
+    box-shadow: 0 8px 20px rgba(255,79,135,.25);
+}
+
+/* ======================================
+   CONTENEDOR
+====================================== */
+
+.store-container{
+    width: 100%;
+    padding: 50px 60px;
+    background: linear-gradient(to bottom,#fff,#fff5f8);
+    min-height: 100vh;
+}
+
+/* ======================================
+   GRID PRODUCTOS
+====================================== */
+
+.products-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    gap: 35px;
+}
+
+/* ======================================
+   TARJETA PRODUCTO
+====================================== */
+
+.product-card{
+    background: white;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    transition: .35s ease;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 10px 30px rgba(15,23,42,.05);
+}
+
+.product-card:hover{
+    transform: translateY(-10px);
+    box-shadow: 0 20px 45px rgba(15,23,42,.12);
+}
+
+.product-image{
+    position: relative;
+    height: 350px;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.product-image img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: .4s ease;
+}
+
+.product-card:hover .product-image img{
+    transform: scale(1.08);
+}
+
+.image-overlay{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top,rgba(0,0,0,.55),transparent);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: .3s ease;
+    padding: 25px;
+}
+
+.product-card:hover .image-overlay{
+    opacity: 1;
+}
+
+.quick-add{
+    width: 100%;
+    border: none;
+    background: white;
+    color: #ff4f87;
+    font-weight: 800;
+    padding: 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: .3s ease;
+    letter-spacing: 1px;
+}
+
+.quick-add:hover{
+    background: #ff4f87;
+    color: white;
+}
+
+/* ======================================
+   DETALLES
+====================================== */
+
+.product-details{
+    padding: 25px;
+}
+
+.category{
+    display: inline-block;
+    background: #ffe4ec;
+    color: #ff4f87;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: .75rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.product-details h4{
+    font-size: 1.4rem;
+    color: #111827;
+    margin-bottom: 12px;
+    font-weight: 800;
+    min-height: 55px;
+}
+
+.price{
+    font-size: 1.7rem;
+    color: #ff4f87;
+    font-weight: 900;
+    margin-bottom: 15px;
+}
+
+.stock-ok,
+.stock-bad{
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 50px;
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.stock-ok{
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.stock-bad{
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* ======================================
+   BOTONES
+====================================== */
+
+.product-actions{
+    display: flex;
+    gap: 12px;
+}
+
+.product-actions button{
+    flex: 1;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .3s ease;
+    font-size: .95rem;
+}
+
+.btn-primary{
+    background: linear-gradient(135deg,#ff4f87,#ff7aa5);
+    color: white;
+    box-shadow: 0 10px 20px rgba(255,79,135,.25);
+}
+
+.btn-primary:hover{
+    transform: translateY(-3px);
+}
+
+.btn-secondary{
+    background: #f8fafc;
+    color: #374151;
+    border: 1px solid #e5e7eb !important;
+}
+
+.btn-secondary:hover{
+    background: #111827;
+    color: white;
+}
+
+/* ======================================
+   CARRITO SIDEBAR
+====================================== */
+
+.cart-sidebar{
+    position: fixed;
+    top: 0;
+    right: -450px;
+    width: 420px;
+    height: 100vh;
+    background: white;
+    z-index: 999;
+    box-shadow: -10px 0 30px rgba(0,0,0,.1);
+    display: flex;
+    flex-direction: column;
+    transition: .4s ease;
+}
+
+.cart-sidebar.active{
+    right: 0;
+}
+
+.cart-header{
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-header h3{
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.close-cart{
+    background: #ffe4ec;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #ff4f87;
+}
+
+.cart-items{
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.cart-footer{
+    border-top: 1px solid #eee;
+    padding: 25px;
+}
+
+.total-cart{
+    font-size: 1.3rem;
+    font-weight: 800;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.btn-checkout-total{
+    width: 100%;
+    border: none;
+    background: linear-gradient(135deg,#ff4f87,#ff7aa5);
+    color: white;
+    padding: 16px;
+    border-radius: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .3s ease;
+}
+
+.btn-checkout-total:hover{
+    transform: translateY(-3px);
+}
+
+/* ======================================
+   MODALES
+====================================== */
+
+.modal-overlay{
+    background: rgba(15,23,42,.55);
+    backdrop-filter: blur(6px);
+}
+
+.modal-content{
+    border-radius: 28px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,.25);
+}
+
+.modal-header{
+    background: linear-gradient(135deg,#ff4f87,#ff7aa5);
+    color: white;
+    padding: 22px 28px;
+}
+
+.modal-header h3{
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.close-btn,
+.close-modal-x{
+    background: rgba(255,255,255,.18);
+    border: none;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* ======================================
+   RESPONSIVE
+====================================== */
+
+@media(max-width: 900px){
+
+    .hero-content h1{
+        font-size: 2.7rem;
+    }
+
+    .store-container{
+        padding: 30px 20px;
+    }
+
+    .nav-container{
+        padding: 20px;
+    }
+
+    .nav-left h3{
+        font-size: 1.2rem;
+    }
+
+    .products-grid{
+        grid-template-columns: 1fr;
+    }
+
+    .cart-sidebar{
+        width: 100%;
+    }
+}
+
+@media(max-width: 600px){
+
+    .hero-content h1{
+        font-size: 2.1rem;
+    }
+
+    .hero-content p{
+        font-size: 1rem;
+    }
+
+    .product-actions{
+        flex-direction: column;
+    }
+
+    .product-image{
+        height: 280px;
+    }
+}
+</style>
+
 <!-- ====================================== -->
 <!-- HERO -->
 <!-- ====================================== -->
@@ -19,7 +565,7 @@ Lucy’s Store | Tienda Online
         </span>
 
         <h1>
-            Lucy’s Boutique
+            Lucy’s Store
         </h1>
 
         <p>
