@@ -121,7 +121,7 @@
                         <td>
 
                             <i class="fas fa-warehouse"></i>
-                            {{ c.ubicacion.nombre }}
+                            {{ c.bodega.nombre }}
 
                         </td>
 
@@ -260,18 +260,18 @@
 
                 <div class="form-group">
 
-                    <label>Ubicación Destino</label>
+                    <label>Bodega Destino</label>
 
-                    <select id="ubicacion_id" required>
+                    <select id="bodega_id" required>
 
                         <option value="">
-                            Seleccionar ubicación
+                            Seleccionar Bodega
                         </option>
 
-                        {% for u in ubicaciones %}
+                        {% for b in bodegas %}
 
-                        <option value="{{ u.ubicacion_id }}">
-                            {{ u.nombre }}
+                        <option value="{{ b.bodega_id }}">
+                            {{ b.nombre }}
                         </option>
 
                         {% endfor %}
@@ -811,8 +811,8 @@
             'proveedor_id'
         ).value;
 
-        let ubicacion = document.getElementById(
-            'ubicacion_id'
+        let bodega = document.getElementById(
+            'bodega_id'
         ).value;
 
         let empleado = document.getElementById(
@@ -833,7 +833,7 @@
             body: JSON.stringify({
 
                 proveedor: proveedor,
-                ubicacion: ubicacion,
+                bodega: bodega,
                 empleado: empleado,
                 productos: detallesCompra
 

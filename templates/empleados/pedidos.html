@@ -1,0 +1,1488 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+
+:root{
+
+    --primary:#6C63FF;
+    --secondary:#4834D4;
+    --success:#20c997;
+    --danger:#dc3545;
+    --warning:#ffc107;
+    --dark:#1f2937;
+    --light:#f8fafc;
+    --border:#e5e7eb;
+}
+
+body{
+
+    background:#f1f5f9;
+}
+
+/* =========================================
+HEADER
+========================================= */
+
+.page-header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.page-title h1{
+
+    font-size:32px;
+    font-weight:800;
+    color:var(--dark);
+    margin:0;
+}
+
+.page-title p{
+
+    color:#6b7280;
+    margin:0;
+}
+
+.btn-create{
+
+    border:none;
+    background:linear-gradient(
+        135deg,
+        var(--primary),
+        var(--secondary)
+    );
+
+    color:white;
+    padding:14px 22px;
+    border-radius:16px;
+    font-weight:700;
+    transition:.3s;
+    box-shadow:0 10px 25px rgba(108,99,255,.25);
+}
+
+.btn-create:hover{
+
+    transform:translateY(-3px);
+}
+
+/* =========================================
+CARDS RESUMEN
+========================================= */
+
+.resume-grid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.resume-card{
+
+    background:white;
+    border-radius:24px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+.resume-card h5{
+
+    color:#6b7280;
+    margin-bottom:10px;
+}
+
+.resume-card h2{
+
+    font-weight:800;
+    color:var(--dark);
+}
+
+/* =========================================
+FILTROS
+========================================= */
+
+.filters{
+
+    background:white;
+    padding:20px;
+    border-radius:24px;
+    margin-bottom:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.filters input,
+.filters select{
+
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    min-width:220px;
+}
+
+/* =========================================
+PEDIDOS
+========================================= */
+
+.orders-grid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(350px,1fr));
+    gap:25px;
+}
+
+.order-card{
+
+    background:white;
+    border-radius:28px;
+    padding:25px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 12px 35px rgba(0,0,0,.06);
+    transition:.3s;
+}
+
+.order-card:hover{
+
+    transform:translateY(-5px);
+}
+
+.order-card::before{
+
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:6px;
+
+    background:linear-gradient(
+        90deg,
+        var(--primary),
+        var(--secondary)
+    );
+}
+
+.order-top{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.order-id{
+
+    font-size:24px;
+    font-weight:800;
+    color:var(--dark);
+}
+
+.status{
+
+    padding:8px 16px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.status-pendiente{
+
+    background:#fff3cd;
+    color:#856404;
+}
+
+.status-bodega{
+
+    background:#cff4fc;
+    color:#055160;
+}
+
+.status-terminado{
+
+    background:#d1e7dd;
+    color:#0f5132;
+}
+
+.status-confirmado{
+
+    background:#198754;
+    color:white;
+}
+
+.status-cancelado{
+
+    background:#f8d7da;
+    color:#842029;
+}
+
+.order-info{
+
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:25px;
+}
+
+.info-item{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.info-item span{
+
+    color:#6b7280;
+}
+
+.info-item strong{
+
+    color:var(--dark);
+}
+
+/* =========================================
+BOTONES
+========================================= */
+
+.actions{
+
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.btn-action{
+
+    border:none;
+    padding:11px 16px;
+    border-radius:14px;
+    font-weight:600;
+    transition:.3s;
+    color:white;
+}
+
+.btn-view{
+
+    background:#0d6efd;
+}
+
+.btn-bodega{
+
+    background:#6f42c1;
+}
+
+.btn-finish{
+
+    background:#20c997;
+}
+
+.btn-confirm{
+
+    background:#198754;
+}
+
+.btn-cancel{
+
+    background:#dc3545;
+}
+
+.btn-action:hover{
+
+    transform:scale(1.04);
+}
+
+/* =========================================
+MODAL
+========================================= */
+
+.modal{
+
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    backdrop-filter:blur(5px);
+}
+
+.modal-content{
+
+    width:95%;
+    max-width:1100px;
+    background:white;
+    border-radius:30px;
+    padding:35px;
+    max-height:92vh;
+    overflow:auto;
+    animation:fadeIn .3s ease;
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+        transform:translateY(20px);
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* =========================================
+FORMULARIO
+========================================= */
+
+.form-grid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.form-group{
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.form-group label{
+
+    font-weight:700;
+    color:var(--dark);
+}
+
+.form-control{
+
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    transition:.3s;
+}
+
+.form-control:focus{
+
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(108,99,255,.15);
+}
+
+/* =========================================
+PRODUCTOS
+========================================= */
+
+.products-container{
+
+    margin-top:30px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.product-card{
+
+    border:1px solid #edf2f7;
+    border-radius:24px;
+    padding:22px;
+    background:#fafafa;
+}
+
+.product-top{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.product-name{
+
+    font-size:20px;
+    font-weight:700;
+}
+
+.product-info{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
+
+.product-info input{
+
+    width:100%;
+}
+
+/* =========================================
+TOTAL
+========================================= */
+
+.total-box{
+
+    margin-top:30px;
+    background:linear-gradient(
+        135deg,
+        var(--primary),
+        var(--secondary)
+    );
+
+    color:white;
+    padding:25px;
+    border-radius:24px;
+}
+
+.total-box h2{
+
+    margin:0;
+    font-size:34px;
+    font-weight:800;
+}
+
+/* =========================================
+RESPONSIVE
+========================================= */
+
+@media(max-width:768px){
+
+    .page-header{
+
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .modal-content{
+
+        padding:20px;
+    }
+}
+
+</style>
+
+<div class="page-header">
+
+    <div class="page-title">
+
+        <h1>Gestión de Pedidos</h1>
+
+        <p>
+            Administra y controla todos los pedidos
+        </p>
+
+    </div>
+
+    <button class="btn-create" onclick="openModal()">
+
+        <i class="bi bi-plus-circle"></i>
+        Nuevo Pedido
+
+    </button>
+
+</div>
+
+<!-- =========================================
+RESUMEN
+========================================= -->
+
+<div class="resume-grid">
+
+    <div class="resume-card">
+
+        <h5>Total Pedidos</h5>
+
+        <h2>{{ pedidos|length }}</h2>
+
+    </div>
+
+    <div class="resume-card">
+
+        <h5>Pendientes</h5>
+
+        <h2>
+            {{ pedidos|length }}
+        </h2>
+
+    </div>
+
+    <div class="resume-card">
+
+        <h5>En Bodega</h5>
+
+        <h2>
+            {{ pedidos|length }}
+        </h2>
+
+    </div>
+
+    <div class="resume-card">
+
+        <h5>Confirmados</h5>
+
+        <h2>
+            {{ pedidos|length }}
+        </h2>
+
+    </div>
+
+</div>
+
+<!-- =========================================
+FILTROS
+========================================= -->
+
+<div class="filters">
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="Buscar pedido..."
+    >
+
+    <select id="filterEstado">
+
+        <option value="">
+            Todos los estados
+        </option>
+
+        <option value="Pendiente">
+            Pendiente
+        </option>
+
+        <option value="En Bodega">
+            En bodega
+        </option>
+
+        <option value="Terminado">
+            Terminado
+        </option>
+
+        <option value="Confirmado">
+            Confirmado
+        </option>
+
+        <option value="Cancelado">
+            Cancelado
+        </option>
+
+    </select>
+
+</div>
+
+<!-- =========================================
+PEDIDOS
+========================================= -->
+
+<div class="orders-grid" id="ordersGrid">
+
+{% for p in pedidos %}
+
+<div
+    class="order-card"
+    data-estado="{{ p.estado.nombre }}"
+>
+
+    <div class="order-top">
+
+        <div class="order-id">
+
+            #{{ p.id }}
+
+        </div>
+
+        <div class="status
+            {% if p.estado.nombre == 'Pendiente' %}
+                status-pendiente
+            {% endif %}
+
+            {% if p.estado.nombre == 'En Bodega' %}
+                status-bodega
+            {% endif %}
+
+            {% if p.estado.nombre == 'Terminado' %}
+                status-terminado
+            {% endif %}
+
+            {% if p.estado.nombre == 'Confirmado' %}
+                status-confirmado
+            {% endif %}
+
+            {% if p.estado.nombre == 'Cancelado' %}
+                status-cancelado
+            {% endif %}
+        ">
+
+            {{ p.estado.nombre }}
+
+        </div>
+
+    </div>
+
+    <div class="order-info">
+
+        <div class="info-item">
+
+            <span>Cliente</span>
+
+            <strong>
+                {{ p.cliente.nombre }}
+                {{ p.cliente.apellido }}
+            </strong>
+
+        </div>
+
+        <div class="info-item">
+
+            <span>Sucursal</span>
+
+            <strong>
+                {{ p.sucursal.nombre }}
+            </strong>
+
+        </div>
+
+        <div class="info-item">
+
+            <span>Entrega</span>
+
+            <strong>
+                {{ p.tipo_entrega.nombre }}
+            </strong>
+
+        </div>
+
+        <div class="info-item">
+
+            <span>Fecha</span>
+
+            <strong>
+                {{ p.fecha|date:"d/m/Y" }}
+            </strong>
+
+        </div>
+
+        <div class="info-item">
+
+            <span>Total</span>
+
+            <strong>
+                C$ {{ p.total }}
+            </strong>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================
+    ACCIONES
+    ========================================= -->
+
+    <div class="actions">
+
+        <button
+            class="btn-action btn-view"
+            onclick="verPedido('{{ p.id }}')"
+        >
+
+            Ver
+
+        </button>
+
+        {% if p.estado.nombre == 'Pendiente' %}
+
+        <button
+            class="btn-action btn-bodega"
+            onclick="cambiarEstado(
+                '{{ p.id }}',
+                'En bodega'
+            )"
+        >
+
+            Enviar
+
+        </button>
+
+        <button
+            class="btn-action btn-cancel"
+            onclick="cambiarEstado(
+                '{{ p.id }}',
+                'Cancelado'
+            )"
+        >
+
+            Cancelar
+
+        </button>
+
+        {% endif %}
+
+        {% if p.estado.nombre == 'En Bodega' %}
+
+        <button
+            class="btn-action btn-finish"
+            onclick="cambiarEstado(
+                '{{ p.id }}',
+                'Terminado'
+            )"
+        >
+
+            Terminar
+
+        </button>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<!-- =========================================
+MODAL
+========================================= -->
+
+<div class="modal" id="pedidoModal">
+
+    <div class="modal-content">
+
+        <div class="page-header">
+
+            <div>
+
+                <h2>
+                    Nuevo Pedido
+                </h2>
+
+                <p>
+                    Completa toda la información
+                </p>
+
+            </div>
+
+            <button
+                class="btn-action btn-cancel"
+                onclick="closeModal()"
+            >
+
+                Cerrar
+
+            </button>
+
+        </div>
+
+        <!-- =========================================
+        FORMULARIO
+        ========================================== -->
+
+        <div class="form-grid">
+
+            {% if modo == 'empleado' %}
+
+            <div class="form-group">
+
+                <label>
+                    Cliente
+                </label>
+
+                <select
+                    id="clienteSelect"
+                    class="form-control"
+                    style="width:100%"
+                ></select>
+
+            </div>
+
+            {% endif %}
+
+            {% if modo == 'cliente' %}
+
+            <div class="form-group">
+
+                <label>
+                    Sucursal
+                </label>
+
+                <select
+                    id="sucursal"
+                    class="form-control"
+                >
+
+                    {% for s in sucursales %}
+
+                    <option value="{{ s.id }}">
+
+                        {{ s.nombre }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            {% endif %}
+
+            <div class="form-group">
+
+                <label>
+                    Tipo Entrega
+                </label>
+
+                <select
+                    id="tipoEntrega"
+                    class="form-control"
+                >
+
+                    {% for t in tipos_entrega %}
+
+                    <option value="{{ t.id }}">
+
+                        {{ t.nombre }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div
+                class="form-group"
+                id="deliverySection"
+            >
+
+                <label>
+                    Método Envío
+                </label>
+
+                <select
+                    id="metodoEnvio"
+                    class="form-control"
+                >
+
+                    {% for m in metodos_envio %}
+
+                    <option value="{{ m.id }}">
+
+                        {{ m.nombre }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <!-- =========================================
+        PRODUCTOS
+        ========================================== -->
+
+        <br>
+
+        <div class="form-group">
+
+            <label>
+                Buscar Productos
+            </label>
+
+            <select
+                id="productoSearch"
+                style="width:100%"
+            ></select>
+
+        </div>
+
+        <div
+            class="products-container"
+            id="productsContainer"
+        ></div>
+
+        <!-- =========================================
+        TOTAL
+        ========================================== -->
+
+        <div class="total-box">
+
+            <h2 id="totalPedido">
+
+                Total: C$ 0
+
+            </h2>
+
+        </div>
+
+        <br>
+
+        <button
+            class="btn-create"
+            onclick="guardarPedido()"
+        >
+
+            Guardar Pedido
+
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+let productos = [];
+
+let total = 0;
+
+/* =========================================
+MODAL
+========================================= */
+
+function openModal(){
+
+    document.getElementById(
+        'pedidoModal'
+    ).style.display='flex';
+}
+
+function closeModal(){
+
+    document.getElementById(
+        'pedidoModal'
+    ).style.display='none';
+}
+
+/* =========================================
+SELECT2 CLIENTES
+========================================= */
+
+$('#clienteSelect').select2({
+
+    dropdownParent:$('#pedidoModal'),
+
+    ajax:{
+
+        url:"{% url 'buscar_clientes' %}",
+
+        dataType:'json',
+
+        delay:250,
+
+        data:function(params){
+
+            return {
+
+                term:params.term
+            }
+        },
+
+        processResults:function(data){
+
+            return {
+
+                results:data
+            }
+        }
+    }
+});
+
+/* =========================================
+PRODUCTOS
+========================================= */
+
+$('#productoSearch').select2({
+
+    dropdownParent:$('#pedidoModal'),
+
+    ajax:{
+
+        url:"{% url 'buscar_productos_pedidos' %}",
+
+        dataType:'json',
+
+        delay:250,
+
+        data:function(params){
+
+            return {
+
+                term:params.term,
+
+                sucursal:document.getElementById(
+                    'sucursal'
+                )?.value || 1
+            }
+        },
+
+        processResults:function(data){
+
+            return {
+
+                results:data
+            }
+        }
+    }
+});
+
+$('#productoSearch').on(
+    'select2:select',
+    function(e){
+
+        const p = e.params.data;
+
+        productos.push({
+
+            producto:p.id,
+            nombre:p.nombre,
+            precio:p.precio,
+            cantidad:3,
+            stock:p.stock
+        });
+
+        renderProductos();
+    }
+);
+
+/* =========================================
+RENDER PRODUCTOS
+========================================= */
+
+function renderProductos(){
+
+    let html='';
+
+    total=0;
+
+    productos.forEach((p,index)=>{
+
+        let subtotal =
+        p.precio * p.cantidad;
+
+        total += subtotal;
+
+        html += `
+
+        <div class="product-card">
+
+            <div class="product-top">
+
+                <div class="product-name">
+
+                    ${p.nombre}
+
+                </div>
+
+                <button
+                    class="btn-action btn-cancel"
+                    onclick="removeProducto(${index})"
+                >
+
+                    Eliminar
+
+                </button>
+
+            </div>
+
+            <div class="product-info">
+
+                <div>
+
+                    <label>
+                        Precio
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="C$ ${p.precio}"
+                        disabled
+                    >
+
+                </div>
+
+                <div>
+
+                    <label>
+                        Stock
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="${p.stock}"
+                        disabled
+                    >
+
+                </div>
+
+                <div>
+
+                    <label>
+                        Cantidad
+                    </label>
+
+                    <input
+                        type="number"
+                        min="3"
+                        step="3"
+                        value="${p.cantidad}"
+                        class="form-control"
+                        onchange="changeCantidad(
+                            ${index},
+                            this.value
+                        )"
+                    >
+
+                </div>
+
+                <div>
+
+                    <label>
+                        Subtotal
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="C$ ${subtotal}"
+                        disabled
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+        `;
+    });
+
+    document.getElementById(
+        'productsContainer'
+    ).innerHTML=html;
+
+    document.getElementById(
+        'totalPedido'
+    ).innerHTML=`Total: C$ ${total.toFixed(2)}`;
+}
+
+/* =========================================
+CANTIDAD
+========================================= */
+
+function changeCantidad(index,value){
+
+    value=parseInt(value);
+
+    if(value % 3 !== 0){
+
+        Swal.fire(
+            'Error',
+            'Solo múltiplos de 3',
+            'error'
+        );
+
+        return;
+    }
+
+    if(value > productos[index].stock){
+
+        Swal.fire(
+            'Error',
+            'Stock insuficiente',
+            'error'
+        );
+
+        return;
+    }
+
+    productos[index].cantidad=value;
+
+    renderProductos();
+}
+
+/* =========================================
+ELIMINAR
+========================================= */
+
+function removeProducto(index){
+
+    productos.splice(index,1);
+
+    renderProductos();
+}
+
+/* =========================================
+DELIVERY
+========================================= */
+
+document.getElementById(
+    'tipoEntrega'
+).addEventListener('change',function(){
+
+    const text =
+    this.options[this.selectedIndex]
+    .text
+    .toLowerCase();
+
+    if(text === 'delivery'){
+
+        $('#deliverySection').slideDown();
+
+    }else{
+
+        $('#deliverySection').slideUp();
+    }
+});
+
+/* =========================================
+GUARDAR PEDIDO
+========================================= */
+
+function guardarPedido(){
+
+    if(productos.length === 0){
+
+        Swal.fire(
+            'Error',
+            'Agrega productos',
+            'error'
+        );
+
+        return;
+    }
+
+    fetch("{% url 'crear_pedido' %}",{
+
+        method:'POST',
+
+        headers:{
+
+            'Content-Type':'application/json',
+            'X-CSRFToken':'{{ csrf_token }}'
+        },
+
+        body:JSON.stringify({
+
+            cliente:$('#clienteSelect').val(),
+
+            sucursal:document.getElementById(
+                'sucursal'
+            )?.value,
+
+            tipo_entrega:document.getElementById(
+                'tipoEntrega'
+            ).value,
+
+            metodo_envio:document.getElementById(
+                'metodoEnvio'
+            ).value,
+
+            productos:productos,
+
+            tipo_venta:'mayorista'
+        })
+    })
+
+    .then(r=>r.json())
+
+    .then(data=>{
+
+        if(data.success){
+
+            Swal.fire(
+                'Correcto',
+                data.message,
+                'success'
+            ).then(()=>{
+
+                location.reload();
+            });
+
+        }else{
+
+            Swal.fire(
+                'Error',
+                data.message,
+                'error'
+            );
+        }
+    });
+}
+
+/* =========================================
+CAMBIAR ESTADO
+========================================= */
+
+function cambiarEstado(id,estado){
+
+    Swal.fire({
+
+        title:'¿Cambiar estado?',
+
+        text:estado,
+
+        icon:'question',
+
+        showCancelButton:true,
+
+        confirmButtonText:'Sí'
+
+    }).then((result)=>{
+
+        if(result.isConfirmed){
+
+            fetch(
+
+                `{% url 'cambiar_estado_pedido' 0 %}`
+                .replace('0', id),
+
+                {
+
+                    method:'POST',
+
+                    headers:{
+
+                        'Content-Type':'application/json',
+
+                        'X-CSRFToken':'{{ csrf_token }}'
+                    },
+
+                    body:JSON.stringify({
+
+                        estado:estado
+                    })
+                }
+            )
+
+            .then(r=>r.json())
+
+            .then(data=>{
+
+                if(data.success){
+
+                    Swal.fire(
+                        'Correcto',
+                        data.message,
+                        'success'
+                    ).then(()=>{
+
+                        location.reload();
+                    });
+
+                }else{
+
+                    Swal.fire(
+                        'Error',
+                        data.message,
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+
+/* =========================================
+VER PEDIDO
+========================================= */
+
+function verPedido(id){
+
+    Swal.fire({
+
+        title:`Pedido #${id}`,
+
+        text:'Aquí puedes abrir tu modal detalle premium.',
+
+        icon:'info'
+    });
+}
+
+/* =========================================
+BUSCADOR
+========================================= */
+
+document.getElementById(
+    'searchInput'
+).addEventListener('keyup',function(){
+
+    const value =
+    this.value.toLowerCase();
+
+    const cards =
+    document.querySelectorAll('.order-card');
+
+    cards.forEach(card=>{
+
+        card.style.display =
+        card.innerText.toLowerCase()
+        .includes(value)
+        ? 'block'
+        : 'none';
+    });
+});
+
+/* =========================================
+FILTRO ESTADO
+========================================= */
+
+document.getElementById(
+    'filterEstado'
+).addEventListener('change',function(){
+
+    const value=this.value;
+
+    const cards =
+    document.querySelectorAll('.order-card');
+
+    cards.forEach(card=>{
+
+        const estado =
+        card.dataset.estado;
+
+        if(
+            value === ''
+            ||
+            estado === value
+        ){
+
+            card.style.display='block';
+
+        }else{
+
+            card.style.display='none';
+        }
+    });
+});
+
+</script>
+
+{% endblock %}

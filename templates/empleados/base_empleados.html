@@ -35,7 +35,7 @@
 
             <span>
                 <i class="fas fa-store"></i>
-                {{ empleado.ubicacion.nombre }}
+                {{ empleado.sucursal.nombre }}
             </span>
             {% endif %}
 
@@ -63,12 +63,17 @@
                 <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
                 <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-boxes-stacked"></i> Kardex</a></li>
                 <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
+                <li><a href="{% url 'pedidos' %}"><i class="fas fa-truck-ramp-box"></i> <span>Pedidos</span></a></li>
                 <li><a href=" {% url 'clientes' %} "><i class="fas fa-users"></i> <span>Clientes</span></a></li>
                 <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>
                 <li><a href="{% url 'proveedores' %}"><i class="fa-solid fa-handshake"></i> <span>Proveedores</span></a></li>
                 <li><a href="{% url 'usuarios' %}"><i class="fas fa-user-gear"></i> Usuarios</a></li>
                 <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i> Traslados</a></li>
                 <li><a href="{% url 'caja' %}"><i class="fas fa-cash-register"></i> Caja</a></li>
+
+                {% if rol_usuario == 'administrador' %}
+                    <li><a href="{% url 'ubicaciones' %}"><i class="fas fa-store"></i> <span>Ubicaciones</span></a></li>
+                {% endif %}
 
                 {% endif %}
 
@@ -77,11 +82,13 @@
                 <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
                 <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
                 <li><a href=" {% url 'clientes' %} "><i class="fas fa-users"></i> <span>Clientes</span></a></li>
+                <li><a href="{% url 'pedidos' %}"><i class="fas fa-truck-ramp-box"></i> <span>Pedidos</span></a></li>
                 {% endif %}
 
                 <!-- BODEGA -->
                 {% if rol_usuario == "bodega" %}
                 <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
+                <li><a href="{% url 'pedidos' %}"><i class="fas fa-truck-ramp-box"></i> <span>Pedidos</span></a></li>
                 <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-boxes-stacked"></i> Kardex</a></li>
                 <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i> Traslados</a></li>
                 <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>

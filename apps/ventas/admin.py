@@ -25,14 +25,14 @@ class VentaAdmin(admin.ModelAdmin):
         for detalle in venta.detalleventa_set.all():
             inv = Inventario.objects.get(
                 producto=detalle.producto,
-                ubicacion=venta.empleado.ubicacion
+                sucursal=venta.empleado.sucursal
             )
             inv.stock -= detalle.cantidad
             inv.save()
 
             Kardex.objects.create(
                 producto=detalle.producto,
-                ubicacion=venta.empleado.ubicacion,
+                bodega=venta.empleado.bodega,
                 tipo='SALIDA',
                 cantidad=detalle.cantidad,
                 descripcion='Venta'

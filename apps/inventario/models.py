@@ -1,25 +1,25 @@
 from django.db import models
 from apps.productos.models import Producto
-from apps.usuarios.models import Ubicacion, Empleado, Estado
+from apps.usuarios.models import Sucursal, Empleado, Estado, Bodega
 
 class Inventario(models.Model):
     inventario_id = models.AutoField(primary_key=True, db_column='Inventario_id')
 
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, db_column='Producto_id')
-    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, db_column='Ubicacion_id')
+    bodega = models.ForeignKey(Bodega, on_delete=models.CASCADE, db_column='Bodega_id')
 
     stock = models.IntegerField(default=0, db_column='Stock')
 
     class Meta:
         db_table = 'Inventarios'
-        unique_together = ('producto', 'ubicacion')
+        unique_together = ('producto', 'bodega')
 
 
 class Kardex(models.Model):
     kardex_id = models.AutoField(primary_key=True, db_column='Kardex_id')
 
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, db_column='Producto_id')
-    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, db_column='Ubicacion_id')
+    bodega = models.ForeignKey(Bodega, on_delete=models.CASCADE, db_column='Bodega_id')
     empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, db_column='Empleado_id')
 
     TIPOS = (
@@ -37,27 +37,81 @@ class Kardex(models.Model):
     class Meta:
         db_table = 'Kardex'
 
+class AjusteInventario(models.Model):
+
+    TIPOS = (
+        ('ENTRADA', 'ENTRADA'),
+        ('SALIDA', 'SALIDA'),
+    )
+
+    MOTIVOS = (
+        ('PRODUCTO_DAÑADO', 'Producto dañado'),
+        ('PERDIDA', 'Pérdida'),
+        ('REGALIA', 'Regalía'),
+        ('AJUSTE_MANUAL', 'Ajuste manual'),
+        ('ERROR_INVENTARIO', 'Error inventario'),
+    )
+
+    ajuste_id = models.AutoField(
+        primary_key=True,
+        db_column='Ajuste_id'
+    )
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        db_column='Producto_id'
+    )
+
+    bodega = models.ForeignKey(
+        Bodega,
+        on_delete=models.CASCADE,
+        db_column='Bodega_id'
+    )
+
+    empleado = models.ForeignKey(
+        Empleado,
+        on_delete=models.CASCADE,
+        db_column='Empleado_id'
+    )
+
+    tipo = models.CharField(
+        max_length=10,
+        choices=TIPOS,
+        db_column='Tipo'
+    )
+
+    cantidad = models.IntegerField(
+        db_column='Cantidad'
+    )
+
+    motivo = models.CharField(
+        max_length=50,
+        choices=MOTIVOS,
+        db_column='Motivo'
+    )
+
+    observacion = models.TextField(
+        blank=True,
+        null=True,
+        db_column='Observacion'
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True,
+        db_column='Fecha'
+    )
+
+    class Meta:
+        db_table = 'AjustesInventario'
 
 class Transferencia(models.Model):
     id = models.AutoField(db_column='Transferencia_id', primary_key=True)
 
-    origen = models.ForeignKey(Ubicacion, db_column='UbicacionOrigen_id', on_delete=models.CASCADE, related_name='transferencias_origen')
-    destino = models.ForeignKey(
-        Ubicacion,
-        db_column='UbicacionDestino_id',
-        on_delete=models.CASCADE,
-        related_name='transferencias_destino'
-    )
-    empleado = models.ForeignKey(
-        Empleado,
-        db_column='Empleado_id',
-        on_delete=models.CASCADE
-    )
-    estado = models.ForeignKey(
-        Estado,
-        db_column='Estado_id',
-        on_delete=models.CASCADE
-    )
+    origen = models.ForeignKey(Bodega, db_column='BodegaOrigen_id', on_delete=models.CASCADE, related_name='transferencias_origen')
+    destino = models.ForeignKey(Bodega,db_column='BodegaDestino_id',on_delete=models.CASCADE, related_name='transferencias_destino')
+    empleado = models.ForeignKey(Empleado,db_column='Empleado_id',on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado,db_column='Estado_id',on_delete=models.CASCADE)
     fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)
 
     class Meta:
@@ -70,18 +124,8 @@ class Transferencia(models.Model):
 class DetalleTransferencia(models.Model):
     id = models.AutoField(db_column='Detalle_id', primary_key=True)
 
-    transferencia = models.ForeignKey(
-        'Transferencia',
-        db_column='Transferencia_id',
-        on_delete=models.CASCADE
-    )
-
-    producto = models.ForeignKey(
-        Producto,
-        db_column='Producto_id',
-        on_delete=models.CASCADE
-    )
-
+    transferencia = models.ForeignKey('Transferencia',db_column='Transferencia_id',on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto,db_column='Producto_id',on_delete=models.CASCADE)
     cantidad = models.IntegerField(db_column='Cantidad')
 
     class Meta:

@@ -34,40 +34,65 @@ class Direccion(models.Model):
         db_table = 'Direcciones'
 
 
-class Ubicacion(models.Model):
-    ubicacion_id = models.AutoField(primary_key=True, db_column='Ubicacion_id')
+# =========================================
+# SUCURSALES
+# =========================================
+class Sucursal(models.Model):
+    sucursal_id = models.AutoField(primary_key=True)
 
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
-    direccion = models.ForeignKey(Direccion, on_delete=models.CASCADE, db_column='Direccion_id')
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    direccion = models.ForeignKey(Direccion, on_delete=models.CASCADE)
 
-    nombre = models.CharField(max_length=100, db_column='Nombre')
+    nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=10, unique=True)
-    tipo = models.CharField(max_length=20, db_column='Tipo')
-    nivel = models.CharField(max_length=20, db_column='Nivel')
 
     class Meta:
-        db_table = 'Ubicaciones'
-
-
-class TelefonoUbicacion(models.Model):
-    id = models.AutoField(db_column='Telefono_id', primary_key=True)
-
-    ubicacion = models.ForeignKey(
-        Ubicacion,
-        db_column='Ubicacion_id',
-        on_delete=models.CASCADE
-    )
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
-
-    numero = models.CharField(db_column='Numero', max_length=20)
-    operadora = models.CharField(db_column='Operadora', max_length=20, null=True, blank=True)
-    tipo = models.CharField(db_column='Tipo', max_length=20, null=True, blank=True)
-
-    class Meta:
-        db_table = 'Telefonos_Ubicaciones'
+        db_table = 'Sucursales'
 
     def __str__(self):
-        return f"{self.numero} - {self.ubicacion}"
+        return self.nombre
+
+
+# =========================================
+# TELEFONOS SUCURSALES
+# =========================================
+class TelefonoSucursal(models.Model):
+    telefono_id = models.AutoField(primary_key=True)
+
+    sucursal = models.ForeignKey(Sucursal,on_delete=models.CASCADE,related_name='telefonos')
+    estado = models.ForeignKey(Estado,on_delete=models.CASCADE)
+    
+    numero = models.CharField(max_length=20)
+    operadora = models.CharField(max_length=20, blank=True, null=True)
+    tipo = models.CharField(max_length=20,blank=True,null=True)
+    codigo = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        db_table = 'Telefonos_Sucursales'
+
+    def __str__(self):
+        return self.numero
+
+
+# =========================================
+# BODEGAS
+# =========================================
+class Bodega(models.Model):
+    bodega_id = models.AutoField(primary_key=True)
+
+    estado = models.ForeignKey(Estado,on_delete=models.CASCADE)
+    direccion = models.ForeignKey(Direccion,on_delete=models.CASCADE)
+    sucursal = models.OneToOneField(Sucursal,on_delete=models.CASCADE,blank=True,null=True,related_name='bodega')
+
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=10,unique=True)
+
+    class Meta:
+        db_table = 'Bodegas'
+
+    def __str__(self):
+        return self.nombre
+
 
 
 class Empleado(models.Model):
@@ -77,7 +102,7 @@ class Empleado(models.Model):
 
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, db_column='Estado_id')
     rol = models.ForeignKey(Rol, on_delete=models.CASCADE, db_column='Rol_id')
-    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, db_column='Ubicacion_id')
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.CASCADE, db_column='Sucursal_id')
 
     class Meta:
         db_table = 'Empleados'

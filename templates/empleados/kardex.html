@@ -10,8 +10,49 @@
 
     <!-- 🔷 HEADER -->
     <div class="header-section">
-        <h2><i class="fas fa-chart-line"></i> Kardex de Producto</h2>
+
+        <div>
+
+            <h2>
+                <i class="fas fa-chart-line"></i>
+                Kardex de Producto
+            </h2>
+
+            <p style="margin-top:5px;color:#777;">
+                Historial completo de movimientos del producto
+            </p>
+
+        </div>
+
+        <!-- BOTON AJUSTE -->
+        {% if request.user.empleado.rol.nombre == 'Administrador' or request.user.empleado.rol.nombre == 'Gerente' or request.user.empleado.rol.nombre == 'Bodega' %}
+
+        <button type="button" class="btn-ajuste" onclick="abrirModalAjuste()">
+
+            <i class="fas fa-boxes"></i>
+            Nuevo Ajuste
+
+        </button>
+
+        {% endif %}
+
     </div>
+
+    <!-- MENSAJES -->
+    {% if messages %}
+
+        {% for message in messages %}
+
+        <div class="alert-message {{ message.tags }}">
+
+            <i class="fas fa-circle-info"></i>
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+
+    {% endif %}
 
     <!-- 🧾 INFO DEL PRODUCTO -->
     <div class="kardex-info-card">
@@ -40,11 +81,13 @@
 
             <div>
                 <label>Estado</label>
+
                 <p>
                     <span class="{% if producto.estado.nombre == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
                         {{ producto.estado.nombre }}
                     </span>
                 </p>
+
             </div>
 
             <div>
@@ -54,24 +97,27 @@
 
             <div>
                 <label>Precio Venta</label>
-                <p>${{ producto.precio_venta }}</p>
+                <p>C${{ producto.precio_venta }}</p>
             </div>
 
             <div>
-                <label>Último Costo</label>
-                <p>${{ ultimo_precio }}</p>
+                <label>Precio Costo</label>
+                <p>C${{ precio_c }}</p>
             </div>
 
         </div>
 
     </div>
 
-    <!-- 📊 TABLA KARDEX CONTABLE -->
+    <!-- 📊 TABLA KARDEX -->
     <div class="table-container">
+
         <table class="table-modern kardex-table">
 
             <thead>
+
                 <tr>
+
                     <th rowspan="2">Fecha</th>
                     <th rowspan="2">Tipo</th>
                     <th rowspan="2">Documento</th>
@@ -79,116 +125,592 @@
                     <th colspan="2">Entradas</th>
                     <th colspan="2">Salidas</th>
                     <th colspan="2">Saldo</th>
+
                 </tr>
 
                 <tr>
-                    <th>Cant.</th>
-                    <th>Valor</th>
 
                     <th>Cant.</th>
                     <th>Valor</th>
 
                     <th>Cant.</th>
                     <th>Valor</th>
+
+                    <th>Cant.</th>
+                    <th>Valor</th>
+
                 </tr>
+
             </thead>
 
             <tbody>
+
                 {% for m in movimientos %}
+
                 <tr>
 
-                    <td>{{ m.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        {{ m.fecha|date:"d/m/Y H:i" }}
+                    </td>
 
                     <td>
+
                         <span class="{% if m.tipo == 'ENTRADA' %}badge-activo{% else %}badge-inactivo{% endif %}">
                             {{ m.tipo }}
                         </span>
+
                     </td>
 
-                    <td>{{ m.documento }}</td>
+                    <td>
+
+                        <div class="documento-cell">
+
+                            {{ m.documento }}
+
+                            {% if m.descripcion %}
+                                <small class="descripcion-kardex">
+                                    {{ m.descripcion }}
+                                </small>
+                            {% endif %}
+
+                        </div>
+
+                    </td>
 
                     <!-- ENTRADAS -->
+
                     <td>
+
                         {% if m.tipo == 'ENTRADA' %}
                             {{ m.cantidad }}
                         {% endif %}
+
                     </td>
 
                     <td>
+
                         {% if m.tipo == 'ENTRADA' %}
-                            ${{ m.valor }}
+                            C${{ m.valor }}
                         {% endif %}
+
                     </td>
 
                     <!-- SALIDAS -->
+
                     <td>
+
                         {% if m.tipo == 'SALIDA' %}
                             {{ m.cantidad }}
                         {% endif %}
+
                     </td>
 
                     <td>
+
                         {% if m.tipo == 'SALIDA' %}
-                            ${{ m.valor }}
+                            C${{ m.valor }}
                         {% endif %}
+
                     </td>
 
                     <!-- SALDO -->
+
                     <td>{{ m.saldo }}</td>
-                    <td>${{ m.saldo_valor }}</td>
+
+                    <td>
+                        C${{ m.saldo_valor }}
+                    </td>
 
                 </tr>
+
                 {% empty %}
+
                 <tr>
-                    <td colspan="9" class="text-center">No hay movimientos registrados</td>
+
+                    <td colspan="9" class="text-center">
+                        No hay movimientos registrados
+                    </td>
+
                 </tr>
+
                 {% endfor %}
+
             </tbody>
 
         </table>
+
     </div>
 
 </div>
 
-<!-- 🎨 ESTILO EXTRA -->
+<!-- =========================================
+     MODAL AJUSTE INVENTARIO
+========================================= -->
+
+<div class="modal-overlay" id="modalAjuste">
+
+    <div class="custom-modal">
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+            <h3>
+
+                <i class="fas fa-warehouse"></i>
+                Ajuste de Inventario
+
+            </h3>
+
+            <button type="button" class="close-btn" onclick="cerrarModalAjuste()">
+                &times;
+            </button>
+
+        </div>
+
+        <!-- MENSAJES -->
+
+        <div id="alertaModal"></div>
+
+        <!-- FORM -->
+
+        <form method="POST" action="{% url 'crear_ajuste_inventario' %}" id="formAjuste">
+
+            {% csrf_token %}
+
+            <input type="hidden" name="producto_id" value="{{ producto.producto_id }}">
+
+            <div class="modal-body">
+
+                <!-- PRODUCTO -->
+
+                <div class="form-group">
+
+                    <label>Producto</label>
+
+                    <input type="text" value="{{ producto.nombre }}" readonly>
+
+                </div>
+
+                <!-- TIPO -->
+
+                <div class="form-group">
+
+                    <label>Tipo Movimiento</label>
+
+                    <select name="tipo" id="tipoMovimiento" required>
+
+                        <option value="">
+                            Seleccione
+                        </option>
+
+                        <option value="ENTRADA">
+                            Entrada
+                        </option>
+
+                        <option value="SALIDA">
+                            Salida
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- CANTIDAD -->
+
+                <div class="form-group">
+
+                    <label>Cantidad</label>
+
+                    <input 
+                        type="number"
+                        name="cantidad"
+                        id="cantidadAjuste"
+                        min="3"
+                        step="3"
+                        placeholder="Ejemplo: 3, 6, 9..."
+                        required
+                    >
+
+                    <small class="help-text">
+                        Solo múltiplos de 3
+                    </small>
+
+                </div>
+
+                <!-- MOTIVO -->
+
+                <div class="form-group">
+
+                    <label>Motivo</label>
+
+                    <select name="motivo" required>
+
+                        <option value="">
+                            Seleccione
+                        </option>
+
+                        <option value="PRODUCTO_DAÑADO">
+                            Producto Dañado
+                        </option>
+
+                        <option value="PERDIDA">
+                            Pérdida
+                        </option>
+
+                        <option value="REGALIA">
+                            Regalía
+                        </option>
+
+                        <option value="AJUSTE_MANUAL">
+                            Ajuste Manual
+                        </option>
+
+                        <option value="ERROR_INVENTARIO">
+                            Error de Inventario
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- OBSERVACION -->
+
+                <div class="form-group">
+
+                    <label>Observación</label>
+
+                    <textarea 
+                        name="observacion"
+                        rows="4"
+                        placeholder="Detalle del ajuste..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button 
+                    type="button"
+                    class="btn-secondary"
+                    onclick="cerrarModalAjuste()"
+                >
+
+                    Cancelar
+
+                </button>
+
+                <button type="submit" class="btn-primary">
+
+                    Guardar Ajuste
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- 🎨 ESTILOS -->
 <style>
 
-.kardex-info-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.kardex-info-card{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
 }
 
-.info-grid label {
-    font-size: 12px;
-    color: #888;
+.info-grid label{
+    font-size:12px;
+    color:#888;
 }
 
-.info-grid p {
-    font-weight: bold;
-    margin: 5px 0 0;
+.info-grid p{
+    font-weight:bold;
+    margin:5px 0 0;
 }
 
-.kardex-table thead th {
-    text-align: center;
+.kardex-table thead th{
+    text-align:center;
 }
 
-.kardex-table tbody td {
-    text-align: center;
+.kardex-table tbody td{
+    text-align:center;
 }
 
-.kardex-table tbody tr:hover {
-    background-color: #f5f5f5;
+.kardex-table tbody tr:hover{
+    background-color:#f5f5f5;
+}
+
+.documento-cell{
+    font-weight:600;
+    color:#444;
+}
+
+.descripcion-kardex{
+    display:block;
+    color:#777;
+    margin-top:5px;
+    font-size:11px;
+}
+
+.header-section{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.btn-ajuste{
+    background:#e91e63;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-ajuste:hover{
+    background:#c2185b;
+}
+
+.alert-message{
+    padding:14px 16px;
+    border-radius:8px;
+    margin-bottom:15px;
+    font-weight:500;
+}
+
+.alert-message.success{
+    background:#e8f5e9;
+    color:#2e7d32;
+    border:1px solid #81c784;
+}
+
+.alert-message.error{
+    background:#ffebee;
+    color:#c62828;
+    border:1px solid #ef9a9a;
+}
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.custom-modal{
+    width:550px;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    animation:modalShow .3s ease;
+}
+
+@keyframes modalShow{
+
+    from{
+        transform:translateY(-20px);
+        opacity:0;
+    }
+
+    to{
+        transform:translateY(0);
+        opacity:1;
+    }
+
+}
+
+.modal-header{
+    background:#e91e63;
+    color:white;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.close-btn{
+    background:none;
+    border:none;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+}
+
+.modal-body{
+    padding:20px;
+}
+
+.form-group{
+    margin-bottom:16px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:600;
+    font-size:14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+.help-text{
+    color:#888;
+    font-size:12px;
+}
+
+.modal-footer{
+    padding:15px 20px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.btn-primary{
+    background:#e91e63;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-secondary{
+    background:#555;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-primary:hover{
+    background:#c2185b;
+}
+
+.btn-secondary:hover{
+    background:#333;
 }
 
 </style>
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+function abrirModalAjuste(){
+
+    document.getElementById(
+        'modalAjuste'
+    ).style.display = 'flex';
+
+}
+
+function cerrarModalAjuste(){
+
+    document.getElementById(
+        'modalAjuste'
+    ).style.display = 'none';
+
+    limpiarAlertasModal();
+
+}
+
+function limpiarAlertasModal(){
+
+    document.getElementById(
+        'alertaModal'
+    ).innerHTML = '';
+
+}
+
+/* VALIDACION FRONTEND */
+
+document.getElementById(
+    'formAjuste'
+).addEventListener('submit', function(e){
+
+    let cantidad = parseInt(
+        document.getElementById(
+            'cantidadAjuste'
+        ).value
+    );
+
+    let tipo = document.getElementById(
+        'tipoMovimiento'
+    ).value;
+
+    let stockActual = parseInt(
+        "{{ stock }}"
+    );
+
+    let alerta = document.getElementById(
+        'alertaModal'
+    );
+
+    alerta.innerHTML = '';
+
+    // VALIDAR MULTIPLO DE 3
+
+    if(cantidad % 3 !== 0){
+
+        e.preventDefault();
+
+        alerta.innerHTML = `
+            <div class="alert-message error">
+                La cantidad debe ser múltiplo de 3
+            </div>
+        `;
+
+        return;
+    }
+
+    // VALIDAR STOCK
+
+    if(tipo === 'SALIDA' && cantidad > stockActual){
+
+        e.preventDefault();
+
+        alerta.innerHTML = `
+            <div class="alert-message error">
+                Stock insuficiente. Disponible: ${stockActual}
+            </div>
+        `;
+
+        return;
+    }
+
+});
+
+</script>
 
 {% endblock %}

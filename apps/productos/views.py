@@ -10,7 +10,7 @@ from apps.productos.models import Producto, Categoria, Marca
 from apps.inventario.models import Inventario
 from apps.usuarios.models import Estado, Empleado
 
-# 🔐 función simple de roles (ajústala a tu lógica real)
+# 🔐 función simple de role
 def es_admin_o_bodega(user):
     try:
         empleado = Empleado.objects.select_related('rol').get(user=user)
@@ -57,20 +57,97 @@ def tienda(request):
 def crear_producto(request):
 
     if request.method == 'POST':
-        Producto.objects.create(
-            codigo=request.POST['codigo'],
-            nombre=request.POST['nombre'],
-            descripcion=request.POST['descripcion'],
-            categoria_id=request.POST['categoria'],
-            marca_id=request.POST['marca'],
-            estado=Estado.objects.get(pk=1),
-            imagen=request.FILES.get('imagen')
-        )
 
-        messages.success(request, "Producto creado")
+        # =====================================
+        # GUARDAR DATOS EN SESSION
+        # =====================================
+
+        request.session['modal_producto_data'] = {
+            'codigo': request.POST.get('codigo', ''),
+            'nombre': request.POST.get('nombre', ''),
+            'descripcion': request.POST.get('descripcion', ''),
+            'categoria': request.POST.get('categoria', ''),
+            'marca': request.POST.get('marca', ''),
+        }
+
+        # ABRIR MODAL SI HAY ERROR
+        request.session['abrir_modal'] = 'modalProducto'
+
+        try:
+
+            codigo = request.POST.get('codigo')
+            nombre = request.POST.get('nombre')
+
+            # VALIDACIONES
+            if not codigo:
+                raise Exception("El código es obligatorio")
+
+            if not nombre:
+                raise Exception("El nombre es obligatorio")
+
+            # VALIDAR CODIGO DUPLICADO
+            if Producto.objects.filter(codigo=codigo).exists():
+                raise Exception("Ya existe un producto con ese código")
+
+            estado_activo = Estado.objects.get(
+                nombre__iexact='Activo'
+            )
+
+            # =====================================
+            # CREAR PRODUCTO
+            # =====================================
+
+            producto = Producto.objects.create(
+
+                codigo=codigo,
+
+                nombre=nombre,
+
+                descripcion=request.POST.get(
+                    'descripcion',
+                    ''
+                ),
+
+                categoria_id=request.POST.get('categoria'),
+
+                marca_id=request.POST.get('marca'),
+
+                estado=estado_activo,
+
+                imagen=request.FILES.get('imagen')
+
+            )
+
+            # =====================================
+            # LIMPIAR SESSION
+            # =====================================
+
+            if 'modal_producto_data' in request.session:
+                del request.session['modal_producto_data']
+
+            if 'abrir_modal' in request.session:
+                del request.session['abrir_modal']
+
+            messages.success(
+                request,
+                f"Producto '{producto.nombre}' creado correctamente"
+            )
+
+        except Estado.DoesNotExist:
+
+            messages.error(
+                request,
+                "No existe un estado llamado 'Activo'"
+            )
+
+        except Exception as e:
+
+            messages.error(
+                request,
+                str(e)
+            )
 
     return redirect('inventario')
-
 
 # 🔹 EDITAR PRODUCTO
 @login_required
@@ -79,24 +156,97 @@ def editar_producto(request, id):
     if not es_admin_o_bodega(request.user):
         return redirect('inventario')
 
-    producto = get_object_or_404(Producto, pk=id)
+    producto = get_object_or_404(
+        Producto,
+        pk=id
+    )
 
     if request.method == 'POST':
-        producto.codigo = request.POST['codigo']
-        producto.nombre = request.POST['nombre']
-        producto.descripcion = request.POST.get('descripcion', '')
-        producto.categoria_id = request.POST['categoria']
-        producto.marca_id = request.POST['marca']
+
+        codigo = request.POST.get('codigo')
+
+        # =========================
+        # VALIDAR CÓDIGO DUPLICADO
+        # =========================
+
+        existe = Producto.objects.filter(
+            codigo=codigo
+        ).exclude(
+            pk=producto.producto_id
+        ).exists()
+
+        if existe:
+
+            messages.error(
+                request,
+                f"El código '{codigo}' ya existe"
+            )
+
+            # GUARDAR DATOS DEL MODAL
+            request.session['modal_editar_data'] = {
+
+                'id': producto.producto_id,
+                'codigo': request.POST.get('codigo'),
+                'nombre': request.POST.get('nombre'),
+                'descripcion': request.POST.get('descripcion'),
+                'categoria': request.POST.get('categoria'),
+                'marca': request.POST.get('marca'),
+
+                # imagen actual
+                'imagen_actual': (
+                    producto.imagen.url
+                    if producto.imagen else ''
+                )
+            }
+
+            request.session['abrir_modal'] = 'modalProductoEditar'
+
+            return redirect('inventario')
+
+        # =========================
+        # ACTUALIZAR
+        # =========================
+
+        producto.codigo = codigo
+        producto.nombre = request.POST.get('nombre')
+        producto.descripcion = request.POST.get(
+            'descripcion',
+            ''
+        )
+
+        producto.categoria_id = request.POST.get(
+            'categoria'
+        )
+
+        producto.marca_id = request.POST.get(
+            'marca'
+        )
 
         if request.FILES.get('imagen'):
-            producto.imagen = request.FILES.get('imagen')
+
+            producto.imagen = request.FILES.get(
+                'imagen'
+            )
 
         producto.save()
 
-        messages.success(request, "Producto actualizado")
+        # LIMPIAR SESSION
+        request.session.pop(
+            'modal_editar_data',
+            None
+        )
+
+        request.session.pop(
+            'abrir_modal',
+            None
+        )
+
+        messages.success(
+            request,
+            "Producto actualizado correctamente"
+        )
 
     return redirect('inventario')
-
 
 # 🔹 CATEGORIA
 @login_required
@@ -149,41 +299,108 @@ def editar_marca(request, id):
     return redirect('inventario')
 
 
-# 🔹 DETALLE JSON
+
+@login_required
 def producto_detalle_json(request, id):
 
-    producto = Producto.objects.select_related('categoria','marca','estado').get(pk=id)
+    # =========================================
+    # PRODUCTO
+    # =========================================
+    producto = Producto.objects.select_related(
+        'categoria',
+        'marca',
+        'estado'
+    ).get(pk=id)
 
-    inventarios = Inventario.objects.select_related('ubicacion').filter(producto=producto)
+    # =========================================
+    # INVENTARIOS
+    # =========================================
+    inventarios = Inventario.objects.select_related(
+        'bodega',
+        'bodega__sucursal'
+    ).filter(
+        producto=producto
+    )
 
-    # 🔥 obtener rol correctamente
-    empleado = Empleado.objects.select_related('rol').get(user=request.user)
-    rol = empleado.rol.nombre
+    # =========================================
+    # EMPLEADO
+    # =========================================
+    empleado = Empleado.objects.select_related(
+        'rol'
+    ).get(user=request.user)
 
+    # =========================================
+    # STOCK TOTAL
+    # =========================================
+    stock_total = inventarios.aggregate(
+        total=Sum('stock')
+    )['total'] or 0
+
+    # =========================================
+    # ARMAR INVENTARIOS
+    # =========================================
+    inventarios_data = []
+
+    for i in inventarios:
+
+        nombre_bodega = "Sin bodega"
+        nombre_sucursal = "Sin sucursal"
+
+        if i.bodega:
+            nombre_bodega = i.bodega.nombre
+
+            if i.bodega.sucursal:
+                nombre_sucursal = i.bodega.sucursal.nombre
+
+        inventarios_data.append({
+            'bodega': nombre_bodega,
+            'sucursal': nombre_sucursal,
+            'stock': i.stock
+        })
+
+    # =========================================
+    # RESPONSE
+    # =========================================
     data = {
+
         'codigo': producto.codigo,
+
         'nombre': producto.nombre,
-        'categoria': producto.categoria.nombre,
-        'marca': producto.marca.nombre,
+
+        'categoria': (
+            producto.categoria.nombre
+            if producto.categoria else ""
+        ),
+
+        'marca': (
+            producto.marca.nombre
+            if producto.marca else ""
+        ),
+
         'descripcion': producto.descripcion or "",
-        'imagen': producto.imagen.url if producto.imagen else "",
 
-        'precio_costo': float(producto.precio_c or 0),
-        'precio_venta': float(producto.precio_venta or 0),
+        'imagen': (
+            producto.imagen.url
+            if producto.imagen else ""
+        ),
 
-        'rol': rol,
+        'precio_costo': float(
+            producto.precio_c or 0
+        ),
 
-        'stock': inventarios.aggregate(total=Sum('stock'))['total'] or 0,
+        'precio_venta': float(
+            producto.precio_venta or 0
+        ),
 
-        'inventarios': [
-            {
-                'ubicacion': i.ubicacion.nombre,
-                'stock': i.stock
-            } for i in inventarios
-        ]
+        'rol': empleado.rol.nombre,
+
+        'stock': stock_total,
+
+        'inventarios': inventarios_data
     }
 
     return JsonResponse(data)
+
 
 
 # 🔹 CAMBIAR ESTADO
@@ -208,15 +425,18 @@ def cambiar_estado_producto(request, id):
 
 
 def buscar_productos(request):
+
     term = request.GET.get('term', '')
 
     productos = Producto.objects.filter(
-        nombre__icontains=term
+        nombre__icontains=term,
+        estado__nombre__iexact='Activo'
     )[:10]
 
     data = []
 
     for p in productos:
+
         data.append({
             'id': p.producto_id,
             'text': f"{p.nombre} - ${p.precio_venta}",

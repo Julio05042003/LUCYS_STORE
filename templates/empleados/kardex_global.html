@@ -3,196 +3,463 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+
+.inventory-wrapper{
+    padding: 20px;
+}
+
+/* HEADER */
+
+.header-section{
+    margin-bottom: 20px;
+}
+
+.header-section h2{
+    font-size: 30px;
+    font-weight: bold;
+}
+
+/* FILTROS */
+
+.filters-card{
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 15px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.field{
+    display: flex;
+    flex-direction: column;
+}
+
+.field label{
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #777;
+}
+
+.field input,
+.field select{
+
+    padding: 10px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    outline: none;
+}
+
+.buttons{
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.btn-primary{
+
+    background: #f06292;
+
+    color: white;
+
+    border: none;
+
+    padding: 10px 15px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+}
+
+.btn-secondary{
+
+    background: #444;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding: 10px 15px;
+
+    border-radius: 10px;
+}
+
+.btn-primary:hover{
+    background: #ec407a;
+}
+
+.btn-secondary:hover{
+    background: #222;
+}
+
+/* TABLA */
+
+.table-container{
+
+    background: white;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.kardex-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.kardex-table thead{
+
+    background: #f48ca7;
+
+    color: white;
+}
+
+.kardex-table th,
+.kardex-table td{
+
+    padding: 14px;
+
+    text-align: center;
+}
+
+.kardex-table tbody tr{
+    border-bottom: 1px solid #eee;
+}
+
+.kardex-table tbody tr:hover{
+    background: #fafafa;
+}
+
+/* PRODUCTO */
+
+.producto-box{
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.producto-box img{
+
+    width: 55px;
+
+    height: 55px;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+}
+
+/* BADGES */
+
+.badge-activo{
+
+    background: #d1fae5;
+
+    color: #065f46;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.badge-inactivo{
+
+    background: #fee2e2;
+
+    color: #991b1b;
+
+    padding: 6px 12px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+/* BOTON */
+
+.btn-kardex{
+
+    background: #f06292;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding: 8px 14px;
+
+    border-radius: 10px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+.btn-kardex:hover{
+
+    background: #ec407a;
+
+    color: white;
+}
+
+</style>
 
 <div class="inventory-wrapper">
 
-    <!-- 🔷 HEADER -->
+    <!-- HEADER -->
     <div class="header-section">
-        <h2><i class="fas fa-chart-line"></i> Kardex Global</h2>
+
+        <h2>
+            <i class="fas fa-chart-line"></i>
+            Kardex Global
+        </h2>
+
     </div>
 
-    <!-- 🔎 FILTROS -->
+    <!-- FILTROS -->
     <form method="GET" class="filters-card">
 
-        <!-- BUSQUEDA POR NOMBRE O CODIGO -->
+        <!-- BUSQUEDA -->
         <div class="field">
-            <label>Buscar Producto</label>
-            <input 
-                type="text" 
-                name="busqueda" 
+
+            <label>Buscar</label>
+
+            <input
+                type="text"
+                name="busqueda"
                 placeholder="Nombre o código..."
                 value="{{ busqueda }}"
             >
+
         </div>
 
-        <!-- TIPO -->
+        <!-- CATEGORIA -->
         <div class="field">
-            <label>Tipo</label>
-            <select name="tipo">
-                <option value="TODOS" {% if tipo == "TODOS" %}selected{% endif %}>Todos</option>
-                <option value="ENTRADA" {% if tipo == "ENTRADA" %}selected{% endif %}>Entradas</option>
-                <option value="SALIDA" {% if tipo == "SALIDA" %}selected{% endif %}>Salidas</option>
+
+            <label>Categoría</label>
+
+            <select name="categoria">
+
+                <option value="TODAS">Todas</option>
+
+                {% for c in categorias %}
+
+                <option
+                    value="{{ c.categoria_id }}"
+                    {% if categoria == c.categoria_id|stringformat:"s" %}
+                    selected
+                    {% endif %}
+                >
+                    {{ c.nombre }}
+                </option>
+
+                {% endfor %}
+
             </select>
+
         </div>
 
-        <!-- FECHA DESDE -->
+        <!-- ESTADO -->
         <div class="field">
-            <label>Desde</label>
-            <input type="date" name="desde" value="{{ desde }}">
-        </div>
 
-        <!-- FECHA HASTA -->
-        <div class="field">
-            <label>Hasta</label>
-            <input type="date" name="hasta" value="{{ hasta }}">
+            <label>Estado</label>
+
+            <select name="estado">
+
+                <option value="TODOS">Todos</option>
+
+                <option value="Activo"
+                {% if estado == "Activo" %}selected{% endif %}
+                >
+                    Activo
+                </option>
+
+                <option value="Inactivo"
+                {% if estado == "Inactivo" %}selected{% endif %}
+                >
+                    Inactivo
+                </option>
+
+            </select>
+
         </div>
 
         <!-- BOTONES -->
         <div class="field buttons">
 
             <button type="submit" class="btn-primary">
-                <i class="fas fa-search"></i> Filtrar
+
+                <i class="fas fa-search"></i>
+                Filtrar
+
             </button>
 
-            <a href="{% url 'kardex_global_view' %}" class="btn-secondary">
-                <i class="fas fa-broom"></i> Limpiar
+            <a href="{% url 'kardex_global_view' %}"
+               class="btn-secondary">
+
+                <i class="fas fa-broom"></i>
+                Limpiar
+
             </a>
 
         </div>
 
     </form>
 
-    <!-- 📊 TABLA KARDEX -->
+    <!-- TABLA -->
     <div class="table-container">
 
-        <table class="table-modern kardex-table">
+        <div class="table-scroll">
+            <table class="kardex-table">
 
             <thead>
+
                 <tr>
-                    <th>Fecha</th>
+
                     <th>Producto</th>
+
                     <th>Código</th>
-                    <th>Ubicación</th>
-                    <th>Tipo</th>
-                    <th>Documento</th>
-                    <th>Cantidad</th>
-                    <th>Valor</th>
-                    <th>Saldo</th>
+
+                    <th>Categoría</th>
+
+                    <th>Marca</th>
+
+                    <th>Stock</th>
+
+                    <th>Entradas</th>
+
+                    <th>Salidas</th>
+
+                    <th>Costo</th>
+
+                    <th>Venta</th>
+
+                    <th>Valor Stock</th>
+
+                    <th>Estado</th>
+
+                    <th>Acción</th>
+
                 </tr>
+
             </thead>
 
             <tbody>
 
-                {% for m in movimientos %}
+                {% for p in productos %}
+
                 <tr>
 
-                    <td>{{ m.fecha|date:"d/m/Y H:i" }}</td>
-                    <td>{{ m.producto }}</td>
-                    <td>{{ m.codigo }}</td>
-                    <td>{{ m.ubicacion }}</td>
-
+                    <!-- PRODUCTO -->
                     <td>
-                        <span class="{% if m.tipo == 'ENTRADA' %}badge-activo{% else %}badge-inactivo{% endif %}">
-                            {{ m.tipo }}
-                        </span>
+
+                        <div class="producto-box">
+
+                            {% if p.imagen %}
+
+                            <img src="{{ p.imagen }}">
+
+                            {% endif %}
+
+                            <div>
+
+                                <strong>{{ p.nombre }}</strong>
+
+                            </div>
+
+                        </div>
+
                     </td>
 
-                    <td>{{ m.documento }}</td>
-                    <td>{{ m.cantidad }}</td>
-                    <td>C${{ m.valor }}</td>
-                    <td>{{ m.saldo }}</td>
+                    <td>{{ p.codigo }}</td>
+
+                    <td>{{ p.categoria }}</td>
+
+                    <td>{{ p.marca }}</td>
+
+                    <td>{{ p.stock }}</td>
+
+                    <td>{{ p.entradas }}</td>
+
+                    <td>{{ p.salidas }}</td>
+
+                    <td>C${{ p.precio_costo }}</td>
+
+                    <td>C${{ p.precio_venta }}</td>
+
+                    <td>C${{ p.valor_stock }}</td>
+
+                    <td>
+
+                        <span class="{% if p.estado == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
+
+                            {{ p.estado }}
+
+                        </span>
+
+                    </td>
+
+                    <!-- ACCION -->
+                    <td>
+
+                        <a href="{% url 'kardex_view' p.id %}"
+                           class="btn-kardex">
+
+                            <i class="fas fa-eye"></i>
+
+                            Ver
+
+                        </a>
+
+                    </td>
 
                 </tr>
 
                 {% empty %}
+
                 <tr>
-                    <td colspan="9" class="text-center">
-                        No hay movimientos registrados
+
+                    <td colspan="12">
+
+                        No hay productos registrados
+
                     </td>
+
                 </tr>
+
                 {% endfor %}
 
             </tbody>
 
         </table>
+        </div>
 
     </div>
 
 </div>
-
-<!-- 🎨 ESTILOS EXTRA -->
-<style>
-
-.filters-card {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.filters-card .field label {
-    font-size: 12px;
-    color: #888;
-}
-
-.filters-card .field input,
-.filters-card .field select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.buttons {
-    display: flex;
-    align-items: end;
-    gap: 10px;
-}
-
-.btn-primary {
-    background: #e91e63;
-    color: white;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.btn-secondary {
-    background: #444;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary:hover {
-    background: #c2185b;
-}
-
-.btn-secondary:hover {
-    background: #222;
-}
-
-.kardex-table tbody td {
-    text-align: center;
-}
-
-.kardex-table thead th {
-    text-align: center;
-}
-
-.kardex-table tbody tr:hover {
-    background: #f5f5f5;
-}
-
-</style>
 
 {% endblock %}

@@ -9,12 +9,12 @@ class DetalleTransferenciaInline(admin.TabularInline):
 
 @admin.register(Inventario)
 class InventarioAdmin(admin.ModelAdmin):
-    list_display = ('inventario_id', 'producto', 'ubicacion', 'stock')
+    list_display = ('inventario_id', 'producto', 'bodega', 'stock')
 
 
 @admin.register(Kardex)
 class KardexAdmin(admin.ModelAdmin):
-    list_display = ('kardex_id', 'producto', 'ubicacion', 'tipo', 'cantidad', 'fecha')
+    list_display = ('kardex_id', 'producto', 'bodega', 'tipo', 'cantidad', 'fecha')
 
 
 @admin.register(Transferencia)

@@ -4,21 +4,155 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from apps.usuarios.decorators import rol_requerido
+from apps.usuarios.helpers import *
 from apps.usuarios.models import *
 from django.db import transaction
 from django.utils import timezone
 import re, json
 from django.http import JsonResponse
 from django.db import connection
+from django.db.models import Q
+from apps.usuarios.tokens import token_generator
 
 
+# =========================
+# LISTADO PRINCIPAL
+# =========================
+def ubicaciones(request):
+    sucursales = Sucursal.objects.select_related('bodega', 'direccion', 'estado').all()
+
+    return render(request, "empleados/ubicaciones.html", {
+        "sucursales": sucursales
+    })
+
+
+# =========================
+# CREAR SUCURSAL + BODEGA
+# =========================
+def crear_sucursal(request):
+    if request.method == "POST":
+
+        suc_codigo = request.POST.get("sucursal_codigo")
+        bod_codigo = request.POST.get("bodega_codigo")
+
+        if Sucursal.objects.filter(codigo=suc_codigo).exists():
+            messages.error(request, "El código de sucursal ya existe")
+            return redirect("ubicaciones")
+
+        if Bodega.objects.filter(codigo=bod_codigo).exists():
+            messages.error(request, "El código de bodega ya existe")
+            return redirect("ubicaciones")
+
+        estado_activo = Estado.objects.get(nombre="Activo")
+
+        direccion = Direccion.objects.create(
+            pais=request.POST.get("pais", "N/A"),
+            departamento=request.POST.get("departamento", "N/A"),
+            ciudad=request.POST.get("ciudad", "N/A"),
+            detalle=request.POST.get("detalle", "N/A")
+        )
+
+        sucursal = Sucursal.objects.create(
+            nombre=request.POST.get("sucursal_nombre"),
+            codigo=suc_codigo,
+            direccion=direccion,
+            estado=estado_activo
+        )
+
+        Bodega.objects.create(
+            nombre=request.POST.get("bodega_nombre"),
+            codigo=bod_codigo,
+            direccion=direccion,
+            sucursal=sucursal,
+            estado=estado_activo
+        )
+
+        messages.success(request, "Sucursal y bodega creadas correctamente")
+        return redirect("ubicaciones")
+    
+# =========================
+# EDITAR SUCURSAL + BODEGA
+# =========================
+def editar_sucursal(request, id):
+    sucursal = get_object_or_404(Sucursal, sucursal_id=id)
+
+    try:
+        bodega = sucursal.bodega
+    except:
+        bodega = None
+
+    if request.method == "POST":
+
+        suc_codigo = request.POST.get("sucursal_codigo")
+        bod_codigo = request.POST.get("bodega_codigo")
+
+        # VALIDACIONES
+        if Sucursal.objects.exclude(sucursal_id=id).filter(codigo=suc_codigo).exists():
+            request.session["error_modal"] = id
+            request.session["error_msg"] = "Código de sucursal ya existe"
+            return redirect("ubicaciones")
+
+        if bodega:
+            if Bodega.objects.exclude(bodega_id=bodega.bodega_id).filter(codigo=bod_codigo).exists():
+                request.session["error_modal"] = id
+                request.session["error_msg"] = "Código de bodega ya existe"
+                return redirect("ubicaciones")
+
+        # ACTUALIZAR SUCURSAL
+        sucursal.nombre = request.POST.get("sucursal_nombre")
+        sucursal.codigo = suc_codigo
+        sucursal.save()
+
+        # ACTUALIZAR BODEGA
+        estado_activo = Estado.objects.get(nombre="Activo")
+
+        if bodega:
+            bodega.nombre = request.POST.get("bodega_nombre")
+            bodega.codigo = bod_codigo
+            bodega.save()
+        else:
+            Bodega.objects.create(
+                nombre=request.POST.get("bodega_nombre"),
+                codigo=bod_codigo,
+                direccion=sucursal.direccion,
+                sucursal=sucursal,
+                estado=estado_activo
+            )
+
+        messages.success(request, "Actualizado correctamente")
+        return redirect("ubicaciones")
+
+# =========================
+# CAMBIAR ESTADO (ACTIVO/INACTIVO)
+# =========================
+def cambiar_estado_sucursal(request, id):
+    sucursal = get_object_or_404(Sucursal, sucursal_id=id)
+
+    estado_activo = Estado.objects.get(nombre="Activo")
+    estado_inactivo = Estado.objects.get(nombre="Inactivo")
+
+    if sucursal.estado.nombre == "Activo":
+        nuevo_estado = estado_inactivo
+    else:
+        nuevo_estado = estado_activo
+
+    sucursal.estado = nuevo_estado
+    sucursal.save()
+
+    if hasattr(sucursal, "bodega"):
+        sucursal.bodega.estado = nuevo_estado
+        sucursal.bodega.save()
+
+    messages.success(request, "Estado actualizado correctamente")
+    return redirect("ubicaciones")
 
 @login_required
 def dashboard_gerente(request):
 
     empleado = Empleado.objects.select_related(
         'rol',
-        'ubicacion',
+        'sucursal',
         'user'
     ).get(user=request.user)
 
@@ -100,63 +234,130 @@ def dashboard_gerente(request):
         context
     )
 
-# VALIDACIONES
-# =========================
-
-def validar_email(email):
-    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
-
-
-def validar_password(password):
-    return len(password) >= 6 and any(char.isdigit() for char in password)
-
 def login_view(request):
 
     if request.method == 'POST':
-        username = request.POST.get('usuario')
-        password = request.POST.get('password')
 
+        username = request.POST.get('usuario', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        # VALIDAR CAMPOS
         if not username or not password:
-            messages.error(request, "Todos los campos son obligatorios")
+            messages.error(request,"Todos los campos son obligatorios")
             return render(request, 'login.html')
 
-        # Intentos
-        intentos = request.session.get('intentos', 0)
+        # VALIDAR USUARIO EXISTE
+        try:
+            user_db = User.objects.get(
+                username=username
+            )
 
-        user = authenticate(request, username=username, password=password)
+        except User.DoesNotExist:
+            messages.error(request,"El usuario no existe")
+            return render(request, 'login.html')
 
-        # ❌ LOGIN FALLIDO
+        # INTENTOS
+        intentos = request.session.get(
+            f'intentos_{username}',
+            0
+        )
+
+        # AUTENTICAR
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        # PASSWORD INCORRECTA
         if not user:
-            intentos += 1
-            request.session['intentos'] = intentos
 
-            if intentos >= 3:
-                try:
-                    user_db = User.objects.get(username=username)
+            # VALIDAR SI ES EMPLEADO
+            es_empleado = Empleado.objects.filter(
+                user=user_db
+            ).exists()
+
+            # SOLO EMPLEADOS SE BLOQUEAN
+            if es_empleado:
+
+                intentos += 1
+
+                request.session[
+                    f'intentos_{username}'
+                ] = intentos
+
+                if intentos >= 3:
+
                     user_db.is_active = False
                     user_db.save()
-                    messages.error(request, "Cuenta bloqueada. Contacte al gerente")
-                except User.DoesNotExist:
-                    messages.error(request, "Usuario no existe")
+
+                    messages.error(
+                        request,
+                        "Cuenta bloqueada. Contacte al gerente o administrador."
+                    )
+
+                else:
+
+                    messages.error(
+                        request,
+                        f"Credenciales incorrectas ({intentos}/3)"
+                    )
+
             else:
-                messages.error(request, f"Credenciales incorrectas ({intentos}/3)")
 
-            return render(request, 'login.html')
+                messages.error(
+                    request,
+                    "Correo o contraseña incorrectos"
+                )
 
-        # 🔒 USUARIO BLOQUEADO
-        if not user.is_active:
-            messages.error(request, "Usuario bloqueado")
             return render(request, 'login.html')
 
         # RESET INTENTOS
-        request.session['intentos'] = 0
+        request.session[
+            f'intentos_{username}'
+        ] = 0
 
-        # 👨‍💼 EMPLEADO
-        try:
-            empleado = Empleado.objects.select_related('estado', 'rol').get(user=user)
+        # VALIDAR CLIENTE VERIFICADO
+        es_empleado = Empleado.objects.filter(
+            user=user
+        ).exists()
 
+        if not es_empleado and not user.is_active:
+
+            messages.warning(
+                request,
+                "Debes verificar tu correo antes de iniciar sesión"
+            )
+
+            return render(request, 'login.html')
+
+        # EMPLEADOS
+        if es_empleado:
+
+            empleado = Empleado.objects.select_related(
+                'estado',
+                'rol',
+                'sucursal'
+            ).get(user=user)
+
+            # EMPLEADO BLOQUEADO
+            if not user.is_active:
+
+                messages.error(
+                    request,
+                    "Usuario bloqueado"
+                )
+
+                return render(request, 'login.html')
+
+            # EMPLEADO INACTIVO
             if empleado.estado.nombre.lower() != "activo":
-                messages.error(request, "Empleado inactivo")
+
+                messages.error(
+                    request,
+                    "Empleado inactivo"
+                )
+
                 return render(request, 'login.html')
 
             login(request, user)
@@ -167,12 +368,13 @@ def login_view(request):
 
             return redirect('index_empleados')
 
-        except Empleado.DoesNotExist:
-            # 🛍️ CLIENTE
-            login(request, user)
-            return redirect('tienda')
+        # CLIENTES
+        login(request, user)
+
+        return redirect('tienda')
 
     return render(request, 'login.html')
+
 
 def logout_view(request):
     logout(request)
@@ -186,7 +388,7 @@ def logout_view(request):
 def index_empleados(request):
 
     try:
-        empleado = Empleado.objects.select_related('user', 'rol', 'ubicacion').get(user=request.user)
+        empleado = Empleado.objects.select_related('user', 'rol', 'sucursal').get(user=request.user)
     except Empleado.DoesNotExist:
         return redirect('tienda')
 
@@ -194,110 +396,161 @@ def index_empleados(request):
         'empleado': empleado
     })
 
-# =========================
-# LISTAR USUARIOS
-# =========================
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.db.models import Q
 
 @login_required
+@rol_requerido(['Administrador', 'Gerente'])
 def usuarios_view(request):
 
-    empleado_actual = Empleado.objects.select_related(
-        'rol',
-        'ubicacion',
-        'user'
-    ).get(user=request.user)
+    empleado_actual = request.empleado
 
-    # 🔒 FILTRO POR ROL
     if empleado_actual.rol.nombre.lower() == "administrador":
 
         empleados = Empleado.objects.select_related(
             'user',
             'rol',
-            'ubicacion',
+            'sucursal',
             'estado'
         ).all()
+
+        roles = Rol.objects.all()
 
     else:
 
         empleados = Empleado.objects.select_related(
             'user',
             'rol',
-            'ubicacion',
+            'sucursal',
             'estado'
         ).filter(
-            Q(ubicacion=empleado_actual.ubicacion) |
-            Q(ubicacion__tipo__iexact="Bodega")
-        ).distinct()
+            sucursal=empleado_actual.sucursal
+        )
 
-    # ❌ excluir roles administrativos
-    roles = Rol.objects.exclude(
-        nombre__icontains="administrador"
-    ).exclude(
-        nombre__icontains="gerente"
-    )
+        roles = Rol.objects.exclude(
+            nombre__icontains="administrador"
+        ).exclude(
+            nombre__icontains="gerente"
+        )
 
-    # ubicaciones completas
-    ubicaciones = Ubicacion.objects.all()
-
-    # estados
+    sucursales = Sucursal.objects.all()
     estados = Estado.objects.filter(
-        nombre__iexact="Activo"
-    ) | Estado.objects.filter(
-        nombre__iexact="Inactivo"
+        nombre__in=['Activo', 'Inactivo']
     )
 
     return render(request, 'empleados/usuarios.html', {
 
         'empleados': empleados,
         'roles': roles,
-        'ubicaciones': ubicaciones,
+        'sucursales': sucursales,
         'estados': estados
 
     })
+
+def render_usuarios(request, extra_context=None):
+
+    empleado_actual = request.empleado
+
+    empleados = Empleado.objects.select_related(
+        'user',
+        'rol',
+        'sucursal'
+    )
+
+    # gerente solo empleados de su sucursal
+    if empleado_actual.rol.nombre.lower() != 'administrador':
+
+        empleados = empleados.filter(
+            sucursal_id=empleado_actual.sucursal_id
+        )
+
+    context = {
+
+        'empleados': empleados,
+        'roles': Rol.objects.all(),
+        'sucursales': Sucursal.objects.all(),
+
+    }
+
+    if extra_context:
+        context.update(extra_context)
+
+    return render(
+        request,
+        'empleados/usuarios.html',
+        context
+    )
 
 # =========================
 # CREAR USUARIO
 # =========================
 @login_required
+@rol_requerido(['Administrador', 'Gerente'])
 def crear_usuario(request):
 
-    if request.method != "POST":
+    if request.method != 'POST':
         return redirect('usuarios')
+
+    empleado_actual = request.empleado
 
     email = request.POST.get('email', '').strip()
     username = request.POST.get('username', '').strip()
+    password = request.POST.get('password', '').strip()
 
-    # validación duplicados
+    if not validar_email(email):
+        messages.error(request,"Correo inválido")
+        return render_usuarios(
+            request,
+            {
+                'abrir_modal': 'modalUsuario'
+            }
+        )
+
+    if not validar_password(password):
+        messages.error(request,"La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y carácter especial")
+        return render_usuarios(request,{'abrir_modal': 'modalUsuario'})
+
     if User.objects.filter(email=email).exists():
-        messages.error(request, "El email ya existe")
-        return redirect('usuarios')
-
+        messages.error(request,"El email ya existe")
+        return render_usuarios(request,{'abrir_modal': 'modalUsuario'})
+    
     if User.objects.filter(username=username).exists():
-        messages.error(request, "El usuario ya existe")
+        messages.error(request,"El username ya existe")
+        return render_usuarios(request,{'abrir_modal': 'modalUsuario'})
+
+    if empleado_actual.rol.nombre.lower() == 'administrador': 
+        sucursal_id = request.POST.get('sucursal_id')
+
+    else:
+        sucursal_id = empleado_actual.sucursal_id
+
+
+    estado_activo = Estado.objects.filter(
+        nombre__iexact='Activo'
+    ).first()
+
+    if not estado_activo:
+        messages.error(request,"No existe el estado activo")
         return redirect('usuarios')
 
+    # CREAR USER
     user = User.objects.create_user(
+
         username=username,
         email=email,
-        password=request.POST.get('password'),
+        password=password,
+
         first_name=request.POST.get('nombre'),
         last_name=request.POST.get('apellido')
-    )
 
-    # estado fijo activo (según tu lógica)
-    estado_activo = Estado.objects.get(nombre__iexact="Activo")
+    )
 
     Empleado.objects.create(
         user=user,
         rol_id=request.POST.get('rol_id'),
-        ubicacion_id=request.POST.get('ubicacion_id'),
+        sucursal_id=sucursal_id,
         estado=estado_activo
     )
 
-    messages.success(request, "Usuario creado correctamente")
+    messages.success(request,"Usuario creado correctamente")
     return redirect('usuarios')
 
 
@@ -305,19 +558,58 @@ def crear_usuario(request):
 # BLOQUEAR USUARIO
 # =========================
 @login_required
+@rol_requerido(['Administrador', 'Gerente'])
 def bloquear_usuario(request, user_id):
+
+    empleado_actual = get_object_or_404(
+        Empleado.objects.select_related('rol', 'sucursal'),
+        user=request.user
+    )
 
     user = get_object_or_404(User, id=user_id)
 
-    # evitar auto-bloqueo
+    # evitar auto bloqueo
     if request.user.id == user.id:
-        messages.warning(request, "No puedes bloquearte a ti mismo")
+        messages.warning(request,"No puedes bloquearte a ti mismo")
         return redirect('usuarios')
 
+    # validar que exista empleado
+    try:
+
+        empleado_objetivo = Empleado.objects.select_related(
+            'rol',
+            'sucursal'
+        ).get(user=user)
+
+    except Empleado.DoesNotExist:
+        messages.error(request,"El usuario no pertenece a empleados")
+        return redirect('usuarios')
+
+    # VALIDAR PERMISOS POR SUCURSAL
+    # administrador puede bloquear cualquiera
+    if empleado_actual.rol.nombre.lower() != 'administrador':
+
+        # gerente solo empleados de SU sucursal
+        if empleado_objetivo.sucursal_id != empleado_actual.sucursal_id:
+
+            messages.error(request,"No puedes bloquear empleados de otra sucursal")
+            return redirect('usuarios')
+
+        # gerente NO puede bloquear administradores
+        if empleado_objetivo.rol.nombre.lower() == 'administrador':
+
+            messages.error(request,"No puedes bloquear administradores")
+            return redirect('usuarios')
+
+    # BLOQUEAR
     user.is_active = False
     user.save()
+    
+    # opcional:
+    # empleado_objetivo.estado = Estado.objects.get(nombre__iexact='Inactivo')
+    # empleado_objetivo.save()
 
-    messages.success(request, "Usuario bloqueado")
+    messages.success(request,"Usuario bloqueado correctamente")
     return redirect('usuarios')
 
 
@@ -325,57 +617,143 @@ def bloquear_usuario(request, user_id):
 # DESBLOQUEAR USUARIO
 # =========================
 @login_required
+@rol_requerido(['Administrador', 'Gerente'])
 def desbloquear_usuario(request, user_id):
+
+    empleado_actual = get_object_or_404(
+        Empleado.objects.select_related('rol', 'sucursal'),
+        user=request.user
+    )
 
     user = get_object_or_404(User, id=user_id)
 
+    # validar empleado
+    try:
+
+        empleado_objetivo = Empleado.objects.select_related(
+            'rol',
+            'sucursal'
+        ).get(user=user)
+
+    except Empleado.DoesNotExist:
+        messages.error(request,"El usuario no pertenece a empleados")
+        return redirect('usuarios')
+
+    # VALIDAR PERMISOS
+    if empleado_actual.rol.nombre.lower() != 'administrador':
+
+        # gerente solo SU sucursal
+        if empleado_objetivo.sucursal_id != empleado_actual.sucursal_id:
+            messages.error(request,"No puedes desbloquear empleados de otra sucursal")
+            return redirect('usuarios')
+
+        # gerente no desbloquea admins
+        if empleado_objetivo.rol.nombre.lower() == 'administrador':
+            messages.error(request,"No puedes desbloquear administradores")
+            return redirect('usuarios')
+
+    # DESBLOQUEAR
     user.is_active = True
     user.save()
 
-    messages.success(request, "Usuario desbloqueado")
+    # opcional:
+    # empleado_objetivo.estado = Estado.objects.get(nombre__iexact='Activo')
+    # empleado_objetivo.save()
+
+    messages.success(request,"Usuario desbloqueado correctamente")
     return redirect('usuarios')
 
 # =========================
 # EDITAR USUARIO
 # =========================
 @login_required
+@rol_requerido(['Administrador', 'Gerente'])
 def editar_usuario(request):
 
     if request.method != "POST":
         return redirect('usuarios')
 
+    empleado_actual = request.empleado
+
     user_id = request.POST.get('user_id')
-    user = get_object_or_404(User, id=user_id)
 
-    email = request.POST.get('email', '').strip()
-    username = request.POST.get('username', '').strip()
+    user = get_object_or_404(User,id=user_id)
+    emp = get_object_or_404(
+        Empleado.objects.select_related(
+            'rol',
+            'sucursal',
+            'user'
+        ),
+        user=user
+    )
 
-    # validación duplicados excluyendo actual
+    # VALIDAR ACCESO GERENTE
+    if empleado_actual.rol.nombre.lower() != 'administrador':
+        # gerente solo puede editar empleados de su sucursal
+        if emp.sucursal_id != empleado_actual.sucursal_id:
+            messages.error(request,"No puedes editar empleados de otra sucursal")
+            return redirect('usuarios')
+
+    # DATOS
+    email = request.POST.get('email','').strip()
+    username = request.POST.get('username','').strip()
+    nombre = request.POST.get('nombre','').strip()
+    apellido = request.POST.get('apellido','').strip()
+
+    # VALIDAR EMAIL
+    if not validar_email(email):
+        messages.error(request,"Correo inválido")
+        return render_usuarios(request,{'abrir_modal': 'modalEditarUsuario'})
+
+    # DUPLICADOS
     if User.objects.exclude(id=user_id).filter(email=email).exists():
-        messages.error(request, "El email ya existe")
-        return redirect('usuarios')
+        messages.error(request,"El email ya existe")
+        return render_usuarios(request,{'abrir_modal': 'modalEditarUsuario'})
 
     if User.objects.exclude(id=user_id).filter(username=username).exists():
-        messages.error(request, "El usuario ya existe")
-        return redirect('usuarios')
+        messages.error(request,"El username ya existe")
+        return render_usuarios(request,{'abrir_modal': 'modalEditarUsuario'})
 
-    # actualizar user
+    # ACTUALIZAR USER
     user.email = email
     user.username = username
-    user.first_name = request.POST.get('nombre')
-    user.last_name = request.POST.get('apellido')
+    user.first_name = nombre
+    user.last_name = apellido
     user.save()
 
-    # actualizar empleado
-    emp = get_object_or_404(Empleado, user=user)
+    # ROL
+    rol_id = request.POST.get('rol_id')
 
-    emp.rol_id = request.POST.get('rol_id')
-    emp.ubicacion_id = request.POST.get('ubicacion_id')
+    # gerente NO puede asignar admin
+    if empleado_actual.rol.nombre.lower() != 'administrador':
+        rol_admin = Rol.objects.filter(nombre__icontains='administrador').first()
+        rol_gerente = Rol.objects.filter(nombre__icontains='gerente').first()
+
+        if str(rol_id) in [
+            str(rol_admin.rol_id)
+            if rol_admin else '',
+
+            str(rol_gerente.rol_id)
+            if rol_gerente else ''
+
+        ]:
+            messages.error(request,"No puedes asignar ese rol")
+            return render_usuarios(request,{'abrir_modal': 'modalEditarUsuario'})
+
+    # ACTUALIZAR EMPLEADO
+    emp.rol_id = rol_id
+
+    # administrador puede mover sucursal
+    if empleado_actual.rol.nombre.lower() == 'administrador':
+        emp.sucursal_id = request.POST.get('sucursal_id')
+    else:
+        # gerente mantiene su sucursal
+        emp.sucursal_id = empleado_actual.sucursal_id
+
     emp.save()
 
-    messages.success(request, "Usuario actualizado correctamente")
+    messages.success(request,"Usuario actualizado correctamente")
     return redirect('usuarios')
-
 
 # =========================
 # REGISTRO CLIENTE ONLINE
@@ -389,9 +767,7 @@ def registro_cliente_view(request):
 
         with transaction.atomic():
 
-            # =========================
             # DATOS PERSONALES
-            # =========================
             email = request.POST.get('email', '').strip()
             password = request.POST.get('password', '').strip()
 
@@ -399,25 +775,19 @@ def registro_cliente_view(request):
             apellido = request.POST.get('apellido', '').strip()
             identificacion = request.POST.get('identificacion', '').strip()
 
-            # =========================
             # LISTAS DIRECCIONES
-            # =========================
             paises = request.POST.getlist('pais[]')
             departamentos = request.POST.getlist('departamento[]')
             ciudades = request.POST.getlist('ciudad[]')
             detalles = request.POST.getlist('detalle[]')
             tipos_direccion = request.POST.getlist('tipo_direccion[]')
 
-            # =========================
             # LISTAS TELÉFONOS
-            # =========================
             telefonos = request.POST.getlist('telefono[]')
             operadoras = request.POST.getlist('operadora[]')
             tipos_tel = request.POST.getlist('tipo_tel[]')
 
-            # =========================
             # VALIDACIONES
-            # =========================
             if not all([
                 email,
                 password,
@@ -426,39 +796,24 @@ def registro_cliente_view(request):
                 identificacion
             ]):
 
-                messages.error(
-                    request,
-                    "Todos los campos son obligatorios"
-                )
-
+                messages.error(request,"Todos los campos son obligatorios")
                 return redirect('registro_cliente')
 
             if not validar_email(email):
-
                 messages.error(request, "Correo inválido")
-
                 return redirect('registro_cliente')
 
             if not validar_password(password):
-
-                messages.error(
-                    request,
-                    "La contraseña debe tener mínimo 6 caracteres y un número"
-                )
-
+                messages.error(request,"La contraseña debe tener mínimo 6 caracteres y un número")
                 return redirect('registro_cliente')
 
             # username/email únicos
             if User.objects.filter(username=email).exists():
-
                 messages.error(request, "El correo ya existe")
-
                 return redirect('registro_cliente')
 
             if User.objects.filter(email=email).exists():
-
                 messages.error(request, "El email ya existe")
-
                 return redirect('registro_cliente')
 
             # identificación única
@@ -473,9 +828,7 @@ def registro_cliente_view(request):
 
                 return redirect('registro_cliente')
 
-            # =========================
             # VALIDAR DIRECCIONES
-            # =========================
             direcciones_validas = 0
 
             for i in range(len(paises)):
@@ -490,16 +843,10 @@ def registro_cliente_view(request):
 
             if direcciones_validas == 0:
 
-                messages.error(
-                    request,
-                    "Debes agregar al menos una dirección"
-                )
-
+                messages.error(request,"Debes agregar al menos una dirección")
                 return redirect('registro_cliente')
 
-            # =========================
             # VALIDAR TELÉFONOS
-            # =========================
             telefonos_validos = 0
 
             for tel in telefonos:
@@ -509,41 +856,28 @@ def registro_cliente_view(request):
                 if tel:
 
                     if not tel.isdigit():
-
-                        messages.error(
-                            request,
-                            "Todos los teléfonos deben ser numéricos"
-                        )
-
+                        messages.error(request,"Todos los teléfonos deben ser numéricos")
                         return redirect('registro_cliente')
 
                     telefonos_validos += 1
 
             if telefonos_validos == 0:
-
-                messages.error(
-                    request,
-                    "Debes ingresar al menos un teléfono"
-                )
-
+                messages.error(request,"Debes ingresar al menos un teléfono")
                 return redirect('registro_cliente')
 
-            # =========================
             # ESTADO ACTIVO
-            # =========================
             estado_activo = Estado.objects.get(
                 nombre__iexact="Activo"
             )
 
-            # =========================
             # CREAR USER
-            # =========================
             user = User.objects.create_user(
                 username=email,
                 email=email,
                 password=password,
                 first_name=nombre,
-                last_name=apellido
+                last_name=apellido,
+                is_active=False
             )
 
             # =========================
@@ -604,23 +938,36 @@ def registro_cliente_view(request):
                         if i < len(tipos_tel)
                         else ""
                     )
-
-            messages.success(
-                request,
-                "Cuenta creada correctamente"
-            )
+                    
+            # ENVIAR VERIFICACIÓN
+            enviar_verificacion_email(request,user)
+            
+            messages.success(request,"Cuenta creada correctamente. Revisa tu correo para activar la cuenta.")
 
             return redirect('login')
 
     except Exception as e:
-
-        messages.error(
-            request,
-            f"Error inesperado: {str(e)}"
-        )
-
+        messages.error(request,f"Error inesperado: {str(e)}")
         return redirect('registro_cliente')
 
+
+def activar_cuenta(request, uid, token):
+
+    try:
+        user = User.objects.get(id=uid)
+
+    except User.DoesNotExist:
+        messages.error(request,"Usuario inválido")
+        return redirect('login')
+
+    if token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request,"Cuenta verificada correctamente")
+        return redirect('login')
+
+    messages.error(request,"Token inválido o expirado")
+    return redirect('login')
 
 # =========================
 # LISTAR CLIENTES

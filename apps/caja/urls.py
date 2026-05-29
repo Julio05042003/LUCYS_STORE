@@ -14,9 +14,10 @@ urlpatterns = [
     path('movimiento/', crear_movimiento, name='crear_movimiento'),
 
     # Cierre
-    path('cerrar/', cerrar_caja, name='cerrar_caja'),
+    #path('cerrar/', cerrar_caja, name='cerrar_caja'),
 
     # Arqueo
     path('arqueo/', crear_arqueo, name='crear_arqueo'),
-    path('iniciar-arqueo/', iniciar_arqueo, name='iniciar_arqueo'),
+    #path('iniciar-arqueo/', iniciar_arqueo, name='iniciar_arqueo'),
+    path('arqueo/pdf/<int:arqueo_id>/', reporte_arqueo_pdf, name='reporte_arqueo_pdf'),
 ]

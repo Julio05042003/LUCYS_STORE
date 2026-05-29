@@ -1,5 +1,5 @@
 from django.db import models
-from apps.usuarios.models import Direccion, Ubicacion, Empleado, Estado
+from apps.usuarios.models import Direccion, Bodega, Empleado, Estado
 from apps.productos.models import Producto
 
 
@@ -19,48 +19,19 @@ class Proveedor(models.Model):
     
 class TelefonoProveedor(models.Model):
 
-    id = models.AutoField(
-        db_column='Telefono_id',
-        primary_key=True
-    )
+    id = models.AutoField(db_column='Telefono_id',primary_key=True)
 
-    proveedor = models.ForeignKey(
-        Proveedor,
-        db_column='Proveedor_id',
-        on_delete=models.CASCADE,
-        related_name='telefonos'
-    )
+    proveedor = models.ForeignKey(Proveedor,db_column='Proveedor_id',on_delete=models.CASCADE,related_name='telefonos')
+    estado = models.ForeignKey(Estado,on_delete=models.PROTECT,db_column='Estado_id')
 
-    estado = models.ForeignKey(
-        Estado,
-        on_delete=models.PROTECT,
-        db_column='Estado_id'
-    )
-
-    numero = models.CharField(
-        db_column='Numero',
-        max_length=20
-    )
-
-    operadora = models.CharField(
-        db_column='Operadora',
-        max_length=20,
-        null=True,
-        blank=True
-    )
-
-    tipo = models.CharField(
-        db_column='Tipo',
-        max_length=20,
-        null=True,
-        blank=True
-    )
+    numero = models.CharField(db_column='Numero',max_length=20)
+    operadora = models.CharField(db_column='Operadora',max_length=20,null=True,blank=True)
+    tipo = models.CharField(db_column='Tipo',max_length=20,null=True,blank=True)
 
     class Meta:
         db_table = 'Telefonos_Proveedores'
 
     def __str__(self):
-
         return f"{self.numero} - {self.proveedor}"
 
 
@@ -68,7 +39,7 @@ class Compra(models.Model):
     id = models.AutoField(db_column='Compra_id', primary_key=True)
 
     proveedor = models.ForeignKey(Proveedor, db_column='Proveedor_id', on_delete=models.CASCADE)
-    ubicacion = models.ForeignKey(Ubicacion, db_column='Ubicacion_id', on_delete=models.CASCADE)
+    bodega = models.ForeignKey(Bodega, db_column='Bodega_id', on_delete=models.CASCADE)
     empleado = models.ForeignKey(Empleado, db_column='Empleado_id', on_delete=models.CASCADE)
 
     fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)

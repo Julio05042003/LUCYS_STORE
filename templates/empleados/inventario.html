@@ -6,6 +6,62 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 
+<style>
+    .messages-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .custom-message {
+        min-width: 300px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: fadeIn .3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, .2);
+    }
+
+    .custom-message.success {
+        background: #16a34a;
+    }
+
+    .custom-message.error {
+        background: #dc2626;
+    }
+
+    .custom-message.warning {
+        background: #f59e0b;
+    }
+
+    .custom-message button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <div class="main-container">
     <main class="content">
         <div class="inventory-wrapper">
@@ -13,6 +69,30 @@
             <div class="header-section">
                 <h2><i class="fas fa-boxes-stacked"></i> Gestión de Inventario</h2>
             </div>
+
+            {% if messages %}
+            <div class="messages-container">
+
+                {% for message in messages %}
+
+                {% if message.tags == 'success' %}
+
+                <div class="custom-message success">
+
+                    <span>{{ message }}</span>
+
+                    <button onclick="this.parentElement.remove()">
+                        &times;
+                    </button>
+
+                </div>
+
+                {% endif %}
+
+                {% endfor %}
+
+            </div>
+            {% endif %}
 
             <!-- 🔍 FILTROS -->
             <div class="filters-card">
@@ -28,84 +108,94 @@
                 <button class="btn-clear" onclick="limpiarFiltros()">Limpiar</button>
             </div>
 
+            <!-- ⚡ ACCIONES -->
+            {% if rol != "Vendedor" %}
+            <div class="action-footer">
+                <button class="btn-primary" id="formProducto" onclick="abrirModal('modalProducto')"">Agregar Producto</button>
+                <button class=" btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
+                <button class="btn-primary" onclick="abrirModal('modalMarca')">Agregar Marca</button>
+            </div>
+            <br>
+            {% endif %}
+
             <!-- 📊 TABLA PRODUCTOS -->
             <div class="table-container">
                 <div class="table-scroll">
                     <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Imagen</th>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Marca</th>
-                            <th>Stock</th>
-                            <th>Precio Venta</th>
-                            <th>Estado</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Marca</th>
+                                <th>Stock</th>
+                                <th>Precio Venta</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
 
-                    <tbody>
-                        {% for p in productos %}
-                        <tr>
-                            <td>
-                                {% if p.imagen %}
-                                <img src="{{ p.imagen }}" width="50">
-                                {% else %}
-                                <img src="{% static 'img/no-image.png' %}" width="50">
-                                {% endif %}
-                            </td>
+                        <tbody>
+                            {% for p in productos %}
+                            <tr>
+                                <td>
+                                    {% if p.imagen %}
+                                    <img src="{{ p.imagen }}" width="50">
+                                    {% else %}
+                                    <img src="{% static 'img/no-image.png' %}" width="50">
+                                    {% endif %}
+                                </td>
 
-                            <td>{{ p.codigo }}</td>
-                            <td>{{ p.nombre }}</td>
-                            <td>{{ p.categoria }}</td>
-                            <td>{{ p.marca }}</td>
-                            <td>{{ p.stock }}</td>
-                            <td>${{ p.precio }}</td>
+                                <td>{{ p.codigo }}</td>
+                                <td>{{ p.nombre }}</td>
+                                <td>{{ p.categoria }}</td>
+                                <td>{{ p.marca }}</td>
+                                <td>{{ p.stock }}</td>
+                                <td>C${{ p.precio }}</td>
 
-                            <td>
-                                <span
-                                    class="{% if p.estado == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
-                                    {{ p.estado }}
-                                </span>
-                            </td>
+                                <td>
+                                    <span
+                                        class="{% if p.estado == 'Activo' %}badge-activo{% else %}badge-inactivo{% endif %}">
+                                        {{ p.estado }}
+                                    </span>
+                                </td>
 
-                            <td class="text-center">
+                                <td class="text-center">
 
-                                <!-- 👁 TODOS -->
-                                <button class="btn-row view" onclick="verProductoDetalle('{{ p.id }}')" title="Ver">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                    <!-- 👁 TODOS -->
+                                    <button class="btn-row view" onclick="verProductoDetalle('{{ p.id }}')" title="Ver">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
 
-                                {% if rol != "Vendedor" %}
+                                    {% if rol != "Vendedor" %}
 
-                                <!-- ✏ EDITAR -->
-                                <button class="btn-editar" data-id="{{ p.id }}" data-codigo="{{ p.codigo }}"
-                                    data-nombre="{{ p.nombre }}" data-descripcion="{{ p.descripcion|escapejs }}"
-                                    data-categoria="{{ p.categoria_id }}" data-marca="{{ p.marca_id }}"
-                                    data-imagen="{{ p.imagen|default:'/static/img/no-image.png' }}" title="Editar">
+                                    <!-- ✏ EDITAR -->
+                                    <button class="btn-editar" data-id="{{ p.id }}" data-codigo="{{ p.codigo }}"
+                                        data-nombre="{{ p.nombre }}" data-descripcion="{{ p.descripcion }}"
+                                        data-categoria="{{ p.categoria_id }}" data-marca="{{ p.marca_id }}"
+                                        data-imagen="{{ p.imagen|default:'/static/img/no-image.png' }}" title="Editar">
 
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
 
-                                <!-- 🔄 ESTADO -->
-                                <button onclick="toggleEstadoProducto('{{ p.id }}')">
-                                    <i class="fas fa-sync"></i>
-                                </button>
+                                    <!-- 🔄 ESTADO -->
+                                    <button onclick="toggleEstadoProducto('{{ p.id }}')">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
 
-                                <!-- 📊 KARDEX -->
-                                <a href="{% url 'kardex_view' p.id  %}">
-                                    <i class="fas fa-chart-line"></i>
-                                </a>
+                                    <!-- 📊 KARDEX -->
+                                    <a href="{% url 'kardex_view' p.id  %}">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
 
-                                {% endif %}
+                                    {% endif %}
 
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -114,26 +204,26 @@
             <div class="table-container small-table" style="margin-top:20px;">
                 <div class="table-scroll">
                     <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Categoría</th>
-                            <th class="text-center">Acción</th>
-                        </tr>
-                    </thead>
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
 
-                    <tbody>
-                        {% for c in categorias %}
-                        <tr>
-                            <td>{{ c.nombre }}</td>
-                            <td class="text-center">
-                                <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        <tbody>
+                            {% for c in categorias %}
+                            <tr>
+                                <td>{{ c.nombre }}</td>
+                                <td class="text-center">
+                                    <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -141,38 +231,30 @@
             <div class="table-container small-table" style="margin-top:20px;">
                 <div class="table-scroll">
                     <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Marca</th>
-                            <th class="text-center">Acción</th>
-                        </tr>
-                    </thead>
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
 
-                    <tbody>
-                        {% for m in marcas %}
-                        <tr>
-                            <td>{{ m.nombre }}</td>
-                            <td class="text-center">
-                                <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        <tbody>
+                            {% for m in marcas %}
+                            <tr>
+                                <td>{{ m.nombre }}</td>
+                                <td class="text-center">
+                                    <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <br>
-            <!-- ⚡ ACCIONES -->
-            {% if rol != "Vendedor" %}
-            <div class="action-footer">
-                <button class="btn-primary" id="formProducto"
-                    onclick="abrirModal('modalProducto')"">Agregar Producto</button>
-                <button class=" btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
-                <button class="btn-primary" onclick="abrirModal('modalMarca')">Agregar Marca</button>
-            </div>
-            {% endif %}
+
 
 
 
@@ -188,25 +270,44 @@
             <h3><i class="fas fa-plus-circle"></i>Nuevo Producto</h3>
             <button class="close-btn" onclick="cerrarModal('modalProducto')">&times;</button>
         </div>
+        {% if messages %}
+        {% for message in messages %}
+
+        {% if message.tags == 'error' %}
+
+        <div class="custom-message error" style="margin-bottom:15px;">
+            <span>{{ message }}</span>
+        </div>
+
+        {% endif %}
+
+        {% endfor %}
+        {% endif %}
 
         <form class="modal-form" method="POST" action="{% url 'crear_producto' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-grid">
                 <div class="form-gruop">
                     <label> Codigo</label>
-                    <input type="text" name="codigo" id="codigo" placeholder="Código" required>
+                    <input type="text" name="codigo" id="codigo" placeholder="Código"
+                        value="{{ request.session.modal_producto_data.codigo|default:'' }}" required>
                 </div>
 
                 <div class="from-group">
                     <label>Nombre</label>
-                    <input type="text" name="nombre" id="nombre" placeholder="Nombre" required>
+                    <input type="text" name="nombre" id="nombre" placeholder="Nombre"
+                        value="{{ request.session.modal_producto_data.nombre|default:'' }}" required>
                 </div>
 
                 <div class="form-gruop">
                     <label>Categoria</label>
                     <select name="categoria" id="categoria">
                         {% for c in categorias %}
-                        <option value="{{ c.categoria_id }}">{{ c.nombre }}</option>
+                        <option value="{{ c.categoria_id }}" {% if
+                            request.session.modal_producto_data.categoria==c.categoria_id|stringformat:"s" %}selected{%
+                            endif %}>
+                            {{ c.nombre }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -215,7 +316,12 @@
                     <label>Marca</label>
                     <select name="marca" id="marca">
                         {% for m in marcas %}
-                        <option value="{{ m.marca_id }}">{{ m.nombre }}</option>
+                        <option value="{{ m.marca_id }}" {% if
+                            request.session.modal_producto_data.marca==m.marca_id|stringformat:"s" %}selected{% endif
+                            %}>
+                            {{ m.nombre }}
+                        </option>
+
                         {% endfor %}
                     </select>
                 </div>
@@ -242,7 +348,7 @@
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Descripción Larga (Opcional)</label>
                     <textarea name="descripcion" rows="2"
-                        placeholder="Detalles de tela, tallas disponibles..."></textarea>
+                        placeholder="Detalles de tela, tallas disponibles...">{{ request.session.modal_producto_data.descripcion|default:'' }}</textarea>
                 </div>
             </div>
 
@@ -264,6 +370,20 @@
             <h3><i class="fas fa-edit"></i> Editar Producto</h3>
             <button class="close-btn" onclick="cerrarModal('modalProductoEditar')">&times;</button>
         </div>
+
+        {% if messages %}
+        {% for message in messages %}
+
+        {% if message.tags == 'error' and request.session.abrir_modal == 'modalProductoEditar' %}
+
+        <div class="custom-message error" style="margin:15px;">
+            <span>{{ message }}</span>
+        </div>
+
+        {% endif %}
+
+        {% endfor %}
+        {% endif %}
 
         <form id="formEditarProducto" class="modal-form" method="POST" action="" enctype="multipart/form-data">
 
@@ -433,13 +553,14 @@
                     <table class="table-modern">
                         <thead>
                             <tr>
-                                <th>Ubicación</th>
+                                <th>Bodega</th>
+                                <th>Sucursal</th>
                                 <th>Stock</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla_ubicaciones">
+                        <tbody id="tabla_bodegas">
                             <tr>
-                                <td colspan="2">Cargando...</td>
+                                <td colspan="3">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -457,5 +578,33 @@
 {% endif %}
 
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+<script>
+    setTimeout(() => {
+
+        document.querySelectorAll('.custom-message').forEach(msg => {
+
+            msg.style.opacity = '0';
+
+            setTimeout(() => {
+                msg.remove();
+            }, 500);
+
+        });
+
+    }, 3000);
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const modal = "{{ abrir_modal }}";
+
+        if (modal && typeof abrirModal === 'function') {
+
+            abrirModal(modal);
+
+        }
+
+    });
+</script>
 
 {% endblock %}

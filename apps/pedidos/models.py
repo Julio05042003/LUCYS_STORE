@@ -1,6 +1,6 @@
 from django.db import models
 from apps.productos.models import Producto
-from apps.usuarios.models import Ubicacion, Estado, Cliente, ClienteDireccion
+from apps.usuarios.models import Sucursal, Estado, Cliente, ClienteDireccion, Empleado
 
 
 class TipoEntrega(models.Model):
@@ -29,21 +29,13 @@ class Pedido(models.Model):
     id = models.AutoField(db_column='Pedido_id', primary_key=True)
 
     cliente = models.ForeignKey(Cliente, db_column='Cliente_id', on_delete=models.CASCADE)
-    ubicacion = models.ForeignKey(Ubicacion, db_column='Ubicacion_id', on_delete=models.CASCADE)
-
+    sucursal = models.ForeignKey(Sucursal, db_column='Sucursal_id', on_delete=models.CASCADE)
+    vendedor = models.ForeignKey(Empleado, db_column='vendedor_id', on_delete=models.SET_NULL, null=True)
     tipo_entrega = models.ForeignKey(TipoEntrega, db_column='TipoEntrega_id', on_delete=models.CASCADE)
     metodo_envio = models.ForeignKey(MetodoEnvio, db_column='MetodoEnvio_id', on_delete=models.SET_NULL, null=True)
-
-    direccion_envio = models.ForeignKey(
-        ClienteDireccion,
-        db_column='DireccionEnvio_id',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-
+    direccion_envio = models.ForeignKey(ClienteDireccion,db_column='DireccionEnvio_id',on_delete=models.SET_NULL,null=True,blank=True)
     estado = models.ForeignKey(Estado, db_column='Estado_id', on_delete=models.CASCADE)
-
+    codigo = models.CharField(db_column='Codigo', max_length=10,unique=True,null=True,blank=True)
     fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)
     total = models.DecimalField(db_column='Total', max_digits=10, decimal_places=2)
 

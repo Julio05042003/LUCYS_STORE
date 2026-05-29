@@ -6,26 +6,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import (
-    render,
-    redirect,
-    get_object_or_404
-)
-
+from django.shortcuts import render,redirect,get_object_or_404
 from apps.inventario.models import Producto
-from apps.usuarios.models import (
-    Empleado,
-    Direccion,
-    Estado,
-    Ubicacion
-)
+from apps.usuarios.models import Empleado, Direccion, Estado, Bodega
+from .models import *
 
-from .models import (
-    Compra,
-    DetalleCompra,
-    Proveedor,
-    TelefonoProveedor
-)
 
 
 # =========================================
@@ -36,7 +21,7 @@ def compras_view(request):
 
     compras = Compra.objects.select_related(
         'proveedor',
-        'ubicacion',
+        'bodega',
         'empleado'
     ).all().order_by('-id')
 
@@ -44,7 +29,7 @@ def compras_view(request):
         'nombre'
     )
 
-    ubicaciones = Ubicacion.objects.all()
+    bodegas = Bodega.objects.all()
 
     estados = Estado.objects.all()
 
@@ -55,7 +40,7 @@ def compras_view(request):
 
             'compras': compras,
             'proveedores': proveedores,
-            'ubicaciones': ubicaciones,
+            'bodegas': bodegas,
             'estados': estados,
             'today': date.today(),
 
@@ -82,26 +67,15 @@ def crear_compra(request):
 
             data = json.loads(request.body)
 
-            empleado = Empleado.objects.get(
-                empleado_id=data['empleado']
-            )
+            empleado = Empleado.objects.get(empleado_id=data['empleado'])
+            proveedor = Proveedor.objects.get(id=data['proveedor'])
+            bodega = Bodega.objects.get(bodega_id=data['bodega'])
 
-            proveedor = Proveedor.objects.get(
-                id=data['proveedor']
-            )
-
-            ubicacion = Ubicacion.objects.get(
-                ubicacion_id=data['ubicacion']
-            )
-
-            # =========================================
             # CREAR COMPRA
-            # =========================================
-
             compra = Compra.objects.create(
 
                 proveedor=proveedor,
-                ubicacion=ubicacion,
+                bodega=bodega,
                 empleado=empleado,
                 total=0
 
@@ -109,32 +83,15 @@ def crear_compra(request):
 
             total = Decimal('0.00')
 
-            # =========================================
             # DETALLES
-            # =========================================
-
             for item in data['productos']:
-
-                producto = Producto.objects.get(
-                    producto_id=item['producto_id']
-                )
-
-                cantidad = int(
-                    item['cantidad']
-                )
-
-                precio = Decimal(
-                    str(item['precio'])
-                )
-
-                subtotal = (
-                    cantidad * precio
-                )
-
+                producto = Producto.objects.get(producto_id=item['producto_id'])
+                cantidad = int(item['cantidad'])
+                precio = Decimal(str(item['precio']))
+                subtotal = (cantidad * precio)
                 total += subtotal
 
                 DetalleCompra.objects.create(
-
                     compra=compra,
                     producto=producto,
                     cantidad=cantidad,
@@ -150,14 +107,7 @@ def crear_compra(request):
             })
 
     except Exception as e:
-
-        print(
-            "ERROR CREAR COMPRA:",
-            str(e)
-        )
-
         return JsonResponse({
-
             'status': 'error',
             'error': str(e)
 
@@ -170,10 +120,7 @@ def crear_compra(request):
 @login_required
 def proveedores(request):
 
-    busqueda = request.GET.get(
-        'q',
-        ''
-    ).strip()
+    busqueda = request.GET.get('q','').strip()
 
     proveedores = Proveedor.objects.select_related(
         'direccion'
@@ -183,20 +130,11 @@ def proveedores(request):
         'nombre'
     )
 
-    # =========================================
     # FILTRO
-    # =========================================
-
     if busqueda:
+        proveedores = proveedores.filter(nombre__icontains=busqueda)
 
-        proveedores = proveedores.filter(
-            nombre__icontains=busqueda
-        )
-
-    # =========================================
     # PRODUCTOS POR PROVEEDOR
-    # =========================================
-
     for proveedor in proveedores:
 
         productos_ids = DetalleCompra.objects.filter(
@@ -217,10 +155,8 @@ def proveedores(request):
         request,
         'empleados/proveedores.html',
         {
-
             'proveedores': proveedores,
             'busqueda': busqueda
-
         }
     )
 
@@ -251,52 +187,17 @@ def crear_proveedor(request):
 
         with transaction.atomic():
 
-            nombre = request.POST.get(
-                'nombre',
-                ''
-            ).strip()
+            nombre = request.POST.get('nombre','').strip()
+            contacto = request.POST.get('contacto','').strip()
+            correo = request.POST.get('correo','').strip()
+            pais = request.POST.get('pais','').strip()
+            departamento = request.POST.get('departamento','').strip()
+            ciudad = request.POST.get('ciudad','').strip()
+            detalle = request.POST.get('detalle','').strip()
 
-            contacto = request.POST.get(
-                'contacto',
-                ''
-            ).strip()
-
-            correo = request.POST.get(
-                'correo',
-                ''
-            ).strip()
-
-            pais = request.POST.get(
-                'pais',
-                ''
-            ).strip()
-
-            departamento = request.POST.get(
-                'departamento',
-                ''
-            ).strip()
-
-            ciudad = request.POST.get(
-                'ciudad',
-                ''
-            ).strip()
-
-            detalle = request.POST.get(
-                'detalle',
-                ''
-            ).strip()
-
-            # =========================================
             # VALIDACIONES
-            # =========================================
-
             if not nombre:
-
-                messages.error(
-                    request,
-                    'El nombre es obligatorio'
-                )
-
+                messages.error(request,'El nombre es obligatorio')
                 return redireccion()
 
             if not all([
@@ -306,46 +207,22 @@ def crear_proveedor(request):
                 detalle
             ]):
 
-                messages.error(
-                    request,
-                    'La dirección es obligatoria'
-                )
-
+                messages.error(request,'La dirección es obligatoria')
                 return redireccion()
 
-            # =========================================
             # VALIDAR NOMBRE
-            # =========================================
-
             existe = Proveedor.objects.filter(
                 nombre__iexact=nombre
             ).exists()
 
             if existe:
-
-                messages.error(
-                    request,
-                    'Ya existe un proveedor con ese nombre'
-                )
-
+                messages.error(request,'Ya existe un proveedor con ese nombre')
                 return redireccion()
 
-            # =========================================
             # TELEFONOS
-            # =========================================
-
-            telefonos = request.POST.getlist(
-                'numero[]'
-            )
-
-            operadoras = request.POST.getlist(
-                'operadora[]'
-            )
-
-            tipos = request.POST.getlist(
-                'tipo[]'
-            )
-
+            telefonos = request.POST.getlist('numero[]')
+            operadoras = request.POST.getlist('operadora[]')
+            tipos = request.POST.getlist('tipo[]')
             telefonos_validos = []
 
             for tel in telefonos:
@@ -354,18 +231,10 @@ def crear_proveedor(request):
 
                 if tel:
 
-                    telefono_limpio = tel.replace(
-                        '-',
-                        ''
-                    )
+                    telefono_limpio = tel.replace('-','')
 
                     if not telefono_limpio.isdigit():
-
-                        messages.error(
-                            request,
-                            'Los teléfonos deben ser numéricos'
-                        )
-
+                        messages.error(request,'Los teléfonos deben ser numéricos')
                         return redireccion()
 
                     telefonos_validos.append(
@@ -373,61 +242,35 @@ def crear_proveedor(request):
                     )
 
             if len(telefonos_validos) == 0:
-
-                messages.error(
-                    request,
-                    'Debes agregar al menos un teléfono'
-                )
-
+                messages.error(request,'Debes agregar al menos un teléfono')
                 return redireccion()
 
-            # =========================================
             # ESTADO ACTIVO
-            # =========================================
-
             estado_activo = Estado.objects.filter(
                 nombre__iexact='Activo'
             ).first()
 
             if not estado_activo:
-
-                messages.error(
-                    request,
-                    'No existe el estado ACTIVO'
-                )
-
+                messages.error(request,'No existe el estado ACTIVO')
                 return redireccion()
 
-            # =========================================
             # CREAR DIRECCION
-            # =========================================
-
             direccion = Direccion.objects.create(
-
                 pais=pais,
                 departamento=departamento,
                 ciudad=ciudad,
                 detalle=detalle
-
             )
 
-            # =========================================
             # CREAR PROVEEDOR
-            # =========================================
-
             proveedor = Proveedor.objects.create(
-
                 direccion=direccion,
                 nombre=nombre,
                 contacto=contacto,
                 correo=correo
-
             )
 
-            # =========================================
             # GUARDAR TELEFONOS
-            # =========================================
-
             for i in range(len(telefonos)):
 
                 numero = telefonos[i].strip()
@@ -435,25 +278,11 @@ def crear_proveedor(request):
                 if not numero:
                     continue
 
-                numero = numero.replace(
-                    '-',
-                    ''
-                )
-
-                operadora = (
-                    operadoras[i]
-                    if i < len(operadoras)
-                    else ''
-                )
-
-                tipo = (
-                    tipos[i]
-                    if i < len(tipos)
-                    else 'Ventas'
-                )
+                numero = numero.replace('-','')
+                operadora = (operadoras[i] if i < len(operadoras) else '')
+                tipo = (tipos[i]if i < len(tipos)else 'Ventas')
 
                 TelefonoProveedor.objects.create(
-
                     proveedor=proveedor,
                     estado=estado_activo,
                     numero=numero,
@@ -462,25 +291,11 @@ def crear_proveedor(request):
 
                 )
 
-            messages.success(
-                request,
-                'Proveedor registrado correctamente'
-            )
-
+            messages.success(request,'Proveedor registrado correctamente')
             return redireccion()
 
     except Exception as e:
-
-        print(
-            "ERROR CREAR PROVEEDOR:",
-            str(e)
-        )
-
-        messages.error(
-            request,
-            f'Error: {str(e)}'
-        )
-
+        messages.error(request,f'Error: {str(e)}')
         return redireccion()
 
 
@@ -510,34 +325,13 @@ def editar_proveedor(request):
 
         with transaction.atomic():
 
-            proveedor_id = request.POST.get(
-                'proveedor_id'
-            )
+            proveedor_id = request.POST.get('proveedor_id')
+            proveedor = get_object_or_404(Proveedor,id=proveedor_id)
+            nombre = request.POST.get('nombre', '').strip()
+            contacto = request.POST.get('contacto','').strip()
+            correo = request.POST.get('correo','').strip()
 
-            proveedor = get_object_or_404(
-                Proveedor,
-                id=proveedor_id
-            )
-
-            nombre = request.POST.get(
-                'nombre',
-                ''
-            ).strip()
-
-            contacto = request.POST.get(
-                'contacto',
-                ''
-            ).strip()
-
-            correo = request.POST.get(
-                'correo',
-                ''
-            ).strip()
-
-            # =========================================
             # VALIDAR NOMBRE
-            # =========================================
-
             existe = Proveedor.objects.exclude(
                 id=proveedor.id
             ).filter(
@@ -545,17 +339,10 @@ def editar_proveedor(request):
             ).exists()
 
             if existe:
-
-                messages.error(
-                    request,
-                    'Ya existe un proveedor con ese nombre'
-                )
-
+                messages.error(request,'Ya existe un proveedor con ese nombre')
                 return redireccion()
 
-            # =========================================
             # ACTUALIZAR PROVEEDOR
-            # =========================================
 
             proveedor.nombre = nombre
             proveedor.contacto = contacto
@@ -563,166 +350,71 @@ def editar_proveedor(request):
 
             proveedor.save()
 
-            # =========================================
             # DIRECCION
-            # =========================================
-
             direccion = proveedor.direccion
-
-            direccion.pais = request.POST.get(
-                'pais'
-            )
-
-            direccion.departamento = request.POST.get(
-                'departamento'
-            )
-
-            direccion.ciudad = request.POST.get(
-                'ciudad'
-            )
-
-            direccion.detalle = request.POST.get(
-                'detalle'
-            )
-
+            direccion.pais = request.POST.get('pais')
+            direccion.departamento = request.POST.get('departamento')
+            direccion.ciudad = request.POST.get('ciudad')
+            direccion.detalle = request.POST.get('detalle')
             direccion.save()
 
-            # =========================================
             # ESTADOS
-            # =========================================
+            estado_activo = Estado.objects.get(nombre__iexact='Activo')
+            estado_inactivo = Estado.objects.get(nombre__iexact='Inactivo')
 
-            estado_activo = Estado.objects.get(
-                nombre__iexact='Activo'
-            )
-
-            estado_inactivo = Estado.objects.get(
-                nombre__iexact='Inactivo'
-            )
-
-            # =========================================
             # TELEFONOS
-            # =========================================
-
-            telefono_ids = request.POST.getlist(
-                'telefono_id[]'
-            )
-
-            telefonos = request.POST.getlist(
-                'numero[]'
-            )
-
-            operadoras = request.POST.getlist(
-                'operadora[]'
-            )
-
-            tipos = request.POST.getlist(
-                'tipo[]'
-            )
-
-            telefonos_eliminar = request.POST.getlist(
-                'telefono_eliminar[]'
-            )
+            telefono_ids = request.POST.getlist('telefono_id[]')
+            telefonos = request.POST.getlist('numero[]')
+            operadoras = request.POST.getlist('operadora[]')
+            tipos = request.POST.getlist('tipo[]')
+            telefonos_eliminar = request.POST.getlist('telefono_eliminar[]')
 
             for i in range(len(telefonos)):
 
-                telefono_id = (
-                    telefono_ids[i]
-                    if i < len(telefono_ids)
-                    else ''
-                )
-
+                telefono_id = (telefono_ids[i] if i < len(telefono_ids) else '')
                 numero = telefonos[i].strip()
+                operadora = (operadoras[i] if i < len(operadoras) else '')
+                tipo = (tipos[i] if i < len(tipos) else 'Ventas')
+                eliminar = (telefonos_eliminar[i] if i < len(telefonos_eliminar) else '0')
 
-                operadora = (
-                    operadoras[i]
-                    if i < len(operadoras)
-                    else ''
-                )
-
-                tipo = (
-                    tipos[i]
-                    if i < len(tipos)
-                    else 'Ventas'
-                )
-
-                eliminar = (
-                    telefonos_eliminar[i]
-                    if i < len(telefonos_eliminar)
-                    else '0'
-                )
-
-                # =========================================
                 # NUEVO TELEFONO
-                # =========================================
-
                 if telefono_id == '':
 
                     if not numero:
                         continue
 
-                    numero = numero.replace(
-                        '-',
-                        ''
-                    )
+                    numero = numero.replace('-','')
 
                     if not numero.isdigit():
-
-                        messages.error(
-                            request,
-                            'Los teléfonos deben ser numéricos'
-                        )
-
+                        messages.error(request,'Los teléfonos deben ser numéricos')
                         return redireccion()
 
                     TelefonoProveedor.objects.create(
-
                         proveedor=proveedor,
                         estado=estado_activo,
                         numero=numero,
                         operadora=operadora,
                         tipo=tipo
-
                     )
 
                     continue
 
-                telefono = TelefonoProveedor.objects.get(
-                    id=telefono_id
-                )
+                telefono = TelefonoProveedor.objects.get(id=telefono_id)
 
-                # =========================================
                 # ELIMINAR
-                # =========================================
-
                 if eliminar == '1':
-
                     telefono.estado = estado_inactivo
                     telefono.save()
-
                     continue
 
-                # =========================================
                 # VALIDAR
-                # =========================================
-
-                numero = numero.replace(
-                    '-',
-                    ''
-                )
+                numero = numero.replace('-','')
 
                 if not numero.isdigit():
-
-                    messages.error(
-                        request,
-                        'Los teléfonos deben ser numéricos'
-                    )
-
+                    messages.error(request,'Los teléfonos deben ser numéricos')
                     return redireccion()
 
-                # =========================================
                 # ACTUALIZAR
-                # =========================================
-
                 telefono.numero = numero
                 telefono.operadora = operadora
                 telefono.tipo = tipo
@@ -730,23 +422,9 @@ def editar_proveedor(request):
 
                 telefono.save()
 
-            messages.success(
-                request,
-                'Proveedor actualizado correctamente'
-            )
-
+            messages.success(request,'Proveedor actualizado correctamente')
             return redireccion()
 
     except Exception as e:
-
-        print(
-            "ERROR EDITAR PROVEEDOR:",
-            str(e)
-        )
-
-        messages.error(
-            request,
-            f'Error: {str(e)}'
-        )
-
+        messages.error(request,f'Error: {str(e)}')
         return redireccion()

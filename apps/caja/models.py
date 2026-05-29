@@ -1,12 +1,27 @@
 from django.db import models
-from apps.usuarios.models import Ubicacion, Empleado, Estado
+from apps.usuarios.models import (
+    Sucursal,
+    Empleado,
+    Estado
+)
 
+
+# =========================================
+# CAJAS
+# =========================================
 
 class Caja(models.Model):
-    id = models.AutoField(db_column='Caja_id', primary_key=True)
+    caja_id = models.AutoField(primary_key=True)
 
-    ubicacion = models.ForeignKey(Ubicacion, db_column='Ubicacion_id', on_delete=models.CASCADE)
-    nombre = models.CharField(db_column='Nombre', max_length=100)
+    sucursal = models.ForeignKey(
+        Sucursal,
+        on_delete=models.CASCADE,
+        db_column='Sucursal_id'
+    )
+
+    nombre = models.CharField(
+        max_length=100
+    )
 
     class Meta:
         db_table = 'Cajas'
@@ -15,57 +30,323 @@ class Caja(models.Model):
         return self.nombre
 
 
+
+# =========================================
+# HISTORIAL TIPO CAMBIO
+# =========================================
+
+class HistorialTipoCambio(models.Model):
+    tipocambio_id = models.AutoField(primary_key=True)
+
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        db_table = 'Historial_TipoCambio'
+
+    def __str__(self):
+        return f'{self.valor}'
+
+
+
+# =========================================
+# APERTURAS DE CAJA
+# =========================================
+
 class AperturaCaja(models.Model):
-    id = models.AutoField(db_column='Apertura_id', primary_key=True)
+    apertura_id = models.AutoField(primary_key=True)
 
-    caja = models.ForeignKey(Caja, db_column='Caja_id', on_delete=models.CASCADE)
-    empleado = models.ForeignKey(Empleado, db_column='Empleado_id', on_delete=models.CASCADE)
-    estado = models.ForeignKey(Estado, db_column='Estado_id', on_delete=models.CASCADE)
+    caja = models.ForeignKey(
+        Caja,
+        on_delete=models.CASCADE,
+        db_column='Caja_id'
+    )
 
-    fecha_apertura = models.DateTimeField(db_column='Fecha_apertura', auto_now_add=True)
-    fecha_cierre = models.DateTimeField(db_column='Fecha_cierre', null=True, blank=True)
+    empleado = models.ForeignKey(
+        Empleado,
+        on_delete=models.CASCADE,
+        db_column='Empleado_id'
+    )
 
-    saldo_inicial = models.DecimalField(db_column='Saldo_inicial', max_digits=10, decimal_places=2)
-    saldo_final = models.DecimalField(db_column='Saldo_final', max_digits=10, decimal_places=2, null=True, blank=True)
+    estado = models.ForeignKey(
+        Estado,
+        on_delete=models.CASCADE,
+        db_column='Estado_id'
+    )
+
+    tipocambio = models.ForeignKey(
+        HistorialTipoCambio,
+        on_delete=models.CASCADE,
+        db_column='TipoCambio_id'
+    )
+
+    fecha_apertura = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    fecha_cierre = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    saldo_inicial = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    saldo_final = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
 
     class Meta:
         db_table = 'Aperturas_Cajas'
 
+    def __str__(self):
+        return f'Apertura #{self.apertura_id}'
+
+
+
+# =========================================
+# MOVIMIENTOS DE CAJA
+# =========================================
 
 class MovimientoCaja(models.Model):
-    id = models.AutoField(db_column='Movimiento_id', primary_key=True)
 
-    apertura = models.ForeignKey(AperturaCaja, db_column='Apertura_id', on_delete=models.CASCADE)
+    TIPOS = (
+        ('INGRESO', 'INGRESO'),
+        ('EGRESO', 'EGRESO'),
+    )
 
-    tipo = models.CharField(db_column='Tipo', max_length=20)
-    descripcion = models.CharField(db_column='Descripcion', max_length=200)
-    monto = models.DecimalField(db_column='Monto', max_digits=10, decimal_places=2)
+    MONEDAS = (
+        ('CORDOBA', 'CORDOBA'),
+        ('DOLAR', 'DOLAR'),
+    )
 
-    fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)
+    movimiento_id = models.AutoField(primary_key=True)
+
+    apertura = models.ForeignKey(
+        AperturaCaja,
+        on_delete=models.CASCADE,
+        db_column='Apertura_id'
+    )
+
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPOS
+    )
+
+    moneda = models.CharField(
+        max_length=20,
+        choices=MONEDAS
+    )
+
+    descripcion = models.CharField(
+        max_length=200
+    )
+
+    monto = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
 
     class Meta:
         db_table = 'Movimientos_Cajas'
 
+    def __str__(self):
+        return f'{self.tipo} - {self.monto}'
+
+
+
+# =========================================
+# ARQUEOS DE CAJA
+# =========================================
 
 class ArqueoCaja(models.Model):
-    id = models.AutoField(db_column='Arqueo_id', primary_key=True)
-    apertura = models.ForeignKey(AperturaCaja, on_delete=models.CASCADE)
-    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE)
 
-    monto_sistema = models.DecimalField(max_digits=10, decimal_places=2)
-    monto_fisico = models.DecimalField(max_digits=10, decimal_places=2)
+    TIPOS = (
+        ('PARCIAL', 'PARCIAL'),
+        ('FINAL', 'FINAL'),
+    )
+
+    arqueo_id = models.AutoField(primary_key=True)
+
+    apertura = models.ForeignKey(
+        AperturaCaja,
+        on_delete=models.CASCADE,
+        db_column='Apertura_id'
+    )
+
+    empleado = models.ForeignKey(
+        Empleado,
+        on_delete=models.CASCADE,
+        db_column='Empleado_id'
+    )
+
+    tipocambio = models.ForeignKey(
+        HistorialTipoCambio,
+        on_delete=models.CASCADE,
+        db_column='TipoCambio_id'
+    )
+
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPOS
+    )
+
+    monto_sistema = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    monto_fisico = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    observacion = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+
+    justificacion = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        db_table = 'Arqueos_Caja'
 
     @property
     def diferencia(self):
         return self.monto_fisico - self.monto_sistema
 
-    observacion = models.CharField(max_length=255, null=True, blank=True)
-    justificacion = models.CharField(max_length=255, null=True, blank=True)
+    def __str__(self):
+        return f'Arqueo #{self.arqueo_id}'
 
-    fecha = models.DateTimeField(auto_now_add=True)
+
+
+# =========================================
+# DENOMINACIONES
+# =========================================
+
+class Denominacion(models.Model):
+
+    MONEDAS = (
+        ('CORDOBA', 'CORDOBA'),
+        ('DOLAR', 'DOLAR'),
+    )
+
+    TIPOS = (
+        ('BILLETE', 'BILLETE'),
+        ('MONEDA', 'MONEDA'),
+    )
+
+    denominacion_id = models.AutoField(primary_key=True)
+
+    moneda = models.CharField(
+        max_length=20,
+        choices=MONEDAS
+    )
+
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPOS
+    )
 
     class Meta:
-        db_table = "Arqueos_Caja"
+        db_table = 'Denominaciones'
 
     def __str__(self):
-        return f"Arqueo {self.id}"
+        return f'{self.moneda} - {self.valor}'
+
+
+
+# =========================================
+# DETALLE APERTURA CAJA
+# =========================================
+
+class DetalleAperturaCaja(models.Model):
+    detalleapertura_id = models.AutoField(primary_key=True)
+
+    apertura = models.ForeignKey(
+        AperturaCaja,
+        on_delete=models.CASCADE,
+        db_column='Apertura_id'
+    )
+
+    denominacion = models.ForeignKey(
+        Denominacion,
+        on_delete=models.CASCADE,
+        db_column='Denominacion_id'
+    )
+
+    cantidad = models.IntegerField()
+
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    class Meta:
+        db_table = 'Detalle_Apertura_Caja'
+
+    def __str__(self):
+        return f'{self.denominacion} x {self.cantidad}'
+
+
+
+# =========================================
+# DETALLE ARQUEO
+# =========================================
+
+class DetalleArqueo(models.Model):
+    detallarqueo_id = models.AutoField(primary_key=True, db_column='DetalleArqueo_id')
+
+    arqueo = models.ForeignKey(
+        ArqueoCaja,
+        on_delete=models.CASCADE,
+        db_column='Arqueo_id'
+    )
+
+    denominacion = models.ForeignKey(
+        Denominacion,
+        on_delete=models.CASCADE,
+        db_column='Denominacion_id'
+    )
+
+    cantidad = models.IntegerField()
+
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    class Meta:
+        db_table = 'Detalle_Arqueo'
+
+    def __str__(self):
+        return f'{self.denominacion} x {self.cantidad}'

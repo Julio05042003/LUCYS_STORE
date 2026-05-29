@@ -1,0 +1,407 @@
+{% extends 'empleados/base_empleados.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
+<link rel="stylesheet" href="{% static 'css/style-usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* =========================
+   WRAPPER
+========================= */
+.page-wrapper{
+    padding:30px;
+    max-width:1400px;
+    margin:auto;
+}
+
+/* HEADER */
+.header h2{
+    font-size:2rem;
+    font-weight:700;
+    color:#2d2d2d;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.header h2 i{
+    color:#ef7f9a;
+}
+
+/* FILTROS */
+.card-filtros{
+    background:#fff;
+    padding:25px;
+    border-radius:22px;
+    box-shadow:0 8px 25px rgba(0,0,0,.05);
+    margin-bottom:25px;
+}
+
+.card-filtros form{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    align-items:end;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+    min-width:220px;
+}
+
+.field input{
+    height:48px;
+    border-radius:14px;
+    border:1px solid #e5e5e5;
+    padding:0 14px;
+    background:#fafafa;
+}
+
+.field input:focus{
+    border-color:#ef7f9a;
+    background:#fff;
+    outline:none;
+}
+
+/* BOTONES */
+.btn-main{
+    height:48px;
+    padding:0 20px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+}
+
+/* TABLE */
+.table-card{
+    background:#fff;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,.05);
+}
+
+.table-scroll{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+thead{
+    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
+    color:#fff;
+}
+
+th, td{
+    padding:18px;
+    border-bottom:1px solid #f2f2f2;
+}
+
+/* BADGES */
+.badge-activo{
+    background:#e9f9ef;
+    color:#1c9c52;
+    padding:6px 12px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+.badge-inactivo{
+    background:#ffe9e9;
+    color:#d63031;
+    padding:6px 12px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+/* ACCIONES */
+.actions button,
+.actions a{
+    border:none;
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    margin-right:6px;
+    cursor:pointer;
+    color:#fff;
+}
+
+.btn-edit{ background:#4e73df; }
+.btn-state{ background:#6c757d; }
+
+/* MODAL */
+.modal-content{
+    border-radius:22px;
+    border:none;
+}
+
+.modal-header{
+    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
+    color:#fff;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:18px;
+}
+
+.form-group input{
+    height:46px;
+    border-radius:12px;
+    border:1px solid #ddd;
+    padding:0 12px;
+    background:#fafafa;
+}
+
+.form-group input:focus{
+    border-color:#ef7f9a;
+    outline:none;
+    background:#fff;
+}
+
+</style>
+
+<div class="page-wrapper">
+
+    <!-- HEADER -->
+    <div class="header mb-3">
+        <h2><i class="fas fa-map-marker-alt"></i> Gestión de Ubicaciones</h2>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card-filtros">
+        <form method="GET">
+
+            <div class="field" style="flex:2;">
+                <input type="text" name="q" placeholder="Buscar sucursal o bodega...">
+            </div>
+
+            <button class="btn-main">Buscar</button>
+
+            <button type="button"
+                    class="btn-main"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCrear">
+                + Nueva Ubicación
+            </button>
+
+        </form>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-card">
+        <div class="table-scroll">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sucursal</th>
+                        <th>Bodega</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for s in sucursales %}
+                <tr>
+
+                    <td>
+                        <b>{{ s.nombre }}</b><br>
+                        <small>Código: {{ s.codigo }}</small>
+                    </td>
+
+                    <td>
+                        {% if s.bodega %}
+                            <b>{{ s.bodega.nombre }}</b><br>
+                            <small>{{ s.bodega.codigo }}</small>
+                        {% else %}
+                            <span class="badge-inactivo">Sin bodega</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ s.direccion.pais }} / {{ s.direccion.departamento }}<br>
+                        <small>{{ s.direccion.ciudad }}</small>
+                    </td>
+
+                    <td>
+                        {% if s.estado.nombre == "Activo" %}
+                            <span class="badge-activo">Activo</span>
+                        {% else %}
+                            <span class="badge-inactivo">Inactivo</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="actions">
+
+                        <button class="btn-edit"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEditar{{ s.sucursal_id }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <a class="btn-state"
+                           href="{% url 'cambiar_estado_sucursal' s.sucursal_id %}">
+                            <i class="fas fa-power-off"></i>
+                        </a>
+
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- =========================
+MODAL CREAR
+========================= -->
+<div class="modal fade" id="modalCrear">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Nueva Ubicación</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="modal-body">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <input name="sucursal_nombre" placeholder="Sucursal">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="sucursal_codigo" placeholder="Código">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="bodega_nombre" placeholder="Bodega">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="bodega_codigo" placeholder="Código Bodega">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="pais" placeholder="País">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="departamento" placeholder="Departamento">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="ciudad" placeholder="Ciudad">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="detalle" placeholder="Detalle">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-main w-100">Guardar</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- =========================
+MODALES EDITAR
+========================= -->
+{% for s in sucursales %}
+
+<div class="modal fade" id="modalEditar{{ s.sucursal_id }}">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Editar Ubicación</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST" action="{% url 'editar_sucursal' s.sucursal_id %}">
+                {% csrf_token %}
+
+                <div class="modal-body">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <input name="sucursal_nombre" value="{{ s.nombre }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="sucursal_codigo" value="{{ s.codigo }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="bodega_nombre" value="{{ s.bodega.nombre|default:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="bodega_codigo" value="{{ s.bodega.codigo|default:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="pais" value="{{ s.direccion.pais }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="departamento" value="{{ s.direccion.departamento }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="ciudad" value="{{ s.direccion.ciudad }}">
+                        </div>
+
+                        <div class="form-group">
+                            <input name="detalle" value="{{ s.direccion.detalle }}">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-main w-100">Actualizar</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endfor %}
+
+{% endblock %}

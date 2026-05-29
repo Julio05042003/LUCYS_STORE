@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+
+
 /* === LÓGICA DE MODALES GENÉRICA === */
 // Esta función sirve para cualquier modal del sistema
 function abrirModal(idModal) {
@@ -92,21 +94,6 @@ document.addEventListener('input', function (e) {
     }
 });
 
-function calcularTotalApertura() {
-    let total = 0;
-    const inputs = document.querySelectorAll('.denom-input');
-
-    inputs.forEach(input => {
-        const denominacion = parseFloat(input.getAttribute('data-value'));
-        const cantidad = parseInt(input.value) || 0;
-        total += denominacion * cantidad;
-    });
-
-    // Actualizar visualmente el modal
-    document.getElementById('labelTotalApertura').innerText = `$${total.toFixed(2)}`;
-    // Asignar al valor oculto para el SQL
-    document.getElementById('inputSaldoInicial').value = total.toFixed(2);
-}
 
 /* ==========================================
    FUNCIONES DE GESTIÓN DE INVENTARIO
@@ -134,7 +121,7 @@ function editarProducto(id, codigo, nombre, descripcion, categoria, marca, image
 
     // ✅ DESCRIPCIÓN FIX
     document.getElementById('descripcion_edit').value =
-        (descripcion && descripcion !== "None") ? descripcion : '';
+        JSON.parse('"' + btn.dataset.descripcion + '"');
 
     // ✅ IMAGEN FIX
     const preview = modal.querySelector('#imagePreviewEdit img');
@@ -176,71 +163,145 @@ function previsualizarImagenEdit(event) {
 function verProductoDetalle(id) {
 
     fetch(`/producto/json/${id}/`)
-        .then(res => res.json())
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            return response.json();
+        })
+
         .then(data => {
 
-            // 🔹 elementos
+            console.log("DATA:", data);
+
+            // =========================================
+            // ELEMENTOS
+            // =========================================
+
             const sku = document.getElementById('v_sku');
             const nombre = document.getElementById('v_nombre');
             const cat = document.getElementById('v_cat');
             const marca = document.getElementById('v_marca');
             const desc = document.getElementById('v_desc');
+
             const stock = document.querySelector('.badge-stock');
+
             const img = document.getElementById('view_img');
 
             const costo = document.getElementById('v_precio_costo');
             const venta = document.getElementById('v_precio_venta');
 
-            const tabla = document.getElementById('tabla_ubicaciones');
+            const tabla = document.getElementById('tabla_bodegas');
 
-            // 🔹 datos básicos
-            if (sku) sku.innerText = data.codigo;
-            if (nombre) nombre.innerText = data.nombre;
-            if (cat) cat.innerText = data.categoria;
-            if (marca) marca.innerText = data.marca;
-            if (desc) desc.innerText = data.descripcion;
+            // =========================================
+            // VALIDAR ELEMENTOS
+            // =========================================
 
-            if (stock) stock.innerText = (data.stock || 0) + " Unidades";
+            if (!sku || !nombre || !cat || !marca ||
+                !desc || !stock || !img ||
+                !costo || !venta || !tabla) {
 
-            if (img) {
-                img.src = data.imagen || "https://via.placeholder.com/200";
+                console.error("Faltan elementos HTML");
+
+                return;
             }
 
-            // 🔹 precios
-            if (venta) venta.innerText = "$" + (data.precio_venta || 0);
+            // =========================================
+            // DATOS BÁSICOS
+            // =========================================
 
-            if (costo) {
-                if (data.rol === "Vendedor") {
-                    costo.parentElement.style.display = "none";
-                } else {
-                    costo.parentElement.style.display = "block";
-                    costo.innerText = "$" + (data.precio_costo || 0);
+            sku.textContent = data.codigo || "";
+            nombre.textContent = data.nombre || "";
+            cat.textContent = data.categoria || "";
+            marca.textContent = data.marca || "";
+            desc.textContent = data.descripcion || "Sin descripción";
+
+            stock.textContent =
+                `${data.stock || 0} Unidades`;
+
+            // =========================================
+            // IMAGEN
+            // =========================================
+
+            img.src = data.imagen && data.imagen !== ""
+                ? data.imagen
+                : "/static/img/no-image.png";
+
+            // =========================================
+            // PRECIOS
+            // =========================================
+
+            venta.textContent =
+                `C$${parseFloat(data.precio_venta || 0).toFixed(2)}`;
+
+            const contenedorCosto = costo.closest('.info-item');
+
+            if (data.rol === "Vendedor") {
+
+                if (contenedorCosto) {
+                    contenedorCosto.style.display = "none";
                 }
-            }
 
-            // 🔥 TABLA UBICACIONES
-            if (tabla) {
-                tabla.innerHTML = "";
+            } else {
 
-                if (data.inventarios.length === 0) {
-                    tabla.innerHTML = `<tr><td colspan="2">Sin stock</td></tr>`;
-                } else {
-                    data.inventarios.forEach(i => {
-                        tabla.insertAdjacentHTML('beforeend', `
-                        <tr>
-                            <td>${i.ubicacion}</td>
-                            <td>${i.stock}</td>
-                        </tr>
-                    `);
-                    });
+                if (contenedorCosto) {
+                    contenedorCosto.style.display = "block";
                 }
+
+                costo.textContent =
+                    `C$${parseFloat(data.precio_costo || 0).toFixed(2)}`;
             }
+
+            // =========================================
+            // TABLA INVENTARIO
+            // =========================================
+
+            tabla.innerHTML = "";
+
+            if (data.inventarios.length > 0) {
+
+                let filas = "";
+
+                data.inventarios.forEach(i => {
+
+                    filas += `
+            <tr>
+                <td>${i.bodega}</td>
+                <td>${i.sucursal}</td>
+                <td>${i.stock}</td>
+            </tr>
+        `;
+                });
+
+                tabla.innerHTML = filas;
+
+            } else {
+
+                tabla.innerHTML = `
+        <tr>
+            <td colspan="3">
+                Sin stock disponible
+            </td>
+        </tr>
+    `;
+            }
+
+            // =========================================
+            // ABRIR MODAL
+            // =========================================
 
             abrirModal('modalVerProducto');
+
         })
-        .catch(err => {
-            console.error(err);
+
+        .catch(error => {
+
+            console.error("ERROR:", error);
+
             alert("Error cargando producto");
+
         });
 }
 
@@ -372,88 +433,4 @@ function establecerFechaActual() {
     }
 }
 
-function abrirModalVenta() {
-    // 1. Llamamos a la función de la fecha antes de mostrar el modal
-    establecerFechaActual();
 
-    // 2. Abrimos el modal (usando tu función existente)
-    abrirModal('modalVenta');
-}
-
-/**
- * 1. Simular agregar producto a la tabla del modal
- */
-function agregarProductoALista() {
-    const lista = document.querySelector('#modalVenta tbody');
-    const inputBusqueda = document.getElementById('input_buscar_prod');
-
-    // Si el input está vacío, no agregamos nada (solo visual)
-    if (inputBusqueda.value === "") {
-        alert("Por favor, busque un producto primero.");
-        return;
-    }
-
-    // Quitamos el mensaje de "No hay productos" si existe
-    if (lista.innerHTML.includes("No hay productos agregados")) {
-        lista.innerHTML = "";
-    }
-
-    // Creamos la nueva fila con el formato de tu tabla Detalles_Ventas
-    const nuevaFila = `
-        <tr>
-            <td>${inputBusqueda.value}</td>
-            <td>$15.00</td>
-            <td><input type="number" value="3" min="3" class="input-table" style="width:60px"></td>
-            <td><input type="number" value="0.00" class="input-table" style="width:60px"></td>
-            <td class="font-bold">$45.00</td>
-            <td><button type="button" class="btn-delete-row" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
-        </tr>
-    `;
-
-    lista.insertAdjacentHTML('beforeend', nuevaFila);
-    inputBusqueda.value = ""; // Limpiar buscador
-    actualizarTotalVenta(45.00); // Función ficticia para sumar
-}
-
-/**
- * 2. PROCESAR VENTA Y ABRIR TICKET
- * Esta es la función que debe ir en el onsubmit del form o el onclick del botón Finalizar
- */
-function procesarVentaFinal(event) {
-    event.preventDefault();
-
-    let cliente = $('#cliente-select').val();
-    let metodo = document.querySelector('[name="metodo"]').value;
-    let empleado = document.querySelector('[name="empleado"]').value;
-    let pedido = $('#pedido-select').val();
-
-    if (carrito.length === 0) {
-        alert("Agrega productos");
-        return;
-    }
-
-    fetch("{% url 'crear_venta' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({
-            cliente: cliente,
-            metodo: metodo,
-            empleado: empleado,
-            pedido: pedido,
-            productos: carrito
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "ok") {
-            alert("Venta registrada");
-            carrito = [];
-            location.reload();
-        } else {
-            alert(data.error);
-        }
-    });
-}

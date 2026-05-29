@@ -6,9 +6,8 @@ from .models import *
 from .forms import (
     EmpleadoForm,
     ClienteForm,
-    UbicacionForm
+    SucursalForm
 )
-
 
 # =========================
 # INLINES
@@ -24,8 +23,8 @@ class ClienteDireccionInline(admin.TabularInline):
     extra = 1
 
 
-class TelefonoUbicacionInline(admin.TabularInline):
-    model = TelefonoUbicacion
+class TelefonoSucursalInline(admin.TabularInline):
+    model = TelefonoSucursal
     extra = 1
 
 
@@ -104,30 +103,27 @@ class DireccionAdmin(admin.ModelAdmin):
 
 
 # =========================
-# UBICACION
+# SUCURSAL
 # =========================
 
-@admin.register(Ubicacion)
-class UbicacionAdmin(admin.ModelAdmin):
+@admin.register(Sucursal)
+class SucursalAdmin(admin.ModelAdmin):
 
-    form = UbicacionForm
+    form = SucursalForm
 
     list_display = (
-        'ubicacion_id',
+        'sucursal_id',
         'nombre',
         'codigo',
-        'tipo',
-        'nivel',
         'estado',
-        'direccion'
+        'direccion',
+        'get_bodega'
     )
 
     fields = (
         'estado',
         'nombre',
         'codigo',
-        'tipo',
-        'nivel',
         'pais',
         'departamento',
         'ciudad',
@@ -137,36 +133,41 @@ class UbicacionAdmin(admin.ModelAdmin):
     search_fields = (
         'nombre',
         'codigo',
-        'tipo',
-        'nivel',
         'estado__nombre'
     )
 
     list_filter = (
         'estado',
-        'tipo',
-        'nivel'
     )
 
     ordering = (
-        'ubicacion_id',
+        'sucursal_id',
     )
 
     inlines = [
-        TelefonoUbicacionInline
+        TelefonoSucursalInline
     ]
 
+    def get_bodega(self, obj):
+
+        if hasattr(obj, 'bodega'):
+            return obj.bodega.nombre
+
+        return "-"
+
+    get_bodega.short_description = "Bodega"
+
 
 # =========================
-# TELEFONO UBICACION
+# TELEFONO SUCURSAL
 # =========================
 
-@admin.register(TelefonoUbicacion)
-class TelefonoUbicacionAdmin(admin.ModelAdmin):
+@admin.register(TelefonoSucursal)
+class TelefonoSucursalAdmin(admin.ModelAdmin):
 
     list_display = (
-        'id',
-        'ubicacion',
+        'telefono_id',
+        'sucursal',
         'numero',
         'operadora',
         'tipo'
@@ -176,7 +177,7 @@ class TelefonoUbicacionAdmin(admin.ModelAdmin):
         'numero',
         'operadora',
         'tipo',
-        'ubicacion__nombre'
+        'sucursal__nombre'
     )
 
     list_filter = (
@@ -185,7 +186,38 @@ class TelefonoUbicacionAdmin(admin.ModelAdmin):
     )
 
     ordering = (
-        'id',
+        'telefono_id',
+    )
+
+
+# =========================
+# BODEGA
+# =========================
+
+@admin.register(Bodega)
+class BodegaAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'bodega_id',
+        'nombre',
+        'codigo',
+        'sucursal',
+        'estado',
+        'direccion'
+    )
+
+    search_fields = (
+        'nombre',
+        'codigo',
+        'sucursal__nombre'
+    )
+
+    list_filter = (
+        'estado',
+    )
+
+    ordering = (
+        'bodega_id',
     )
 
 
@@ -203,7 +235,7 @@ class EmpleadoAdmin(admin.ModelAdmin):
         'get_nombre',
         'get_email',
         'rol',
-        'ubicacion',
+        'sucursal',
         'estado'
     )
 
@@ -212,13 +244,13 @@ class EmpleadoAdmin(admin.ModelAdmin):
         'user__last_name',
         'user__email',
         'rol__nombre',
-        'ubicacion__nombre'
+        'sucursal__nombre'
     )
 
     list_filter = (
         'rol',
         'estado',
-        'ubicacion'
+        'sucursal'
     )
 
     ordering = (
@@ -228,7 +260,7 @@ class EmpleadoAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         'rol',
         'estado',
-        'ubicacion'
+        'sucursal'
     )
 
     def get_nombre(self, obj):

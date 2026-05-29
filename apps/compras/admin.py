@@ -120,7 +120,7 @@ class CompraAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'proveedor',
-        'ubicacion',
+        'bodega',
         'empleado',
         'fecha',
         'total'
@@ -128,13 +128,13 @@ class CompraAdmin(admin.ModelAdmin):
 
     search_fields = (
         'proveedor__nombre',
-        'ubicacion__nombre',
+        'bodega__nombre',
         'empleado__user__first_name',
         'empleado__user__last_name'
     )
 
     list_filter = (
-        'ubicacion',
+        'bodega',
         'fecha'
     )
 
@@ -142,7 +142,7 @@ class CompraAdmin(admin.ModelAdmin):
 
     autocomplete_fields = (
         'proveedor',
-        'ubicacion',
+        'bodega',
         'empleado'
     )
 
@@ -171,7 +171,7 @@ class CompraAdmin(admin.ModelAdmin):
 
             inventario, creado = Inventario.objects.get_or_create(
                 producto=detalle.producto,
-                ubicacion=compra.ubicacion,
+                bodega=compra.bodega,
                 defaults={'stock': 0}
             )
 
@@ -184,7 +184,7 @@ class CompraAdmin(admin.ModelAdmin):
 
             Kardex.objects.create(
                 producto=detalle.producto,
-                ubicacion=compra.ubicacion,
+                bodega=compra.bodega,
                 tipo='ENTRADA',
                 cantidad=detalle.cantidad,
                 descripcion=f'Compra #{compra.id}'

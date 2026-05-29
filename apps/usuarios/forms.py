@@ -1,10 +1,12 @@
 from django import forms
 from django.contrib.auth.models import User
+
 from .models import (
     Empleado,
     Cliente,
-    Ubicacion,
-    Direccion
+    Direccion,
+    Sucursal,
+    Bodega
 )
 
 
@@ -29,12 +31,9 @@ class EmpleadoForm(forms.ModelForm):
         fields = [
             'estado',
             'rol',
-            'ubicacion'
+            'sucursal'
         ]
 
-    # =========================
-    # CARGAR DATOS EN EDITAR
-    # =========================
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -51,7 +50,6 @@ class EmpleadoForm(forms.ModelForm):
 # =========================
 class ClienteForm(forms.ModelForm):
 
-    # USUARIO OPCIONAL
     first_name = forms.CharField(
         label="Nombre Usuario",
         required=False
@@ -72,7 +70,6 @@ class ClienteForm(forms.ModelForm):
         required=False
     )
 
-    # CLIENTE FISICO
     nombre = forms.CharField(
         label="Nombre",
         required=False
@@ -92,9 +89,6 @@ class ClienteForm(forms.ModelForm):
             'apellido'
         ]
 
-    # =========================
-    # CARGAR DATOS EN EDITAR
-    # =========================
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -112,43 +106,24 @@ class ClienteForm(forms.ModelForm):
 
 
 # =========================
-# UBICACION FORM
+# SUCURSAL FORM
 # =========================
-class UbicacionForm(forms.ModelForm):
+class SucursalForm(forms.ModelForm):
 
     pais = forms.CharField(label="País")
     departamento = forms.CharField(label="Departamento")
     ciudad = forms.CharField(label="Ciudad")
     detalle = forms.CharField(label="Detalle")
 
-    TIPO_CHOICES = [
-        ('BODEGA', 'BODEGA'),
-        ('SUCURSAL', 'SUCURSAL'),
-    ]
-
-    NIVEL_CHOICES = [
-        ('CENTRAL', 'CENTRAL'),
-        ('SECUNDARIA', 'SECUNDARIA'),
-    ]
-
-    tipo = forms.ChoiceField(choices=TIPO_CHOICES)
-
-    nivel = forms.ChoiceField(choices=NIVEL_CHOICES)
-
     class Meta:
-        model = Ubicacion
+        model = Sucursal
 
         fields = [
             'estado',
             'nombre',
-            'codigo',
-            'tipo',
-            'nivel'
+            'codigo'
         ]
 
-    # =========================
-    # CARGAR DATOS EN EDITAR
-    # =========================
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -160,15 +135,15 @@ class UbicacionForm(forms.ModelForm):
             self.fields['ciudad'].initial = self.instance.direccion.ciudad
             self.fields['detalle'].initial = self.instance.direccion.detalle
 
-    # =========================
-    # SAVE
-    # =========================
     def save(self, commit=True):
 
-        ubicacion = super().save(commit=False)
+        sucursal = super().save(commit=False)
 
-        # NUEVA DIRECCION
-        if not ubicacion.direccion_id:
+        # =====================================
+        # DIRECCION
+        # =====================================
+
+        if not sucursal.direccion_id:
 
             direccion = Direccion.objects.create(
                 pais=self.cleaned_data['pais'],
@@ -177,12 +152,11 @@ class UbicacionForm(forms.ModelForm):
                 detalle=self.cleaned_data['detalle']
             )
 
-            ubicacion.direccion = direccion
+            sucursal.direccion = direccion
 
-        # EDITAR DIRECCION
         else:
 
-            direccion = ubicacion.direccion
+            direccion = sucursal.direccion
 
             direccion.pais = self.cleaned_data['pais']
             direccion.departamento = self.cleaned_data['departamento']
@@ -192,6 +166,16 @@ class UbicacionForm(forms.ModelForm):
             direccion.save()
 
         if commit:
-            ubicacion.save()
+            sucursal.save()
+            # CREAR BODEGA AUTOMATICAMENTE
+            if not hasattr(sucursal, 'bodega'):
 
-        return ubicacion
+                Bodega.objects.create(
+                    estado=sucursal.estado,
+                    direccion=sucursal.direccion,
+                    sucursal=sucursal,
+                    nombre=f"Bodega {sucursal.nombre}",
+                    codigo=f"BOD-{sucursal.codigo}"
+                )
+
+        return sucursal
