@@ -35,7 +35,7 @@ class Pedido(models.Model):
     metodo_envio = models.ForeignKey(MetodoEnvio, db_column='MetodoEnvio_id', on_delete=models.SET_NULL, null=True)
     direccion_envio = models.ForeignKey(ClienteDireccion,db_column='DireccionEnvio_id',on_delete=models.SET_NULL,null=True,blank=True)
     estado = models.ForeignKey(Estado, db_column='Estado_id', on_delete=models.CASCADE)
-    codigo = models.CharField(db_column='Codigo', max_length=10,unique=True,null=True,blank=True)
+    codigo = models.CharField(db_column='Codigo', max_length=20,unique=True,null=True,blank=True)
     fecha = models.DateTimeField(db_column='Fecha', auto_now_add=True)
     total = models.DecimalField(db_column='Total', max_digits=10, decimal_places=2)
 

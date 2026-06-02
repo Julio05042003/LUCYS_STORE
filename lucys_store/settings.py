@@ -85,7 +85,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'LUCYS_STORE',
-        'HOST': 'DESKTOP-FS5V3MM',
+        'HOST': 'FRANCELA-CENTEN\SQLEXPRESS',
         'PORT': '',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',

@@ -22,6 +22,8 @@ def generar_codigo_pedido(pedido):
     # :06d transforma el ID 42 en "000042"
     return f'{pedido.sucursal.codigo}-PED-{pedido.id:06d}'
 
+
+
 # BUSCAR CLIENTES
 @login_required
 def buscar_clientes(request):
@@ -318,9 +320,9 @@ def crear_pedido(request):
                 estado=estado,
                 total=0
             )
-            
+
             pedido.codigo = generar_codigo_pedido(pedido)
-            pedido.save()
+            pedido.save(update_fields=['codigo'])
 
             # ==========================================
             # 6. ASIGNACIÓN DE BODEGA Y LOGÍSTICA

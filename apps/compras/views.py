@@ -86,6 +86,17 @@ def crear_compra(request):
             # DETALLES
             for item in data['productos']:
                 producto = Producto.objects.get(producto_id=item['producto_id'])
+
+                # VALIDAR SI YA EXISTE EN ALGUNA COMPRA
+                existe_compra = DetalleCompra.objects.filter(
+                    producto=producto
+                ).exists()
+
+                if existe_compra:
+                    raise Exception(
+                        f'El producto "{producto.nombre}" ya fue comprado anteriormente.'
+                    )
+                
                 cantidad = int(item['cantidad'])
                 precio = Decimal(str(item['precio']))
                 subtotal = (cantidad * precio)
