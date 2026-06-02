@@ -61,7 +61,7 @@
                 <!-- ADMIN / GERENTE -->
                 {% if rol_usuario == "administrador" or rol_usuario == "gerente" %}
 
-                <!--<li><a href="{% url 'dashboard_gerente' %}"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>-->
+                <li><a href="{% url 'dashboard_view' %}"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>
                 <li><a href="{% url 'inventario' %}"><i class="fas fa-boxes-stacked"></i> Inventario</a></li>
                 <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-boxes-stacked"></i> Kardex</a></li>
                 <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>

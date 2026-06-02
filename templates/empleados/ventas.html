@@ -377,7 +377,7 @@
 
                                     {% if v.estado.nombre == "Pendiente" %}
                                     <button class="btn-row edit"
-                                        onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}')">
+                                        onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}', '{{ v.metodo }}')">
                                         <i class="fas fa-cash-register"></i>
                                     </button>
                                     {% endif %}
@@ -1709,15 +1709,11 @@ ERRORES MODAL
     ABRIR MODAL
     ========================================================= */
 
-    function abrirModalCobro(ventaId, total) {
+    function abrirModalCobro(ventaId, total, metodoPago) {
 
-        document.getElementById(
-            'venta_id_cobro'
-        ).value = ventaId;
+        document.getElementById('venta_id_cobro').value = ventaId;
 
-        document.getElementById(
-            'totalCobro'
-        ).value =
+        document.getElementById('totalCobro').value =
             parseFloat(total).toFixed(2);
 
         limpiarCobro();

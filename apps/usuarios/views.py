@@ -16,7 +16,15 @@ from django.db.models import Q
 from apps.usuarios.tokens import token_generator
 from apps.caja.models import AperturaCaja
 from apps.inventario.models import Inventario
-
+from django.db.models.functions import TruncDate
+from django.db.models import Sum, Count, F
+from django.utils.timezone import now, timedelta
+from decimal import Decimal
+from apps.ventas.models import Venta, DetalleVenta
+from apps.productos.models import Producto
+from apps.inventario.models import Kardex
+from apps.usuarios.models import Empleado
+from apps.caja.models import MovimientoCaja
 
 # =========================
 # LISTADO PRINCIPAL
@@ -231,7 +239,7 @@ def editar_sucursal(request, id):
 
             # Teléfonos activos actualmente en BD
             telefonos_actuales = {
-                str(t.id): t
+                str(t.telefono_id): t
                 for t in TelefonoSucursal.objects.filter(
                     sucursal=sucursal
                 )
@@ -295,7 +303,7 @@ def editar_sucursal(request, id):
                     telefono_ids_recibidos.add(telefono_id)
 
                     telefono = TelefonoSucursal.objects.get(
-                        id=telefono_id,
+                        telefono_id=telefono_id,
                         sucursal=sucursal
                     )
 
@@ -397,91 +405,72 @@ def cambiar_estado_sucursal(request, id):
 
 
 @login_required
-def dashboard_gerente(request):
+def dashboard_view(request):
+    empleado = request.user.empleado
+    rol = empleado.rol.nombre.lower()
 
-    empleado = Empleado.objects.select_related(
-        'rol',
-        'sucursal',
-        'user'
-    ).get(user=request.user)
+    # 1. FILTRO BASE (GERENTE / ADMIN)
+    ventas_qs = Venta.objects.filter(estado__nombre='Pagada')
+    if rol == 'gerente':
+        ventas_qs = ventas_qs.filter(empleado__sucursal=empleado.sucursal)
 
-    # =====================================
-    # KPIs
-    # =====================================
-    with connection.cursor() as cursor:
+    # 2. FECHAS (últimos 30 días)
+    fecha_inicio = now() - timedelta(days=30)
+    ventas_qs = ventas_qs.filter(fecha__gte=fecha_inicio)
 
-        cursor.execute("EXEC sp_dashboard_kpis")
+    # 3. INGRESOS GENERALES
+    ingreso_total = ventas_qs.aggregate(total=Sum('total'))['total'] or Decimal('0')
 
-        row = cursor.fetchone()
+    # 4. VENTAS POR EMPLEADO
+    ventas_por_empleado = ventas_qs.values('empleado__user__first_name').annotate(
+        total=Sum('total')
+    ).order_by('-total')
 
-        kpis = {
+    # 5. PRODUCTOS MÁS VENDIDOS
+    productos_top = DetalleVenta.objects.filter(venta__in=ventas_qs).values(
+        'producto__nombre'
+    ).annotate(
+        total_vendido=Sum('cantidad')
+    ).order_by('-total_vendido')[:10]
 
-            'ventas_hoy': row[0],
-            'ventas_mes': row[1],
-            'compras_mes': row[2],
-            'clientes_nuevos': row[3],
-            'stock_critico': row[4],
-            'cajas_abiertas': row[5],
-        }
+    # 6. MOVIMIENTOS CAJA
+    movimientos = MovimientoCaja.objects.filter(apertura__empleado=empleado)
+    if rol == 'gerente':
+        movimientos = movimientos.filter(apertura__empleado__sucursal=empleado.sucursal)
 
-    # =====================================
-    # VENTAS 7 DIAS
-    # =====================================
-    with connection.cursor() as cursor:
-
-        cursor.execute("EXEC sp_dashboard_ventas_7dias")
-
-        rows = cursor.fetchall()
-
-        ventas_labels = []
-        ventas_data = []
-
-        for r in rows:
-
-            ventas_labels.append(
-                r[0].strftime('%d/%m')
-            )
-
-            ventas_data.append(
-                float(r[1])
-            )
-
-    # =====================================
-    # TOP PRODUCTOS
-    # =====================================
-    with connection.cursor() as cursor:
-
-        cursor.execute("EXEC sp_dashboard_top_productos")
-
-        productos = cursor.fetchall()
-
-    # =====================================
-    # TOP EMPLEADOS
-    # =====================================
-    with connection.cursor() as cursor:
-
-        cursor.execute("EXEC sp_dashboard_top_empleados")
-
-        empleados_top = cursor.fetchall()
-
-    context = {
-
-    'empleado': empleado,
-    'rol_usuario': empleado.rol.nombre.lower(),
-
-    'kpis': kpis,
-
-    'ventas_labels': json.dumps(ventas_labels),
-    'ventas_data': json.dumps(ventas_data),
-
-    'productos': productos,
-    'empleados_top': empleados_top,
-}
-    return render(
-        request,
-        'empleados/dashboard_gerente.html',
-        context
+    stats_caja = movimientos.aggregate(
+        ingresos=Sum('monto', filter=Q(tipo='INGRESO')),
+        egresos=Sum('monto', filter=Q(tipo='EGRESO'))
     )
+    ingresos_caja = stats_caja['ingresos'] or Decimal('0')
+    egresos_caja = stats_caja['egresos'] or Decimal('0')
+    saldo_caja = ingresos_caja - egresos_caja
+
+    # 7. VENTAS DIARIAS (Para gráfico)
+    ventas_diarias = ventas_qs.annotate(dia=TruncDate('fecha')).values('dia').annotate(
+        total=Sum('total')
+    ).order_by('dia')
+
+    # CONTEXTO CON SERIALIZACIÓN SEGURA (Decimal -> float)
+    context = {
+        'ingreso_total': float(ingreso_total),
+        'saldo_caja': float(saldo_caja),
+        'ingresos_caja': float(ingresos_caja),
+        'egresos_caja': float(egresos_caja),
+        
+        # Serializamos a JSON convirtiendo Decimal a float
+        'ventas_diarias_json': json.dumps([
+            {'dia': v['dia'].isoformat(), 'total': float(v['total'])} 
+            for v in ventas_diarias
+        ]),
+        'productos_top_json': json.dumps([
+            {'nombre': p['producto__nombre'], 'cantidad': float(p['total_vendido'])} 
+            for p in productos_top
+        ]),
+    }
+
+    return render(request, 'empleados/dashboard.html', context)
+
 
 def login_view(request):
 

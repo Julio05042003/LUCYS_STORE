@@ -155,6 +155,15 @@ def vista_ventas(request):
         'tasa': tasa
     })
 
+
+
+from django.db.models import Sum
+from decimal import Decimal
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+
+
 @login_required
 def anular_venta(request, venta_id):
 
@@ -164,83 +173,169 @@ def anular_venta(request, venta_id):
     venta = get_object_or_404(
         Venta.objects.select_related(
             'estado',
-            'metodo',
             'apertura',
-            'empleado'
+            'empleado',
+            'pedido'
         ),
         venta_id=venta_id
     )
 
+    # =========================================================
     # SOLO POST
+    # =========================================================
     if request.method != 'POST':
-
         return redirect('ventas')
 
-    # VALIDAR ROL
+    # =========================================================
+    # VALIDACIONES DE PERMISOS
+    # =========================================================
     if rol not in ['gerente', 'administrador']:
-
-        messages.error(request,'No tienes permisos para anular ventas.')
+        messages.error(request, 'No tienes permisos para anular ventas.')
         return redirect('ventas')
 
-    # VALIDAR SUCURSAL
     if venta.empleado.sucursal != empleado.sucursal:
-
-        messages.error(request,'No puedes anular ventas de otra sucursal.')
+        messages.error(request, 'No puedes anular ventas de otra sucursal.')
         return redirect('ventas')
 
-    # YA ANULADA
     if venta.estado.nombre == 'Anulada':
-
-        messages.error(request,'La factura ya está anulada.')
+        messages.error(request, 'La factura ya está anulada.')
         return redirect('ventas')
 
-    # SI ESTÁ PAGADA
+    # =========================================================
+    # SOLO SI ESTÁ PAGADA AFECTA CAJA
+    # =========================================================
     if venta.estado.nombre == 'Pagada':
-        # SOLO EFECTIVO AFECTA CAJA
-        if venta.metodo.nombre.lower() == 'efectivo':
-            apertura = venta.apertura
 
-            # validar apertura
-            if not apertura:
-                messages.error(request,'La venta no tiene apertura de caja.')
-                return redirect('ventas')
+        apertura = venta.apertura
 
-            # validar caja abierta
-            if apertura.estado.nombre != 'Abierta':
-                messages.error(request,'No se puede anular porque la caja está cerrada.')
-                return redirect('ventas')
+        if not apertura:
+            messages.error(request, 'La venta no tiene apertura de caja.')
+            return redirect('ventas')
 
-            # MOVIMIENTO CAJA
+        if apertura.estado.nombre != 'Abierta':
+            messages.error(request, 'La caja está cerrada.')
+            return redirect('ventas')
+
+        # =========================================================
+        # SALDO REAL DE CAJA (INGRESOS - EGRESOS)
+        # =========================================================
+        ingresos_cordoba = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            moneda='CORDOBA',
+            tipo='INGRESO'
+        ).exclude(
+            descripcion__icontains='Transferencia'
+        ).exclude(
+            descripcion__icontains='Tarjeta'
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
+
+        egresos_cordoba = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            moneda='CORDOBA',
+            tipo='EGRESO'
+        ).exclude(
+            descripcion__icontains='Transferencia'
+        ).exclude(
+            descripcion__icontains='Tarjeta'
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
+
+        saldo_cordoba = ingresos_cordoba - egresos_cordoba
+
+        ingresos_dolar = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            moneda='DOLAR',
+            tipo='INGRESO'
+        ).exclude(
+            descripcion__icontains='Transferencia'
+        ).exclude(
+            descripcion__icontains='Tarjeta'
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
+
+        egresos_dolar = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            moneda='DOLAR',
+            tipo='EGRESO'
+        ).exclude(
+            descripcion__icontains='Transferencia'
+        ).exclude(
+            descripcion__icontains='Tarjeta'
+        ).aggregate(total=Sum('monto'))['total'] or Decimal('0')
+
+        saldo_dolar = ingresos_dolar - egresos_dolar
+
+        # =========================================================
+        # INGRESOS DE ESTA FACTURA (SOLO EFECTIVO)
+        # =========================================================
+        movimientos_factura = MovimientoCaja.objects.filter(
+            apertura=apertura,
+            tipo='INGRESO',
+            descripcion__icontains=f'Cobro factura {venta.numero_factura}'
+        ).exclude(
+            descripcion__icontains='Transferencia'
+        ).exclude(
+            descripcion__icontains='Tarjeta'
+        )
+
+        total_factura_cordoba = sum(
+            m.monto for m in movimientos_factura if m.moneda == 'CORDOBA'
+        )
+
+        total_factura_dolar = sum(
+            m.monto for m in movimientos_factura if m.moneda == 'DOLAR'
+        )
+
+        # =========================================================
+        # VALIDACIÓN DE CAJA
+        # =========================================================
+        if total_factura_cordoba > saldo_cordoba:
+            messages.error(request, 'No hay suficiente efectivo en córdobas para anular esta factura.')
+            return redirect('ventas')
+
+        if total_factura_dolar > saldo_dolar:
+            messages.error(request, 'No hay suficiente efectivo en dólares para anular esta factura.')
+            return redirect('ventas')
+
+        # =========================================================
+        # REVERSA (EGRESO)
+        # =========================================================
+        if total_factura_cordoba > 0:
             MovimientoCaja.objects.create(
                 apertura=apertura,
                 tipo='EGRESO',
-                monto=venta.total,
+                moneda='CORDOBA',
+                monto=total_factura_cordoba,
                 descripcion=f'ANULACIÓN FACTURA #{venta.numero_factura}'
             )
 
-            # ACTUALIZAR SALDO
-            if apertura.saldo_final is None:
-                apertura.saldo_final = 0
+        if total_factura_dolar > 0:
+            MovimientoCaja.objects.create(
+                apertura=apertura,
+                tipo='EGRESO',
+                moneda='DOLAR',
+                monto=total_factura_dolar,
+                descripcion=f'ANULACIÓN FACTURA #{venta.numero_factura}'
+            )
 
-            apertura.saldo_final -= venta.total
-            apertura.save()
-            
-    # CAMBIAR ESTADO PEDIDO
+    # =========================================================
+    # CANCELAR PEDIDO
+    # =========================================================
     if venta.pedido:
         estado_cancelado = Estado.objects.get(nombre='Cancelado')
         venta.pedido.estado = estado_cancelado
         venta.pedido.save()
-    
 
-    # CAMBIAR ESTADO FACTURA
-    estado_anulada = Estado.objects.get(
-        nombre='Anulada'
-    )
-
+    # =========================================================
+    # ANULAR FACTURA
+    # =========================================================
+    estado_anulada = Estado.objects.get(nombre='Anulada')
     venta.estado = estado_anulada
     venta.save()
 
-    messages.success(request,f'Factura #{venta.numero_factura} anulada correctamente.')
+    messages.success(
+        request,
+        f'Factura #{venta.numero_factura} anulada correctamente.'
+    )
+
     return redirect('ventas')
 
 
@@ -278,7 +373,7 @@ def crear_venta(request):
                         sucursal=empleado.sucursal
                     )
 
-                    estado_confirmado = Estado.objects.get(nombre__iexact="Confirmado")
+                    estado_confirmado = Estado.objects.get(nombre__iexact="Facturado")
                     pedido.estado = estado_confirmado
                     pedido.save()
 
@@ -431,6 +526,19 @@ def cobrar_venta(request):
             )
 
             return redirect('ventas')
+        
+        # CALCULAR VUELTO
+        vuelto = total_pagado - venta.total
+
+        if vuelto > 0:
+
+            MovimientoCaja.objects.create(
+                apertura=apertura,
+                tipo='EGRESO',
+                moneda='CORDOBA',
+                monto=Decimal(vuelto),
+                descripcion=f'Vuelto factura {venta.numero_factura}'
+            )
 
         # ACTUALIZAR VENTA
 
@@ -452,7 +560,7 @@ def cobrar_venta(request):
                 moneda='CORDOBA',
                 monto=efectivo_cordoba,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Efectivo C$'
+                f'Cobro factura {venta.numero_factura}'
             )
 
         # EFECTIVO DOLAR
@@ -464,7 +572,7 @@ def cobrar_venta(request):
                 moneda='DOLAR',
                 monto=efectivo_dolar,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Efectivo USD'
+                f'Cobro factura {venta.numero_factura}'
 
             )
 
@@ -479,7 +587,7 @@ def cobrar_venta(request):
                 moneda='CORDOBA',
                 monto=transferencia_cordoba,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Transferencia C$',
+                f'Cobro factura {venta.numero_factura} - Transferencia C$',
 
             )
 
@@ -492,7 +600,7 @@ def cobrar_venta(request):
                 moneda='DOLAR',
                 monto=transferencia_dolar,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Transferencia USD',
+                f'Cobro factura {venta.numero_factura} - Transferencia USD',
 
             )
 
@@ -505,7 +613,7 @@ def cobrar_venta(request):
                 moneda='CORDOBA',
                 monto=tarjeta_cordoba,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Tarjeta C$',
+                f'Cobro factura {venta.numero_factura} - Tarjeta C$',
 
             )
 
@@ -518,7 +626,7 @@ def cobrar_venta(request):
                 moneda='DOLAR',
                 monto=tarjeta_dolar,
                 descripcion=
-                f'Cobro factura #{venta.venta_id} - Tarjeta USD',
+                f'Cobro factura {venta.numero_factura} - Tarjeta USD',
 
             )
 
@@ -526,4 +634,11 @@ def cobrar_venta(request):
         messages.success(request,'Venta cobrada correctamente.')
 
     return redirect('ventas')
+
+
+
+
+
+
+
 

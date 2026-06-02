@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib import messages
 from decimal import Decimal
 from django.utils import timezone
-
 from .models import *
 from apps.usuarios.models import Estado
 from apps.ventas.models import Venta
@@ -123,6 +122,10 @@ def calcular_totales_apertura(apertura):
     ingresos_cordoba = movimientos.filter(
         tipo='INGRESO',
         moneda='CORDOBA'
+    ).exclude(
+        Q(descripcion__icontains='Transferencia') |
+        Q(descripcion__icontains='Tarjeta')
+        
     ).aggregate(
         total=Coalesce(
             Sum('monto'),
@@ -153,6 +156,9 @@ def calcular_totales_apertura(apertura):
     ingresos_dolar = movimientos.filter(
         tipo='INGRESO',
         moneda='DOLAR'
+    ).exclude(
+        Q(descripcion__icontains='Transferencia') |
+        Q(descripcion__icontains='Tarjeta')
     ).aggregate(
         total=Coalesce(
             Sum('monto'),
@@ -867,6 +873,21 @@ from decimal import Decimal
 # REPORTE PDF ARQUEO
 # =====================================================
 
+from decimal import Decimal
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+)
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+from decimal import Decimal, ROUND_HALF_UP
+
+def fmt(valor):
+    return Decimal(valor).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
 def reporte_arqueo_pdf(request, arqueo_id):
 
     arqueo = get_object_or_404(
@@ -884,23 +905,10 @@ def reporte_arqueo_pdf(request, arqueo_id):
     caja = apertura.caja
     sucursal = caja.sucursal
     empleado = arqueo.empleado
+    tasa = Decimal(arqueo.tipocambio.valor)
 
-    # =====================================================
-    # RESPONSE
-    # =====================================================
-
-    response = HttpResponse(
-        content_type='application/pdf'
-    )
-
-    response[
-        'Content-Disposition'
-    ] = f'attachment; filename="arqueo_{arqueo.arqueo_id}.pdf"'
-
-
-    # =====================================================
-    # DOCUMENTO
-    # =====================================================
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="arqueo_{arqueo.arqueo_id}.pdf"'
 
     doc = SimpleDocTemplate(
         response,
@@ -912,51 +920,31 @@ def reporte_arqueo_pdf(request, arqueo_id):
     )
 
     styles = getSampleStyleSheet()
-
     elementos = []
 
     # =====================================================
     # TITULO
     # =====================================================
-
-    titulo = (
-        "ARQUEO DE CIERRE"
-        if arqueo.tipo == "FINAL"
-        else "ARQUEO PARCIAL"
-    )
-
-    elementos.append(
-        Paragraph(
-            f"<b>{titulo}</b>",
-            styles['Title']
-        )
-    )
-
+    titulo = "ARQUEO DE CIERRE" if arqueo.tipo == "FINAL" else "ARQUEO PARCIAL"
+    elementos.append(Paragraph(f"<b>{titulo}</b>", styles['Title']))
     elementos.append(Spacer(1, 10))
 
     # =====================================================
-    # INFORMACION GENERAL
+    # INFO
     # =====================================================
-
     info = [
         ["Sucursal:", sucursal.nombre],
         ["Caja:", caja.nombre],
         ["Empleado:", f"{empleado.user.first_name} {empleado.user.last_name}"],
         ["Fecha:", arqueo.fecha.strftime("%d/%m/%Y")],
         ["Hora:", arqueo.fecha.strftime("%I:%M %p")],
-        ["Tipo Cambio:", f"C${arqueo.tipocambio.valor}"]
+        ["Tipo Cambio:", f"C${tasa}"]
     ]
 
-    tabla_info = Table(
-        info,
-        colWidths=[150, 300]
-    )
-
+    tabla_info = Table(info, colWidths=[150, 300])
     tabla_info.setStyle(TableStyle([
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
         ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#eeeeee')),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
     ]))
 
     elementos.append(tabla_info)
@@ -965,45 +953,37 @@ def reporte_arqueo_pdf(request, arqueo_id):
     # =====================================================
     # DENOMINACIONES
     # =====================================================
+    apertura_detalles = DetalleAperturaCaja.objects.filter(apertura=apertura)
+    arqueo_detalles = DetalleArqueo.objects.filter(arqueo=arqueo)
 
-    apertura_detalles = DetalleAperturaCaja.objects.filter(
-        apertura=apertura
-    ).select_related('denominacion')
+    apertura_dict = {d.denominacion_id: d for d in apertura_detalles}
+    arqueo_dict = {d.denominacion_id: d for d in arqueo_detalles}
 
-    arqueo_detalles = DetalleArqueo.objects.filter(
-        arqueo=arqueo
-    ).select_related('denominacion')
-
-    arqueo_dict = {}
-
-    for d in arqueo_detalles:
-        arqueo_dict[d.denominacion_id] = d
-
-    # =====================================================
-    # TABLA DENOMINACIONES
-    # =====================================================
+    denominaciones = Denominacion.objects.all().order_by('moneda', 'valor')
 
     data = [[
         'Denominación',
         'Inicio',
         'Cierre',
-        'Diferencia'
+        'Dif.'
     ]]
 
-    subtotal_inicio = Decimal('0')
-    subtotal_cierre = Decimal('0')
+    total_cordoba_inicio = Decimal('0')
+    total_cordoba_cierre = Decimal('0')
 
-    for detalle in apertura_detalles:
+    total_dolar_inicio = Decimal('0')
+    total_dolar_cierre = Decimal('0')
 
-        denom = detalle.denominacion
-        inicio = detalle.cantidad
+    for denom in denominaciones:
 
-        cierre = 0
+        ap = apertura_dict.get(denom.denominacion_id)
+        ar = arqueo_dict.get(denom.denominacion_id)
 
-        if denom.denominacion_id in arqueo_dict:
-            cierre = arqueo_dict[
-                denom.denominacion_id
-            ].cantidad
+        inicio = ap.cantidad if ap else 0
+        cierre = ar.cantidad if ar else 0
+
+        inicio_sub = ap.subtotal if ap else Decimal('0')
+        cierre_sub = ar.subtotal if ar else Decimal('0')
 
         diferencia = cierre - inicio
 
@@ -1014,194 +994,159 @@ def reporte_arqueo_pdf(request, arqueo_id):
             str(diferencia)
         ])
 
-        subtotal_inicio += detalle.subtotal
+        # =====================================================
+        # SUMAS POR MONEDA
+        # =====================================================
+        if denom.moneda == 'CORDOBA':
+            total_cordoba_inicio += inicio_sub
+            total_cordoba_cierre += cierre_sub
 
-        if denom.denominacion_id in arqueo_dict:
-            subtotal_cierre += arqueo_dict[
-                denom.denominacion_id
-            ].subtotal
+        elif denom.moneda == 'DOLAR':
+            total_dolar_inicio += inicio_sub
+            total_dolar_cierre += cierre_sub
 
-    tabla = Table(
-        data,
-        colWidths=[180, 100, 100, 100]
-    )
-
+    tabla = Table(data, colWidths=[200, 100, 100, 80])
     tabla.setStyle(TableStyle([
-
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#d63384')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-
         ('ALIGN', (1,1), (-1,-1), 'CENTER'),
-
-        ('BOTTOMPADDING', (0,0), (-1,0), 8),
-
+        ('FONTSIZE', (0,0), (-1,-1), 8),
     ]))
 
-    elementos.append(
-        Paragraph(
-            "<b>CONTROL DE EFECTIVO</b>",
-            styles['Heading2']
-        )
-    )
-
+    elementos.append(Paragraph("<b>CONTROL DE EFECTIVO</b>", styles['Heading2']))
     elementos.append(tabla)
     elementos.append(Spacer(1, 10))
 
     # =====================================================
-    # SUBTOTALES
+    # RESUMEN POR MONEDA
     # =====================================================
+
+    dolar_en_cordoba_inicio = total_dolar_inicio * tasa
+    dolar_en_cordoba_cierre = total_dolar_cierre * tasa
+
+    total_general_inicio = total_cordoba_inicio + dolar_en_cordoba_inicio
+    total_general_cierre = total_cordoba_cierre + dolar_en_cordoba_cierre
 
     resumen = [
-        ['Subtotal Inicial', f"C${subtotal_inicio}"],
-        ['Subtotal Cierre', f"C${subtotal_cierre}"],
+        ['Concepto', 'Inicio', 'Cierre'],
+        
+        ['DÓLAR (USD)',
+        f"${fmt(total_dolar_inicio)}",
+        f"${fmt(total_dolar_cierre)}"],
+        
+        ['DÓLAR (en C$)',
+         f"C${fmt(dolar_en_cordoba_inicio)}",
+         f"C${fmt(dolar_en_cordoba_cierre)}"],
+
+        ['CÓRDOBA',
+         f"C${fmt(total_cordoba_inicio)}",
+         f"C${fmt(total_cordoba_cierre)}"],
+
+        ['TOTAL GENERAL (C$)',
+         f"C${fmt(total_general_inicio)}",
+         f"C${fmt(total_general_cierre)}"],
     ]
 
-    tabla_resumen = Table(
-        resumen,
-        colWidths=[250, 150]
-    )
-
+    tabla_resumen = Table(resumen, colWidths=[200, 150, 150])
     tabla_resumen.setStyle(TableStyle([
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#eeeeee')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0d6efd')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
     ]))
 
+    elementos.append(Paragraph("<b>RESUMEN GENERAL</b>", styles['Heading2']))
     elementos.append(tabla_resumen)
     elementos.append(Spacer(1, 15))
-
+    
     # =====================================================
-    # TARJETAS Y TRANSFERENCIAS
+    # MOVIMIENTOS (MEDIOS ELECTRÓNICOS)
     # =====================================================
 
-    ventas = Venta.objects.filter(
-        apertura=apertura
-    ).select_related('metodo')
+    movimientos = MovimientoCaja.objects.filter(apertura=apertura)
 
-    total_tarjetas = Decimal('0')
-    total_transferencias = Decimal('0')
+    total_tarjeta_c = Decimal('0')
+    total_tarjeta_d = Decimal('0')
 
-    for venta in ventas:
+    total_trans_c = Decimal('0')
+    total_trans_d = Decimal('0')
 
-        metodo = venta.metodo.nombre.upper()
+    for m in movimientos:
 
-        if 'TARJETA' in metodo:
-            total_tarjetas += venta.total
+        desc = (m.descripcion or '').upper()
 
-        if 'TRANSFERENCIA' in metodo:
-            total_transferencias += venta.total
+
+        if 'TARJETA C$' in desc:
+            total_tarjeta_c += m.monto
+
+        elif 'TARJETA USD' in desc:
+            total_tarjeta_d += m.monto
+
+
+        elif 'TRANSFERENCIA C$' in desc:
+            total_trans_c += m.monto
+
+        elif 'TRANSFERENCIA USD' in desc:
+            total_trans_d += m.monto
+
+    elementos.append(Paragraph("<b>MÉTODOS ELECTRÓNICOS</b>", styles['Heading2']))
 
     tabla_pago = Table([
-        ['Método', 'Total'],
-        ['Tarjetas', f"C${total_tarjetas}"],
-        ['Transferencias', f"C${total_transferencias}"],
-    ], colWidths=[250, 150])
+        ['Método', 'C$', 'USD'],
+
+        ['Tarjetas',
+        f"C${total_tarjeta_c}",
+        f"${total_tarjeta_d}"],
+
+        ['Transferencias',
+        f"C${total_trans_c}",
+        f"${total_trans_d}"],
+    ])
 
     tabla_pago.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#198754')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
     ]))
-
-    elementos.append(
-        Paragraph(
-            "<b>MÉTODOS ELECTRÓNICOS</b>",
-            styles['Heading2']
-        )
-    )
 
     elementos.append(tabla_pago)
     elementos.append(Spacer(1, 15))
 
     # =====================================================
-    # VALIDACION
+    # VALIDACIÓN
     # =====================================================
 
-    diferencia = (
-        arqueo.monto_fisico -
-        arqueo.monto_sistema
-    )
-
-    if diferencia > 0:
-        sobrante = diferencia
-        faltante = Decimal('0')
-    else:
-        sobrante = Decimal('0')
-        faltante = abs(diferencia)
+    diferencia = arqueo.monto_fisico - arqueo.monto_sistema
+    sobrante = diferencia if diferencia > 0 else Decimal('0')
+    faltante = abs(diferencia) if diferencia < 0 else Decimal('0')
 
     validacion = [
         ['Concepto', 'Monto'],
-        ['Monto Sistema', f"C${arqueo.monto_sistema}"],
-        ['Monto Físico', f"C${arqueo.monto_fisico}"],
+        ['Sistema', f"C${arqueo.monto_sistema}"],
+        ['Físico', f"C${arqueo.monto_fisico}"],
         ['Sobrante', f"C${sobrante}"],
         ['Faltante', f"C${faltante}"],
     ]
 
-    tabla_validacion = Table(
-        validacion,
-        colWidths=[250, 150]
-    )
-
+    tabla_validacion = Table(validacion, colWidths=[250, 150])
     tabla_validacion.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0d6efd')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#198754')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
     ]))
 
-    elementos.append(
-        Paragraph(
-            "<b>VALIDACIÓN DEL ARQUEO</b>",
-            styles['Heading2']
-        )
-    )
-
+    elementos.append(Paragraph("<b>VALIDACIÓN DEL ARQUEO</b>", styles['Heading2']))
     elementos.append(tabla_validacion)
-    elementos.append(Spacer(1, 15))
+    elementos.append(Spacer(1, 20))
 
-    # OBSERVACIONES
-    elementos.append(
-        Paragraph(
-            "<b>OBSERVACIONES</b>",
-            styles['Heading2']
-        )
-    )
-
-    elementos.append(
-        Paragraph(
-            arqueo.observacion or "Sin observaciones.",
-            styles['BodyText']
-        )
-    )
-
-    elementos.append(Spacer(1, 10))
-
-    elementos.append(
-        Paragraph(
-            "<b>JUSTIFICACIÓN</b>",
-            styles['Heading2']
-        )
-    )
-
-    elementos.append(
-        Paragraph(
-            arqueo.justificacion or "Sin justificación.",
-            styles['BodyText']
-        )
-    )
-
-    elementos.append(Spacer(1, 30))
-
+    # =====================================================
     # FIRMAS
-
-    firmas = Table([
-        [
-            "Cajero Responsable\n\n\n________________________",
-            "Supervisor / Gerente\n\n\n________________________"
-        ]
-    ], colWidths=[250, 250])
+    # =====================================================
+    firmas = Table([[
+        "Cajero Responsable\n\n__________________",
+        "Supervisor / Gerente\n\n__________________"
+    ]], colWidths=[250, 250])
 
     firmas.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'CENTER')
@@ -1209,10 +1154,10 @@ def reporte_arqueo_pdf(request, arqueo_id):
 
     elementos.append(firmas)
 
-    # =====================================================
-    # BUILD
-    # =====================================================
-
     doc.build(elementos)
-
     return response
+
+
+
+
+
