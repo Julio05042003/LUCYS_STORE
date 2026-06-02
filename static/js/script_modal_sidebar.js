@@ -1,22 +1,5 @@
 /* === LÓGICA DEL SIDEBAR (GLOBAL) === */
 // Usamos comprobación de existencia para evitar errores si el elemento no existe en alguna página
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebar-overlay');
-
-if (menuToggle && sidebar) {
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-        if (overlay) overlay.classList.toggle('active');
-    });
-}
-
-if (overlay) {
-    overlay.addEventListener('click', () => {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    });
-}
 
 /* modal editar */
 document.addEventListener('DOMContentLoaded', function () {
@@ -68,11 +51,6 @@ window.onclick = function (event) {
 
 
 
-// Función para WhatsApp
-function enviarWhatsApp() {
-    const mensaje = encodeURIComponent("*CIERRE DE CAJA - LUCY'S BOUTIQUE*\nTotal en Caja: $455.00\nEstado: Balanceado");
-    window.open(`https://wa.me/50581703596?text=${mensaje}`, '_blank');
-}
 
 // Función para Imprimir
 function imprimirTicket() {

@@ -8,7 +8,9 @@ from django.db.models import Q
 
 from apps.productos.models import Producto, Categoria, Marca
 from apps.inventario.models import Inventario
-from apps.usuarios.models import Estado, Empleado
+from apps.usuarios.models import *
+from apps.pedidos.models import *
+
 
 # 🔐 función simple de role
 def es_admin_o_bodega(user):
@@ -19,39 +21,88 @@ def es_admin_o_bodega(user):
         return False
 
 
+
+
 def tienda(request):
+    # 1. Capturar la sucursal seleccionada (Prioriza parámetros GET, si no, recurre a la Sesión)
+    sucursal_id = request.GET.get('sucursal')
+    if sucursal_id:
+        request.session['sucursal_id'] = sucursal_id
+    else:
+        sucursal_id = request.session.get('sucursal_id')
 
-    categoria_id = request.GET.get('categoria')
+    # 2. Obtener las sucursales activas filtrando por su relación con el modelo Estado
+    sucursales = Sucursal.objects.filter(estado__nombre='Activo').select_related('direccion')
+    
+    # NUEVO: Obtener la instancia completa de la sucursal para poder acceder a .telefonos
+    sucursal_obj = Sucursal.objects.filter(pk=sucursal_id).first()
+    
+    telefonos_vendedor = []
+    if sucursal_obj:
+        # Filtramos aquí mismo los números de tipo vendedor activos
+        telefonos_vendedor = sucursal_obj.telefonos.filter(
+            tipo__iexact='vendedor', 
+            estado__nombre='Activo'
+        )
+    
+    # Inicializamos el contenedor de productos en vacío
+    productos = []
 
-    productos = Producto.objects.select_related(
-        'categoria',
-        'marca',
-        'estado'
-    ).filter(
-        estado__nombre='Activo'
-    )
-
-    if categoria_id:
-        productos = productos.filter(
-            categoria_id=categoria_id
+    # 3. Si hay una sucursal seleccionada por el cliente, extraemos su inventario de bodega
+    if sucursal_id:
+        inventarios = Inventario.objects.select_related(
+            'producto',
+            'producto__categoria',
+            'producto__marca',
+            'producto__estado',
+            'bodega__sucursal'
+        ).filter(
+            bodega__sucursal_id=sucursal_id,
+            producto__estado__nombre='Activo', 
+            stock__gt=0                        
         )
 
-    # STOCK TOTAL
-    for p in productos:
+        # 4. Aplicar el filtro del select de categorías si el cliente seleccionó una
+        categoria_id = request.GET.get('categoria')
+        if categoria_id:
+            inventarios = inventarios.filter(producto__categoria_id=categoria_id)
 
-        p.stock = Inventario.objects.filter(
-            producto=p
-        ).aggregate(
-            total=Sum('stock')
-        )['total'] or 0
+        # 5. Construir la lista de objetos Producto inyectando el stock real de la bodega
+        for inv in inventarios:
+            prod = inv.producto
+            prod.stock = inv.stock  
+            productos.append(prod)
 
     categorias = Categoria.objects.all()
 
+    # =========================================================================
+    # NUEVA LOGÍSTICA PARA EL CHECKOUT DE LA TIENDA
+    # =========================================================================
+    tipos_entrega = TipoEntrega.objects.all()
+    metodos_envio = MetodoEnvio.objects.all()
+    direcciones_cliente = None
+
+    # Si el usuario inició sesión y tiene un perfil de cliente asociado, traemos sus direcciones
+    if request.user.is_authenticated and hasattr(request.user, 'cliente'):
+        direcciones_cliente = ClienteDireccion.objects.filter(
+            cliente=request.user.cliente,
+            estado__nombre='Activo' # Trae solo las direcciones que no estén deshabilitadas
+        ).select_related('direccion')
+
     return render(request, 'tienda/index.html', {
         'productos': productos,
-        'categorias': categorias
+        'categorias': categorias,
+        'sucursales': sucursales,
+        'sucursal_seleccionada': int(sucursal_id) if sucursal_id else None,
+        'telefonos_vendedor': telefonos_vendedor,
+        
+        # Nuevas variables añadidas al contexto para alimentar el modal
+        'tipos_entrega': tipos_entrega,
+        'metodos_envio': metodos_envio,
+        'direcciones_cliente': direcciones_cliente,
     })
-
+    
+    
 # 🔹 CREAR PRODUCTO
 @login_required
 def crear_producto(request):
@@ -400,6 +451,38 @@ def producto_detalle_json(request, id):
     }
 
     return JsonResponse(data)
+
+
+def detalle_producto_tienda_json(request, id):
+    """
+    Vista pública para que los clientes consulten los detalles 
+    de un producto desde el catálogo de la tienda.
+    """
+    try:
+        # 1. Obtenemos el producto con su categoría de forma eficiente
+        producto = Producto.objects.select_related('categoria').get(pk=id)
+
+        # 2. Sumamos el stock total disponible en todas las bodegas/sucursales
+        stock_total = Inventario.objects.filter(producto=producto).aggregate(
+            total=Sum('stock')
+        )['total'] or 0
+
+        # 3. Estructuramos la respuesta JSON limpia
+        data = {
+            'producto_id': producto.producto_id,
+            'codigo': producto.codigo,
+            'nombre': producto.nombre,
+            'categoria': producto.categoria.nombre if producto.categoria else "General",
+            'marca': producto.marca.nombre if producto.marca else "Lucy's",
+            'descripcion': producto.descripcion or "Sin descripción disponible.",
+            'imagen': producto.imagen.url if producto.imagen else "",
+            'precio_venta': float(producto.precio_venta or 0),
+            'stock': stock_total
+        }
+        return JsonResponse(data)
+
+    except Producto.DoesNotExist:
+        return JsonResponse({'error': 'El artículo ya no está disponible.'}, status=404)
 
 
 

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/style-empleado.css' %}">
 </head>
 
+
 <body>
 
     <header class="topbar">
@@ -41,6 +42,7 @@
 
         </div>
     </header>
+
 
     <div class="main-container">
 
@@ -121,21 +123,6 @@
 
     </div>
 
-    <script>
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        });
-
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-    </script>
 
 </body>
 

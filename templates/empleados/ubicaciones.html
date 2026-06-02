@@ -1,407 +1,724 @@
 {% extends 'empleados/base_empleados.html' %}
 {% load static %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
-<link rel="stylesheet" href="{% static 'css/style-usuarios.css' %}">
-{% endblock %}
-
 {% block content %}
-
 <style>
+    /* =========================================
+   CONTENEDOR
+========================================= */
 
-/* =========================
-   WRAPPER
-========================= */
-.page-wrapper{
-    padding:30px;
-    max-width:1400px;
-    margin:auto;
-}
+    .providers-wrapper {
+        padding: 25px;
+    }
 
-/* HEADER */
-.header h2{
-    font-size:2rem;
-    font-weight:700;
-    color:#2d2d2d;
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
+    /* =========================================
+   HEADER
+========================================= */
 
-.header h2 i{
-    color:#ef7f9a;
-}
+    .providers-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
 
-/* FILTROS */
-.card-filtros{
-    background:#fff;
-    padding:25px;
-    border-radius:22px;
-    box-shadow:0 8px 25px rgba(0,0,0,.05);
-    margin-bottom:25px;
-}
+    .providers-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+    }
 
-.card-filtros form{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-    align-items:end;
-}
+    .btn-primary {
+        border: none;
+        background: linear-gradient(90deg, #ec4899, #f472b6);
+        color: white;
+        padding: 13px 22px;
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+    }
 
-.field{
-    display:flex;
-    flex-direction:column;
-    min-width:220px;
-}
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
 
-.field input{
-    height:48px;
-    border-radius:14px;
-    border:1px solid #e5e5e5;
-    padding:0 14px;
-    background:#fafafa;
-}
+    /* =========================================
+   ALERTAS
+========================================= */
 
-.field input:focus{
-    border-color:#ef7f9a;
-    background:#fff;
-    outline:none;
-}
+    .alert-container {
+        margin-bottom: 20px;
+    }
 
-/* BOTONES */
-.btn-main{
-    height:48px;
-    padding:0 20px;
-    border:none;
-    border-radius:14px;
-    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
-    color:#fff;
-    font-weight:600;
-    cursor:pointer;
-}
+    .alert {
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        animation: fadeIn .3s ease;
+    }
 
-/* TABLE */
-.table-card{
-    background:#fff;
-    border-radius:22px;
-    overflow:hidden;
-    box-shadow:0 8px 25px rgba(0,0,0,.05);
-}
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+    }
 
-.table-scroll{
-    overflow-x:auto;
-}
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:900px;
-}
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
 
-thead{
-    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
-    color:#fff;
-}
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-th, td{
-    padding:18px;
-    border-bottom:1px solid #f2f2f2;
-}
+    /* Estilos modernos para la tabla y botones */
+    .tabla-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 20px;
+    }
 
-/* BADGES */
-.badge-activo{
-    background:#e9f9ef;
-    color:#1c9c52;
-    padding:6px 12px;
-    border-radius:30px;
-    font-weight:600;
-}
+    .tabla-clientes {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-.badge-inactivo{
-    background:#ffe9e9;
-    color:#d63031;
-    padding:6px 12px;
-    border-radius:30px;
-    font-weight:600;
-}
+    .tabla-clientes th {
+        background: #f8fafc;
+        padding: 15px;
+        text-align: left;
+        color: #64748b;
+        font-weight: 600;
+    }
 
-/* ACCIONES */
-.actions button,
-.actions a{
-    border:none;
-    width:38px;
-    height:38px;
-    border-radius:10px;
-    margin-right:6px;
-    cursor:pointer;
-    color:#fff;
-}
+    .tabla-clientes td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+    }
 
-.btn-edit{ background:#4e73df; }
-.btn-state{ background:#6c757d; }
+    /* Efecto Hover en filas */
+    .tabla-clientes tbody tr:hover {
+        background-color: #f8fafc;
+        transition: all 0.2s ease;
+    }
 
-/* MODAL */
-.modal-content{
-    border-radius:22px;
-    border:none;
-}
+    /* Botones de acción */
+    .btn-table {
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
 
-.modal-header{
-    background:linear-gradient(135deg,#ef7f9a,#f59bb2);
-    color:#fff;
-}
+    .btn-table:hover {
+        transform: scale(1.1);
+    }
 
-.form-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:18px;
-}
+    .btn-edit {
+        background: #dcfce7;
+        color: #166534;
+    }
 
-.form-group input{
-    height:46px;
-    border-radius:12px;
-    border:1px solid #ddd;
-    padding:0 12px;
-    background:#fafafa;
-}
+    .btn-user {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
 
-.form-group input:focus{
-    border-color:#ef7f9a;
-    outline:none;
-    background:#fff;
-}
+    /* Modal Moderno */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
 
+    .modal-content {
+        background: #fff;
+        padding: 25px;
+        border-radius: 16px;
+        width: 450px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
-<div class="page-wrapper">
+<style>
+    :root {
+        --rosa-principal: #ff8fa3;
+        --rosa-hover: #ff6b8b;
+        --rosa-claro: #fff0f3;
+        --fondo-claro: #fffafa;
+        --texto-oscuro: #4a4a4a;
+        --borde-rosa: #ffccd5;
+    }
 
-    <!-- HEADER -->
-    <div class="header mb-3">
-        <h2><i class="fas fa-map-marker-alt"></i> Gestión de Ubicaciones</h2>
-    </div>
+    /* Estilos globales para Inputs y Selects */
+    input[type="text"],
+    select {
+        width: 100%;
+        padding: 12px;
+        margin: 5px 0;
+        display: inline-block;
+        border: 1px solid var(--borde-rosa);
+        border-radius: 8px;
+        background-color: var(--fondo-claro);
+        font-family: inherit;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
 
-    <!-- FILTROS -->
-    <div class="card-filtros">
-        <form method="GET">
+    input[type="text"]:focus,
+    select:focus {
+        border-color: var(--rosa-principal);
+        outline: none;
+        box-shadow: 0 0 5px rgba(255, 143, 163, 0.5);
+    }
 
-            <div class="field" style="flex:2;">
-                <input type="text" name="q" placeholder="Buscar sucursal o bodega...">
+    /* Etiquetas de campos */
+    .field label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #704747;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    /* Botones de acción */
+    .btn-primary {
+        background: var(--rosa-principal);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-weight: 600;
+    }
+
+    .btn-primary:hover {
+        background: var(--rosa-hover);
+    }
+
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #475569;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .btn-table {
+        border: 1px solid var(--rosa-principal);
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+        background: white;
+        color: var(--rosa-hover);
+    }
+
+    .btn-table:hover {
+        background: var(--rosa-claro);
+        transform: scale(1.05);
+    }
+
+    /* Modales */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1050;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 30px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 15px 35px rgba(255, 143, 163, 0.2);
+        border: 1px solid var(--rosa-claro);
+    }
+
+    /* Estructura de grid para el formulario */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    /* Tabla */
+    .tabla-container {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Contenedor con scroll para los teléfonos */
+    .telefonos-scroll-container {
+        max-height: 250px;
+        overflow-y: auto;
+        border: 1px solid #ffccd5;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fffafa;
+        margin-bottom: 15px;
+    }
+
+    .telefono-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+    .telefonos-scroll-container{
+    max-height:260px;
+    overflow-y:auto;
+    padding:12px;
+    border:1px solid #fbcfe8;
+    border-radius:14px;
+    background:#fff7fb;
+    margin-top:10px;
+}
+
+.telefono-row{
+    display:grid;
+    grid-template-columns: 1.2fr 1fr 1fr 50px;
+    gap:10px;
+    align-items:center;
+    background:white;
+    padding:10px;
+    border-radius:12px;
+    border:1px solid #f3e8ff;
+    margin-bottom:10px;
+    transition:.2s;
+}
+
+.telefono-row:hover{
+    background:#fdf2f8;
+}
+
+.telefono-row input,
+.telefono-row select{
+    height:42px;
+    margin:0;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:0 12px;
+    background:white;
+}
+
+.telefono-row input:focus,
+.telefono-row select:focus{
+    border-color:#ec4899;
+    box-shadow:0 0 0 3px rgba(236,72,153,.15);
+}
+
+.btn-remove-phone{
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:10px;
+    background:#fee2e2;
+    color:#dc2626;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn-remove-phone:hover{
+    background:#fecaca;
+}
+
+.btn-add-phone{
+    margin-top:12px;
+    border:none;
+    background:linear-gradient(135deg,#ec4899,#f472b6);
+    color:white;
+    padding:10px 18px;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn-add-phone:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(236,72,153,.25);
+}
+</style>
+
+<div class="main-container">
+    <main class="content">
+        <div class="inventory-wapper">
+            <div class="header-section">
+                <h2><i class="fas fa-store"></i> Gestión de Ubicaciones</h2>
             </div>
 
-            <button class="btn-main">Buscar</button>
+            {% if messages %}
+            <div class="alert-container">
 
-            <button type="button"
-                    class="btn-main"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalCrear">
-                + Nueva Ubicación
-            </button>
+                {% for message in messages %}
 
-        </form>
-    </div>
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
 
-    <!-- TABLA -->
-    <div class="table-card">
-        <div class="table-scroll">
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sucursal</th>
-                        <th>Bodega</th>
-                        <th>Ubicación</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                {% for s in sucursales %}
-                <tr>
-
-                    <td>
-                        <b>{{ s.nombre }}</b><br>
-                        <small>Código: {{ s.codigo }}</small>
-                    </td>
-
-                    <td>
-                        {% if s.bodega %}
-                            <b>{{ s.bodega.nombre }}</b><br>
-                            <small>{{ s.bodega.codigo }}</small>
-                        {% else %}
-                            <span class="badge-inactivo">Sin bodega</span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        {{ s.direccion.pais }} / {{ s.direccion.departamento }}<br>
-                        <small>{{ s.direccion.ciudad }}</small>
-                    </td>
-
-                    <td>
-                        {% if s.estado.nombre == "Activo" %}
-                            <span class="badge-activo">Activo</span>
-                        {% else %}
-                            <span class="badge-inactivo">Inactivo</span>
-                        {% endif %}
-                    </td>
-
-                    <td class="actions">
-
-                        <button class="btn-edit"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalEditar{{ s.sucursal_id }}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-
-                        <a class="btn-state"
-                           href="{% url 'cambiar_estado_sucursal' s.sucursal_id %}">
-                            <i class="fas fa-power-off"></i>
-                        </a>
-
-                    </td>
-
-                </tr>
                 {% endfor %}
 
-                </tbody>
-            </table>
+            </div>
+            {% endif %}
 
-        </div>
-    </div>
 
-</div>
-
-<!-- =========================
-MODAL CREAR
-========================= -->
-<div class="modal fade" id="modalCrear">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5>Nueva Ubicación</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="filters-card">
+                <div class="field" style="flex:2;">
+                    <label>Buscar Sucursal:</label>
+                    <input type="text" id="filtroSucursal" placeholder="Nombre o código...">
+                </div>
             </div>
 
-            <form method="POST">
-                {% csrf_token %}
+            <div class="tabla-container">
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Sucursal</th>
+                            <th>Bodega</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sucursales %}
+                        <tr>
+                            <td>#{{ s.sucursal_id }}</td>
+                            <td>
+                                <strong>{{ s.nombre }}</strong><br>
+                                <small class="text-muted">Cod: {{ s.codigo }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ s.bodega.nombre }}</strong><br>
+                                <small class="text-muted">Cod: {{ s.bodega.codigo }}</small>
+                            </td>
+                            <td>
+                                {% if s.estado.nombre == 'Activo' %}
+                                <span class="badge-online"><i class="fas fa-check-circle"></i> Activo</span>
+                                {% else %}
+                                <span class="badge-fisico" style="background:#fee2e2; color:#991b1b;"><i
+                                        class="fas fa-times-circle"></i> Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="acciones-tabla">
+                                    <button class="btn-table btn-edit"
+                                        onclick="abrirModal('editModal{{ s.sucursal_id }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="{% url 'cambiar_estado_sucursal' s.sucursal_id %}"
+                                        class="btn-table btn-user" style="background:#e0f2fe; color:#0369a1;">
+                                        <i class="fas fa-power-off"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-                <div class="modal-body">
-                    <div class="form-grid">
-
-                        <div class="form-group">
-                            <input name="sucursal_nombre" placeholder="Sucursal">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="sucursal_codigo" placeholder="Código">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="bodega_nombre" placeholder="Bodega">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="bodega_codigo" placeholder="Código Bodega">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="pais" placeholder="País">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="departamento" placeholder="Departamento">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="ciudad" placeholder="Ciudad">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="detalle" placeholder="Detalle">
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn-main w-100">Guardar</button>
-                </div>
-
-            </form>
-
+            <div class="action-footer">
+                <button class="btn-primary" onclick="abrirModal('modalCrear')">
+                    <i class="fas fa-plus"></i> Nueva Ubicación
+                </button>
+            </div>
         </div>
+    </main>
+</div>
+
+<!-- Modal CREAR -->
+<div id="modalCrear" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Registrar Nueva Ubicación</h3>
+        <form method="POST" action="{% url 'crear_sucursal' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="field"><label>Sucursal:</label><input type="text" name="sucursal_nombre" required></div>
+                <div class="field"><label>Cod. Sucursal:</label><input type="text" name="sucursal_codigo" required>
+                </div>
+                <div class="field"><label>Bodega:</label><input type="text" name="bodega_nombre" required></div>
+                <div class="field"><label>Cod. Bodega:</label><input type="text" name="bodega_codigo" required></div>
+            </div>
+            <div class="field"><label>País:</label><input type="text" name="pais"></div>
+            <div class="form-grid">
+                <div class="field"><label>Depto:</label><input type="text" name="departamento"></div>
+                <div class="field"><label>Ciudad:</label><input type="text" name="ciudad"></div>
+            </div>
+            <div class="field"><label>Detalle Dirección:</label><input type="text" name="detalle"></div>
+
+            <div id="containerTelefonos">
+                <label>Teléfonos:</label>
+            </div>
+            <button
+    type="button"
+    class="btn-add-phone"
+    onclick="agregarTelefonoEdit('{{ s.sucursal_id }}')"
+>
+    <i class="fas fa-plus"></i>
+    Agregar Teléfono
+</button>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="cerrarModal('modalCrear')">Cancelar</button>
+                <button type="submit" class="btn-primary">Guardar</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- =========================
-MODALES EDITAR
-========================= -->
+<!-- Modal EDITAR (Ejemplo para un registro) -->
 {% for s in sucursales %}
-
-<div class="modal fade" id="modalEditar{{ s.sucursal_id }}">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5>Editar Ubicación</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-
+<div id="editModal{{ s.sucursal_id }}" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Editar: {{ s.nombre }}</h3>
+        <div class="table-scroll">
             <form method="POST" action="{% url 'editar_sucursal' s.sucursal_id %}">
                 {% csrf_token %}
-
-                <div class="modal-body">
-                    <div class="form-grid">
-
-                        <div class="form-group">
-                            <input name="sucursal_nombre" value="{{ s.nombre }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="sucursal_codigo" value="{{ s.codigo }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="bodega_nombre" value="{{ s.bodega.nombre|default:'' }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="bodega_codigo" value="{{ s.bodega.codigo|default:'' }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="pais" value="{{ s.direccion.pais }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="departamento" value="{{ s.direccion.departamento }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="ciudad" value="{{ s.direccion.ciudad }}">
-                        </div>
-
-                        <div class="form-group">
-                            <input name="detalle" value="{{ s.direccion.detalle }}">
-                        </div>
-
-                    </div>
+                <div class="form-grid">
+                    <div class="field"><label>Nombre Sucursal:</label><input type="text" name="sucursal_nombre"
+                            value="{{ s.nombre }}"></div>
+                    <div class="field"><label>Código:</label><input type="text" name="sucursal_codigo"
+                            value="{{ s.codigo }}"></div>
+                    <div class="field"><label>Bodega:</label><input type="text" name="bodega_nombre"
+                            value="{{ s.bodega.nombre }}"></div>
+                    <div class="field"><label>Cod. Bodega:</label><input type="text" name="bodega_codigo"
+                            value="{{ s.bodega.codigo }}"></div>
                 </div>
+
+                <div class="field"><label>País:</label><input type="text" name="pais" value="{{ s.direccion.pais }}">
+                </div>
+                <div class="form-grid">
+                    <div class="field"><label>Depto:</label><input type="text" name="departamento"
+                            value="{{ s.direccion.departamento }}"></div>
+                    <div class="field"><label>Ciudad:</label><input type="text" name="ciudad"
+                            value="{{ s.direccion.ciudad }}"></div>
+                </div>
+                <div class="field"><label>Detalle:</label><input type="text" name="detalle"
+                        value="{{ s.direccion.detalle }}"></div>
+
+                <label>Teléfonos:</label>
+
+<div id="telefonos-edit-{{ s.sucursal_id }}" class="telefonos-scroll-container">
+
+    {% for tel in s.telefonos.all %}
+        {% if tel.estado.nombre == 'Activo' %}
+        <div class="dynamic-row telefono-row">
+
+            <input type="hidden"
+                   name="telefono_id[]"
+                   value="{{ tel.id }}">
+
+            <input type="text"
+                   name="numero[]"
+                   value="{{ tel.numero }}"
+                   placeholder="Número"
+                   maxlength="8"
+                   required>
+
+            <select name="operadora[]" required>
+                <option value="Tigo"
+                    {% if tel.operadora == 'Tigo' %}selected{% endif %}>
+                    Tigo
+                </option>
+
+                <option value="Claro"
+                    {% if tel.operadora == 'Claro' %}selected{% endif %}>
+                    Claro
+                </option>
+
+                <option value="Convencional"
+                    {% if tel.operadora == 'Convencional' %}selected{% endif %}>
+                    Convencional
+                </option>
+            </select>
+
+            <select name="tipo[]" required>
+
+                <option value="Vendedor"
+                    {% if tel.tipo == 'Vendedor' %}selected{% endif %}>
+                    Vendedor
+                </option>
+
+                <option value="Cobros"
+                    {% if tel.tipo == 'Cobros' %}selected{% endif %}>
+                    Cobros
+                </option>
+
+                <option value="Administración"
+                    {% if tel.tipo == 'Administración' %}selected{% endif %}>
+                    Administración
+                </option>
+
+                <option value="Oficina"
+                    {% if tel.tipo == 'Oficina' %}selected{% endif %}>
+                    Oficina
+                </option>
+
+                <option value="Bodega"
+                    {% if tel.tipo == 'Bodega' %}selected{% endif %}>
+                    Bodega
+                </option>
+
+            </select>
+
+            <button type="button"
+                    class="btn-remove-phone"
+                    onclick="eliminarTelefonoExistente(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+
+        </div>
+        {% endif %}
+    {% endfor %}
+
+</div>
+
+<button type="button"
+        class="btn-table"
+        onclick="agregarTelefonoEdit('{{ s.sucursal_id }}')">
+    + Agregar Teléfono
+</button>
 
                 <div class="modal-footer">
-                    <button class="btn-main w-100">Actualizar</button>
+                    <button type="button" class="btn-cancel"
+                        onclick="cerrarModal('editModal{{ s.sucursal_id }}')">Cerrar</button>
+                    <button type="submit" class="btn-primary">Actualizar</button>
                 </div>
-
             </form>
-
         </div>
     </div>
 </div>
-
 {% endfor %}
 
+<script>
+    function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // Cerrar al hacer clic fuera
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = 'none';
+        }
+    }
+
+    function agregarTelefono(containerId) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'dynamic-row';
+        div.style.display = 'flex';
+        div.style.gap = '5px';
+        div.style.marginBottom = '5px';
+        div.innerHTML = `
+            <input type="text" name="telefono[]" placeholder="Número" required style="width:50%">
+            <select name="operadora[]" style="width:25%"><option>Tigo</option><option>Claro</option></select>
+            <select name="tipo[]" style="width:25%"><option>Oficina</option><option>Vendedor</option><option>Bodega</option><option>Gerente</option></select>
+            <button type="button" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+
+
+function eliminarTelefonoExistente(btn) {
+    btn.closest('.telefono-row').remove();
+}
+
+function agregarTelefonoEdit(sucursalId) {
+
+    const container = document.getElementById(
+        `telefonos-edit-${sucursalId}`
+    );
+
+    const row = document.createElement('div');
+    row.className = 'dynamic-row telefono-row';
+
+    row.innerHTML = `
+        <input type="hidden"
+               name="telefono_id[]"
+               value="">
+
+        <input type="text"
+               name="numero[]"
+               placeholder="Número"
+               maxlength="8"
+               required>
+
+        <select name="operadora[]" required>
+            <option value="Tigo">Tigo</option>
+            <option value="Claro">Claro</option>
+            <option value="Convencional">Convencional</option>
+        </select>
+
+        <select name="tipo[]" required>
+            <option value="Vendedor">Vendedor</option>
+            <option value="Cobros">Cobros</option>
+            <option value="Administración">Administración</option>
+            <option value="Oficina">Oficina</option>
+            <option value="Bodega">Bodega</option>
+        </select>
+
+        <button type="button"
+                class="btn-remove-phone"
+                onclick="eliminarTelefonoExistente(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+
+    container.appendChild(row);
+}
+    
+    /* =========================================
+       MENSAJES
+    ========================================= */
+
+    setTimeout(() => {
+
+        document.querySelectorAll('.alert').forEach(el => {
+
+            el.style.transition = '0.4s';
+            el.style.opacity = '0';
+
+            setTimeout(() => {
+                el.remove();
+            }, 400);
+
+        });
+
+    }, 3000);
+
+</script>
 {% endblock %}

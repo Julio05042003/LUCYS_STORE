@@ -642,14 +642,14 @@ def transferencias_view(request):
         'sucursal__bodega'
     ).get(user=request.user)
 
-    # =========================================
-    # BODEGAS
-    # =========================================
+    bodega_actual = empleado.sucursal.bodega
 
-    if empleado.rol.nombre == "Administrador":
+    # TODAS MENOS LA SUYA
+    bodegas = Bodega.objects.exclude(
+        pk=bodega_actual.pk
+    )
 
-        # ADMIN Y GERENTE VEN TODAS
-        bodegas = Bodega.objects.all()
+    if empleado.rol.nombre.lower() == "administrador":
 
         transferencias = Transferencia.objects.select_related(
             'estado',
@@ -660,26 +660,15 @@ def transferencias_view(request):
 
     else:
 
-        # EMPLEADOS SOLO SU BODEGA
-        bodega_empleado = empleado.sucursal.bodega
-
-        bodegas = Bodega.objects.filter(
-            pk=bodega_empleado.pk
-        )
-
         transferencias = Transferencia.objects.select_related(
             'estado',
             'origen',
             'destino',
             'empleado'
         ).filter(
-            Q(origen=bodega_empleado) |
-            Q(destino=bodega_empleado)
+            Q(origen=bodega_actual) |
+            Q(destino=bodega_actual)
         ).order_by('-id')
-
-    # =========================================
-    # PRODUCTOS AUTOCOMPLETE
-    # =========================================
 
     productos = Producto.objects.all()
 
@@ -687,10 +676,23 @@ def transferencias_view(request):
         {
             "id": p.producto_id,
             "codigo": p.codigo,
-            "nombre": p.nombre
+            "nombre": p.nombre,
+            "stock": (
+                Inventario.objects.filter(
+                    producto=p,
+                    bodega=bodega_actual
+                ).first().stock
+                if Inventario.objects.filter(
+                    producto=p,
+                    bodega=bodega_actual
+                ).exists()
+                else 0
+            )
         }
         for p in productos
     ]
+    
+    detalles_json = request.session.pop('detalles_transferencia','[]')
 
     return render(
         request,
@@ -699,29 +701,33 @@ def transferencias_view(request):
             'bodegas': bodegas,
             'transferencias': transferencias,
             'empleado': empleado,
-
-            # IMPORTANTE
-            'productos_json': json.dumps(productos_data)
+            'productos_json': json.dumps(productos_data),
+            'detalles_json': detalles_json
         }
-    )
+    )  
     
     
 @login_required
 def detalle_transferencia(request, id):
 
-    detalles = DetalleTransferencia.objects.select_related('producto').filter(
-        Transferencia_id=id
+    detalles = DetalleTransferencia.objects.select_related(
+        'producto'
+    ).filter(
+        transferencia_id=id
     )
 
     data = []
 
     for d in detalles:
+
         data.append({
-            'producto': d.Producto_id,
-            'cantidad': d.Cantidad
+            'producto': d.producto.nombre,
+            'cantidad': d.cantidad
         })
 
-    return JsonResponse({'detalles': data})
+    return JsonResponse({
+        'detalles': data
+    })
 
 
 @login_required
@@ -738,27 +744,49 @@ def crear_transferencia(request):
 
         estado = Estado.objects.get(nombre="Aprobado")
 
+        detalles_json = request.POST.get('detalles', '[]')
+
         # VALIDAR BODEGAS
         if origen.bodega_id == destino.bodega_id:
-            messages.error(request,"La bodega destino no puede ser la misma bodega origen")
+
+            request.session['detalles_transferencia'] = detalles_json
+
+            messages.error(
+                request,
+                "La bodega destino no puede ser la misma bodega origen"
+            )
             return redirect('transferencias')
 
         # VALIDAR DETALLES
-        detalles_json = request.POST.get('detalles')
-
         if not detalles_json:
-            messages.error(request,"No se enviaron productos en el traslado")
+
+            messages.error(
+                request,
+                "No se enviaron productos en el traslado"
+            )
             return redirect('transferencias')
 
         try:
             detalles = json.loads(detalles_json)
 
         except json.JSONDecodeError:
-            messages.error(request,"Error en formato de productos")
+
+            request.session['detalles_transferencia'] = detalles_json
+
+            messages.error(
+                request,
+                "Error en formato de productos"
+            )
             return redirect('transferencias')
 
         if len(detalles) == 0:
-            messages.error(request,"Debe agregar al menos un producto")
+
+            request.session['detalles_transferencia'] = detalles_json
+
+            messages.error(
+                request,
+                "Debe agregar al menos un producto"
+            )
             return redirect('transferencias')
 
         # VALIDAR STOCK Y MÚLTIPLO DE 3
@@ -770,37 +798,38 @@ def crear_transferencia(request):
 
             cantidad = int(d['cantidad'])
 
-            # VALIDAR MÚLTIPLO DE 3
             if cantidad % 3 != 0:
+
+                request.session['detalles_transferencia'] = detalles_json
+
                 messages.error(
                     request,
-                    f"La cantidad del producto "
-                    f"{producto.nombre} debe ser múltiplo de 3"
+                    f"La cantidad del producto {producto.nombre} debe ser múltiplo de 3"
                 )
                 return redirect('transferencias')
 
-            # BUSCAR INVENTARIO EN BODEGA ORIGEN
             inventario = Inventario.objects.filter(
                 producto=producto,
                 bodega=origen
             ).first()
 
-            # VALIDAR EXISTENCIA
             if not inventario:
+
+                request.session['detalles_transferencia'] = detalles_json
+
                 messages.error(
                     request,
-                    f"No existe inventario para "
-                    f"{producto.nombre} en la bodega origen"
+                    f"No existe inventario para {producto.nombre} en la bodega origen"
                 )
                 return redirect('transferencias')
 
-            # VALIDAR STOCK
             if cantidad > inventario.stock:
+
+                request.session['detalles_transferencia'] = detalles_json
+
                 messages.error(
                     request,
-                    f"Stock insuficiente para "
-                    f"{producto.nombre}. "
-                    f"Disponible: {inventario.stock}"
+                    f"Stock insuficiente para {producto.nombre}. Disponible: {inventario.stock}"
                 )
                 return redirect('transferencias')
 
@@ -827,6 +856,14 @@ def crear_transferencia(request):
                 cantidad=cantidad
             )
 
-        messages.success(request,"Transferencia creada correctamente")
+        # LIMPIAR SESIÓN
+        request.session.pop('detalles_transferencia', None)
+
+        messages.success(
+            request,
+            "Transferencia creada correctamente"
+        )
 
         return redirect('transferencias')
+
+    return redirect('transferencias')

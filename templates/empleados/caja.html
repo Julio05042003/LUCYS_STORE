@@ -2234,37 +2234,6 @@
             'selectMoneda'
         );
 
-    if (selectTipoMovimiento) {
-
-        selectTipoMovimiento
-            .addEventListener('change', function () {
-
-                if (this.value === 'CAMBIO') {
-
-                    contenedorCambio.style.display =
-                        'block';
-
-                    selectMoneda.value =
-                        'CORDOBA';
-
-                    selectMoneda.disabled =
-                        true;
-
-                } else {
-
-                    contenedorCambio.style.display =
-                        'none';
-
-                    selectMoneda.disabled =
-                        false;
-
-                }
-
-            });
-
-    }
-
-
 
     /* ======================================================
        CAMBIAR SIMBOLO MONEDA

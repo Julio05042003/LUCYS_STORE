@@ -18,5 +18,6 @@ urlpatterns = [
 
     # OTROS
     path('detalle/<int:id>/', producto_detalle_json),
+    path('producto/detalle-publico/<str:id>/', detalle_producto_tienda_json, name='detalle_producto_tienda_json'),
     path('producto/estado/<int:id>/', cambiar_estado_producto, name='cambiar_estado_producto'),
 ]

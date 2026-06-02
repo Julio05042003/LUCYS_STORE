@@ -14,17 +14,37 @@ from django.http import JsonResponse
 from django.db import connection
 from django.db.models import Q
 from apps.usuarios.tokens import token_generator
+from apps.caja.models import AperturaCaja
+from apps.inventario.models import Inventario
 
 
 # =========================
 # LISTADO PRINCIPAL
 # =========================
+@login_required
 def ubicaciones(request):
-    sucursales = Sucursal.objects.select_related('bodega', 'direccion', 'estado').all()
 
-    return render(request, "empleados/ubicaciones.html", {
-        "sucursales": sucursales
-    })
+    sucursales = Sucursal.objects.select_related(
+        'bodega',
+        'direccion',
+        'estado'
+    ).prefetch_related(
+        'telefonos__estado'
+    ).all()
+
+    for sucursal in sucursales:
+
+        sucursal.telefonos_activos = sucursal.telefonos.filter(
+            estado__nombre='Activo'
+        )
+
+    return render(
+        request,
+        "empleados/ubicaciones.html",
+        {
+            "sucursales": sucursales
+        }
+    )
 
 
 # =========================
@@ -32,120 +52,349 @@ def ubicaciones(request):
 # =========================
 def crear_sucursal(request):
     if request.method == "POST":
+        # 1. Captura de datos
+        suc_nombre = request.POST.get("sucursal_nombre", "").strip()
+        suc_codigo = request.POST.get("sucursal_codigo", "").strip()
+        bod_nombre = request.POST.get("bodega_nombre", "").strip()
+        bod_codigo = request.POST.get("bodega_codigo", "").strip()
 
-        suc_codigo = request.POST.get("sucursal_codigo")
-        bod_codigo = request.POST.get("bodega_codigo")
-
+        # 2. Validaciones de existencia (pre-transacción)
         if Sucursal.objects.filter(codigo=suc_codigo).exists():
-            messages.error(request, "El código de sucursal ya existe")
+            messages.error(request, f"Ya existe una sucursal con el código '{suc_codigo}'.")
             return redirect("ubicaciones")
-
+        
         if Bodega.objects.filter(codigo=bod_codigo).exists():
-            messages.error(request, "El código de bodega ya existe")
+            messages.error(request, f"Ya existe una bodega con el código '{bod_codigo}'.")
             return redirect("ubicaciones")
 
-        estado_activo = Estado.objects.get(nombre="Activo")
+        try:
+            with transaction.atomic():
+                estado_activo = Estado.objects.get(nombre="Activo")
 
-        direccion = Direccion.objects.create(
-            pais=request.POST.get("pais", "N/A"),
-            departamento=request.POST.get("departamento", "N/A"),
-            ciudad=request.POST.get("ciudad", "N/A"),
-            detalle=request.POST.get("detalle", "N/A")
-        )
+                # 3. Crear Dirección
+                direccion = Direccion.objects.create(
+                    pais=request.POST.get("pais", ""),
+                    departamento=request.POST.get("departamento", ""),
+                    ciudad=request.POST.get("ciudad", ""),
+                    detalle=request.POST.get("detalle", "")
+                )
 
-        sucursal = Sucursal.objects.create(
-            nombre=request.POST.get("sucursal_nombre"),
-            codigo=suc_codigo,
-            direccion=direccion,
-            estado=estado_activo
-        )
+                # 4. Crear Sucursal
+                sucursal = Sucursal.objects.create(
+                    nombre=suc_nombre,
+                    codigo=suc_codigo,
+                    direccion=direccion,
+                    estado=estado_activo
+                )
 
-        Bodega.objects.create(
-            nombre=request.POST.get("bodega_nombre"),
-            codigo=bod_codigo,
-            direccion=direccion,
-            sucursal=sucursal,
-            estado=estado_activo
-        )
+                # 5. Crear Bodega
+                Bodega.objects.create(
+                    nombre=bod_nombre,
+                    codigo=bod_codigo,
+                    direccion=direccion,
+                    sucursal=sucursal,
+                    estado=estado_activo
+                )
 
-        messages.success(request, "Sucursal y bodega creadas correctamente")
-        return redirect("ubicaciones")
+                # 6. Procesar Teléfonos
+                telefonos = request.POST.getlist("telefono[]")
+                operadoras = request.POST.getlist("operadora[]")
+                tipos = request.POST.getlist("tipo[]")
+                
+                # Zip permite recorrer las listas en paralelo
+                contador_telefonos = 0
+                for tel, op, tipo in zip(telefonos, operadoras, tipos):
+                    tel_limpio = tel.strip().replace('-', '')
+                    
+                    if tel_limpio:
+                        if not tel_limpio.isdigit():
+                            raise ValueError(f"El teléfono '{tel}' debe ser numérico.")
+                        
+                        TelefonoSucursal.objects.create(
+                            sucursal=sucursal,
+                            estado=estado_activo,
+                            numero=tel_limpio,
+                            operadora=op,
+                            tipo=tipo or "Oficina"
+                        )
+                        contador_telefonos += 1
+                
+                if contador_telefonos == 0:
+                    raise ValueError("Debes agregar al menos un número de teléfono.")
+
+            messages.success(request, "Sucursal, bodega y teléfonos creados correctamente.")
+            
+        except ValueError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Error inesperado al procesar la creación: {str(e)}")
+        
+        return redirect("ubicaciones") 
+    
     
 # =========================
 # EDITAR SUCURSAL + BODEGA
 # =========================
+
+@login_required
 def editar_sucursal(request, id):
     sucursal = get_object_or_404(Sucursal, sucursal_id=id)
 
+    if request.method != 'POST':
+        return redirect('ubicaciones')
+
     try:
-        bodega = sucursal.bodega
-    except:
-        bodega = None
+        with transaction.atomic():
 
-    if request.method == "POST":
+            # =====================================
+            # DATOS GENERALES
+            # =====================================
+            nuevo_nombre = request.POST.get('sucursal_nombre', '').strip()
+            nuevo_codigo = request.POST.get('sucursal_codigo', '').strip()
+            nueva_bodega = request.POST.get('bodega_nombre', '').strip()
+            nuevo_cod_bodega = request.POST.get('bodega_codigo', '').strip()
 
-        suc_codigo = request.POST.get("sucursal_codigo")
-        bod_codigo = request.POST.get("bodega_codigo")
+            # =====================================
+            # VALIDACIONES DE DUPLICADOS
+            # =====================================
+            if Sucursal.objects.filter(
+                nombre__iexact=nuevo_nombre
+            ).exclude(sucursal_id=id).exists():
+                messages.error(
+                    request,
+                    f"Ya existe una sucursal llamada '{nuevo_nombre}'."
+                )
+                return redirect('ubicaciones')
 
-        # VALIDACIONES
-        if Sucursal.objects.exclude(sucursal_id=id).filter(codigo=suc_codigo).exists():
-            request.session["error_modal"] = id
-            request.session["error_msg"] = "Código de sucursal ya existe"
-            return redirect("ubicaciones")
+            if Sucursal.objects.filter(
+                codigo__iexact=nuevo_codigo
+            ).exclude(sucursal_id=id).exists():
+                messages.error(
+                    request,
+                    f"El código '{nuevo_codigo}' ya está asignado a otra sucursal."
+                )
+                return redirect('ubicaciones')
 
-        if bodega:
-            if Bodega.objects.exclude(bodega_id=bodega.bodega_id).filter(codigo=bod_codigo).exists():
-                request.session["error_modal"] = id
-                request.session["error_msg"] = "Código de bodega ya existe"
-                return redirect("ubicaciones")
+            if Bodega.objects.filter(
+                nombre__iexact=nueva_bodega
+            ).exclude(sucursal__sucursal_id=id).exists():
+                messages.error(
+                    request,
+                    f"Ya existe una bodega llamada '{nueva_bodega}'."
+                )
+                return redirect('ubicaciones')
 
-        # ACTUALIZAR SUCURSAL
-        sucursal.nombre = request.POST.get("sucursal_nombre")
-        sucursal.codigo = suc_codigo
-        sucursal.save()
+            if Bodega.objects.filter(
+                codigo__iexact=nuevo_cod_bodega
+            ).exclude(sucursal__sucursal_id=id).exists():
+                messages.error(
+                    request,
+                    f"El código de bodega '{nuevo_cod_bodega}' ya está en uso."
+                )
+                return redirect('ubicaciones')
 
-        # ACTUALIZAR BODEGA
-        estado_activo = Estado.objects.get(nombre="Activo")
+            # =====================================
+            # ACTUALIZAR SUCURSAL
+            # =====================================
+            sucursal.nombre = nuevo_nombre
+            sucursal.codigo = nuevo_codigo
+            sucursal.save()
 
-        if bodega:
-            bodega.nombre = request.POST.get("bodega_nombre")
-            bodega.codigo = bod_codigo
+            # =====================================
+            # ACTUALIZAR DIRECCIÓN
+            # =====================================
+            direccion = sucursal.direccion
+            direccion.pais = request.POST.get('pais', '').strip()
+            direccion.departamento = request.POST.get('departamento', '').strip()
+            direccion.ciudad = request.POST.get('ciudad', '').strip()
+            direccion.detalle = request.POST.get('detalle', '').strip()
+            direccion.save()
+
+            # =====================================
+            # ACTUALIZAR BODEGA
+            # =====================================
+            bodega = sucursal.bodega
+            bodega.nombre = nueva_bodega
+            bodega.codigo = nuevo_cod_bodega
             bodega.save()
-        else:
-            Bodega.objects.create(
-                nombre=request.POST.get("bodega_nombre"),
-                codigo=bod_codigo,
-                direccion=sucursal.direccion,
-                sucursal=sucursal,
-                estado=estado_activo
+
+            # =====================================
+            # TELÉFONOS
+            # =====================================
+            estado_activo = Estado.objects.get(nombre__iexact='Activo')
+            estado_inactivo = Estado.objects.get(nombre__iexact='Inactivo')
+
+            telefono_ids = request.POST.getlist('telefono_id[]')
+            telefonos = request.POST.getlist('numero[]')
+            operadoras = request.POST.getlist('operadora[]')
+            tipos = request.POST.getlist('tipo[]')
+
+            # Teléfonos activos actualmente en BD
+            telefonos_actuales = {
+                str(t.id): t
+                for t in TelefonoSucursal.objects.filter(
+                    sucursal=sucursal
+                )
+            }
+
+            # IDs recibidos desde el formulario
+            telefono_ids_recibidos = set()
+
+            for i in range(len(telefonos)):
+
+                telefono_id = (
+                    telefono_ids[i].strip()
+                    if i < len(telefono_ids)
+                    else ''
+                )
+
+                numero = (
+                    telefonos[i].strip().replace('-', '')
+                    if i < len(telefonos)
+                    else ''
+                )
+
+                operadora = (
+                    operadoras[i].strip()
+                    if i < len(operadoras)
+                    else ''
+                )
+
+                tipo = (
+                    tipos[i].strip()
+                    if i < len(tipos)
+                    else 'Ventas'
+                )
+
+                if not numero:
+                    continue
+
+                if not numero.isdigit():
+                    raise ValueError(
+                        f'El teléfono "{numero}" debe contener únicamente números.'
+                    )
+
+                # =====================================
+                # NUEVO TELÉFONO
+                # =====================================
+                if telefono_id == '':
+
+                    TelefonoSucursal.objects.create(
+                        sucursal=sucursal,
+                        numero=numero,
+                        operadora=operadora,
+                        tipo=tipo,
+                        estado=estado_activo
+                    )
+
+                # =====================================
+                # ACTUALIZAR TELÉFONO EXISTENTE
+                # =====================================
+                else:
+
+                    telefono_ids_recibidos.add(telefono_id)
+
+                    telefono = TelefonoSucursal.objects.get(
+                        id=telefono_id,
+                        sucursal=sucursal
+                    )
+
+                    telefono.numero = numero
+                    telefono.operadora = operadora
+                    telefono.tipo = tipo
+                    telefono.estado = estado_activo
+                    telefono.save()
+
+            # =====================================
+            # DESACTIVAR LOS ELIMINADOS
+            # =====================================
+            for telefono_id, telefono in telefonos_actuales.items():
+
+                if telefono_id not in telefono_ids_recibidos:
+
+                    telefono.estado = estado_inactivo
+                    telefono.save()
+
+            messages.success(
+                request,
+                'Ubicación actualizada correctamente.'
             )
 
-        messages.success(request, "Actualizado correctamente")
-        return redirect("ubicaciones")
+            return redirect('ubicaciones')
+
+    except Exception as e:
+        messages.error(
+            request,
+            f'Error al actualizar: {str(e)}'
+        )
+        return redirect('ubicaciones')
 
 # =========================
 # CAMBIAR ESTADO (ACTIVO/INACTIVO)
 # =========================
+
 def cambiar_estado_sucursal(request, id):
     sucursal = get_object_or_404(Sucursal, sucursal_id=id)
-
+    
+    # Obtenemos los objetos de estado por su nombre
     estado_activo = Estado.objects.get(nombre="Activo")
     estado_inactivo = Estado.objects.get(nombre="Inactivo")
 
-    if sucursal.estado.nombre == "Activo":
-        nuevo_estado = estado_inactivo
-    else:
-        nuevo_estado = estado_activo
+    # SI QUIERE ACTIVAR LA SUCURSAL
+    if sucursal.estado == estado_inactivo:
+        sucursal.estado = estado_activo
+        sucursal.save()
+        if hasattr(sucursal, "bodega"):
+            sucursal.bodega.estado = estado_activo
+            sucursal.bodega.save()
+        messages.success(request, "Sucursal reactivada correctamente.")
+        return redirect("ubicaciones")
 
-    sucursal.estado = nuevo_estado
-    sucursal.save()
+    # SI QUIERE INACTIVAR (VALIDACIONES)
+    
+    # 1. Validar cajas abiertas: 
+    # Buscamos aperturas de cajas asociadas a las cajas de la sucursal donde fecha_cierre es nulo
+    cajas_abiertas = AperturaCaja.objects.filter(
+        caja__sucursal=sucursal, 
+        fecha_cierre__isnull=True
+    ).exists()
+    
+    if cajas_abiertas:
+        messages.error(request, "No se puede inactivar: existen cajas abiertas en esta sucursal.")
+        return redirect("ubicaciones")
 
+    # 2. Validar inventario en 0:
+    # Si la sucursal tiene bodega, sumamos el stock de todos sus registros en inventario
     if hasattr(sucursal, "bodega"):
-        sucursal.bodega.estado = nuevo_estado
-        sucursal.bodega.save()
+        tiene_stock = Inventario.objects.filter(
+            bodega=sucursal.bodega, 
+            stock__gt=0
+        ).exists()
+        
+        if tiene_stock:
+            messages.error(request, "No se puede inactivar: la bodega aún tiene productos en inventario.")
+            return redirect("ubicaciones")
 
-    messages.success(request, "Estado actualizado correctamente")
+    # 3. PROCESO DE INACTIVACIÓN (con transacciones para integridad)
+    with transaction.atomic():
+        # Cambiar estados
+        sucursal.estado = estado_inactivo
+        sucursal.save()
+        
+        if hasattr(sucursal, "bodega"):
+            sucursal.bodega.estado = estado_inactivo
+            sucursal.bodega.save()
+
+        # Quitar permisos de logueo a todos los empleados de la sucursal
+        empleados = sucursal.empleado_set.all()
+        for emp in empleados:
+            if emp.user:
+                emp.user.is_active = False
+                emp.user.save()
+
+    messages.success(request, "Sucursal inactivada exitosamente y accesos bloqueados.")
     return redirect("ubicaciones")
+
 
 @login_required
 def dashboard_gerente(request):
@@ -403,7 +652,9 @@ def usuarios_view(request):
 
     empleado_actual = request.empleado
 
-    if empleado_actual.rol.nombre.lower() == "administrador":
+    es_admin = empleado_actual.rol.nombre.lower() == "administrador"
+
+    if es_admin:
 
         empleados = Empleado.objects.select_related(
             'user',
@@ -432,6 +683,7 @@ def usuarios_view(request):
         )
 
     sucursales = Sucursal.objects.all()
+
     estados = Estado.objects.filter(
         nombre__in=['Activo', 'Inactivo']
     )
@@ -441,9 +693,12 @@ def usuarios_view(request):
         'empleados': empleados,
         'roles': roles,
         'sucursales': sucursales,
-        'estados': estados
+        'estados': estados,
+        'es_admin': es_admin
 
     })
+    
+    
 
 def render_usuarios(request, extra_context=None):
 
@@ -1024,9 +1279,7 @@ def crear_cliente(request):
                 ''
             ).strip()
 
-            # =========================
             # LISTAS
-            # =========================
             paises = request.POST.getlist('pais[]')
             departamentos = request.POST.getlist('departamento[]')
             ciudades = request.POST.getlist('ciudad[]')
@@ -1037,35 +1290,19 @@ def crear_cliente(request):
             operadoras = request.POST.getlist('operadora[]')
             tipos_tel = request.POST.getlist('tipo_tel[]')
 
-            # =========================
             # VALIDACIONES
-            # =========================
             if not nombre or not apellido or not identificacion:
-
-                messages.error(
-                    request,
-                    "Todos los campos son obligatorios"
-                )
-
+                messages.error(request, "Todos los campos son obligatorios")
                 return redireccion()
 
-            # =========================
             # IDENTIFICACIÓN ÚNICA
-            # =========================
             if Cliente.objects.filter(
                 identificacion=identificacion
             ).exists():
-
-                messages.error(
-                    request,
-                    "La identificación ya existe"
-                )
-
+                messages.error(request,"La identificación ya existe")
                 return redireccion()
 
-            # =========================
             # VALIDAR TELÉFONOS
-            # =========================
             telefonos_validos = []
 
             for tel in telefonos:
@@ -1077,55 +1314,32 @@ def crear_cliente(request):
                     telefono_limpio = tel.replace('-', '')
 
                     if not telefono_limpio.isdigit():
-
-                        messages.error(
-                            request,
-                            "Los teléfonos deben ser numéricos"
-                        )
-
+                        messages.error(request, "Los teléfonos deben ser numéricos")
                         return redireccion()
 
-                    telefonos_validos.append(
-                        telefono_limpio
-                    )
+                    telefonos_validos.append(telefono_limpio)
 
             if len(telefonos_validos) == 0:
-
-                messages.error(
-                    request,
-                    "Debes agregar al menos un teléfono"
-                )
-
+                messages.error(request, "Debes agregar al menos un teléfono")
                 return redireccion()
 
-            # =========================
             # ESTADO ACTIVO
-            # =========================
             estado_activo = Estado.objects.filter(
                 nombre__iexact='Activo'
             ).first()
 
             if not estado_activo:
-
-                messages.error(
-                    request,
-                    "No existe el estado ACTIVO"
-                )
-
+                messages.error(request,"No existe el estado ACTIVO")
                 return redireccion()
 
-            # =========================
             # CREAR CLIENTE
-            # =========================
             cliente = Cliente.objects.create(
                 nombre=nombre,
                 apellido=apellido,
                 identificacion=identificacion
             )
 
-            # =========================
             # GUARDAR DIRECCIONES
-            # =========================
             total_direcciones = min(
                 len(paises),
                 len(departamentos),
@@ -1166,9 +1380,7 @@ def crear_cliente(request):
                     )
                 )
 
-            # =========================
             # GUARDAR TELÉFONOS
-            # =========================
             for i in range(len(telefonos)):
 
                 numero = telefonos[i].strip()

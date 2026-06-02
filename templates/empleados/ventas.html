@@ -8,24 +8,279 @@
 <link rel="stylesheet" href="{% static 'css/style-clientes.css' %}">
 
 <style>
-    .desc-total{
+    .desc-total {
 
-    background: #f1f5f9;
+        background: #f1f5f9;
 
-    padding: 6px 10px;
+        padding: 6px 10px;
 
-    border-radius: 6px;
+        border-radius: 6px;
 
-    display: inline-block;
+        display: inline-block;
 
-    color: #64748b;
+        color: #64748b;
 
-    font-weight: 600;
+        font-weight: 600;
 
-    min-width: 80px;
+        min-width: 80px;
 
-    text-align: center;
-}
+        text-align: center;
+    }
+
+    /* ==========================================
+   MODAL COBRO
+========================================== */
+
+    #modalCobro .modal-content {
+        border-radius: 18px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+    }
+
+    #modalCobro .modal-header {
+        background: linear-gradient(135deg,
+                #e97293,
+                #d95d7d);
+        color: white;
+        padding: 18px 25px;
+        border-bottom: none;
+    }
+
+    #modalCobro .modal-header h3 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    #modalCobro .close-btn {
+        color: white;
+        font-size: 28px;
+        transition: .3s;
+    }
+
+    #modalCobro .close-btn:hover {
+        transform: rotate(90deg);
+    }
+
+    /* ==========================================
+   SCROLL
+========================================== */
+
+    #modalCobro .table-scroll {
+        max-height: 75vh;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    /* ==========================================
+   TOTAL FACTURA
+========================================== */
+
+    #modalCobro #totalCobro {
+        background: #fff5f8;
+        border: 2px solid #f0a4b7;
+        font-size: 24px;
+        font-weight: bold;
+        color: #c94c71;
+        text-align: center;
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    /* ==========================================
+   TITULOS DE SECCION
+========================================== */
+
+    #modalCobro .section-title {
+        margin-top: 20px;
+        margin-bottom: 12px;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    #modalCobro .section-title:nth-of-type(1) {
+        background: #e9fff1;
+        color: #198754;
+    }
+
+    #modalCobro .section-title:nth-of-type(2) {
+        background: #eef7ff;
+        color: #0d6efd;
+    }
+
+    #modalCobro .section-title:nth-of-type(3) {
+        background: #f5ecff;
+        color: #7c3aed;
+    }
+
+    /* ==========================================
+   GRID
+========================================== */
+
+    #modalCobro .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    /* ==========================================
+   LABELS
+========================================== */
+
+    #modalCobro label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    /* ==========================================
+   INPUTS
+========================================== */
+
+    #modalCobro .input-cobro {
+        width: 100%;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        padding: 12px;
+        font-size: 15px;
+        transition: .25s;
+    }
+
+    #modalCobro .input-cobro:focus {
+        outline: none;
+        border-color: #e97293;
+        box-shadow: 0 0 0 4px rgba(233, 114, 147, .15);
+    }
+
+    /* ==========================================
+   EFECTIVO
+========================================== */
+
+    #efectivoCordoba,
+    #efectivoDolar {
+        background: #f3fff8;
+        border-color: #a7e6c2;
+    }
+
+    /* ==========================================
+   TRANSFERENCIA
+========================================== */
+
+    #transferenciaCordoba,
+    #transferenciaDolar {
+        background: #f4faff;
+        border-color: #9bc9ff;
+    }
+
+    /* ==========================================
+   TARJETA
+========================================== */
+
+    #tarjetaCordoba,
+    #tarjetaDolar {
+        background: #faf5ff;
+        border-color: #d5b3ff;
+    }
+
+    /* ==========================================
+   RESUMEN
+========================================== */
+
+    #modalCobro .resumen-cierre {
+        margin-top: 25px;
+
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fit,
+                minmax(180px, 1fr));
+
+        gap: 12px;
+    }
+
+    #modalCobro .resumen-cierre>div {
+        background: white;
+        border-radius: 14px;
+        padding: 12px;
+        border: 1px solid #ececec;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .05);
+    }
+
+    #modalCobro .resumen-cierre strong {
+        display: block;
+        margin-top: 8px;
+    }
+
+    /* Inputs del resumen */
+
+    #modalCobro .resumen-cierre input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        font-weight: 700;
+        color: #444;
+    }
+
+    /* ==========================================
+   COLORES RESUMEN
+========================================== */
+
+    #totalEfectivo {
+        color: #198754 !important;
+    }
+
+    #totalTransferencia {
+        color: #0d6efd !important;
+    }
+
+    #totalTarjeta {
+        color: #7c3aed !important;
+    }
+
+    #totalPagado {
+        color: #d63384 !important;
+    }
+
+    #vuelto {
+        color: #198754 !important;
+    }
+
+    #faltante {
+        color: #dc3545 !important;
+    }
+
+    /* ==========================================
+   FOOTER
+========================================== */
+
+    #modalCobro .modal-footer {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    #modalCobro .btn-primary {
+        background: linear-gradient(135deg,
+                #e97293,
+                #d95d7d);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-weight: 600;
+    }
+
+    #modalCobro .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(217, 93, 125, .3);
+    }
+
+    #modalCobro .btn-secondary {
+        border-radius: 12px;
+    }
 </style>
 
 <div class="main-container">
@@ -79,7 +334,7 @@
                             <td>{{ v.fecha }}</td>
                             <td><strong>#{{ v.numero_factura }}</strong></td>
                             <td>{{ v.cliente }}</td>
-                            <td>{{ venta.empleado.user.first_name }} {{ venta.empleado.user.last_name }}</td>
+                            <td>{{ v.empleado.user.first_name }} {{ v.empleado.user.last_name }}</td>
                             <td class="font-bold">${{ v.total }}</td>
                             <td>
                                 <span class="badge-pago">{{ v.metodo.nombre }}</span>
@@ -153,7 +408,7 @@
 
 <!-- ========================= MODAL VENTA ========================= -->
 <div id="modalVenta" class="modal-overlay">
-    <div class="modal-content" style="max-width: 850px;">
+    <div class="modal-content" style="max-width: 1080px;">
         <div class="modal-header">
             <h3><i class="fas fa-cash-register"></i> Facturación - Nueva Venta</h3>
             <button class="close-btn" onclick="cerrarModal('modalVenta')">&times;</button>
@@ -267,314 +522,282 @@ MODAL COBRO
 
         <!-- HEADER -->
         <div class="modal-header">
-
             <h3>
-
-                <i class="fas fa-cash-register"></i>
-                Cobrar Venta
-
+                <i class="fas fa-cash-register"></i>Cobrar Venta
             </h3>
-
-            <button class="close-btn"
-                    onclick="cerrarModal('modalCobro')">
-
+            <button class="close-btn" onclick="cerrarModal('modalCobro')">
                 &times;
-
             </button>
-
         </div>
 
-        <!-- FORM -->
-        <form method="POST"
-              id="formCobro"
-              action="{% url 'cobrar_venta' %}">
+        <div class="table-scroll">
 
-            {% csrf_token %}
+            <!-- FORM -->
+            <form method="POST" id="formCobro" action="{% url 'cobrar_venta' %}">
 
-            <div class="modal-form">
+                {% csrf_token %}
 
                 <!-- =====================================
-                HIDDEN
+                MENSAJES ERROR
                 ===================================== -->
 
-                <input type="hidden"
-                       name="venta_id"
-                       id="venta_id_cobro">
-
-                <!-- EFECTIVO -->
-                <input type="hidden"
-                       name="efectivo_cordoba"
-                       id="hiddenEfectivoCordoba">
-
-                <input type="hidden"
-                       name="efectivo_dolar"
-                       id="hiddenEfectivoDolar">
-
-                <!-- TRANSFERENCIA -->
-                <input type="hidden"
-                       name="transferencia_cordoba"
-                       id="hiddenTransferenciaCordoba">
-
-                <input type="hidden"
-                       name="transferencia_dolar"
-                       id="hiddenTransferenciaDolar">
-
-                <!-- TARJETA -->
-                <input type="hidden"
-                       name="tarjeta_cordoba"
-                       id="hiddenTarjetaCordoba">
-
-                <input type="hidden"
-                       name="tarjeta_dolar"
-                       id="hiddenTarjetaDolar">
-
-                <!-- =====================================
-                TOTAL
-                ===================================== -->
-
-                <div class="form-group">
-
-                    <label>Total Factura</label>
-
-                    <input type="text"
-                           id="totalCobro"
-                           readonly>
-
+                <div id="errorCobro" style="
+                        display:none;
+                        background:#f8d7da;
+                        color:#842029;
+                        border:1px solid #f5c2c7;
+                        padding:12px;
+                        margin-bottom:15px;
+                        border-radius:8px;
+                        font-weight:600;
+                     ">
                 </div>
 
-                <!-- =====================================
-                EFECTIVO
-                ===================================== -->
+                <div class="modal-form">
 
-                <div class="section-title">
+                    <!-- =====================================
+                    HIDDEN
+                    ===================================== -->
 
-                    <i class="fas fa-money-bill-wave"></i>
-                    Pago en Efectivo
+                    <input type="hidden" name="venta_id" id="venta_id_cobro">
 
-                </div>
+                    <!-- EFECTIVO -->
+                    <input type="hidden" name="efectivo_cordoba" id="hiddenEfectivoCordoba">
 
-                <div class="grid-2">
+                    <input type="hidden" name="efectivo_dolar" id="hiddenEfectivoDolar">
+
+                    <!-- TRANSFERENCIA -->
+                    <input type="hidden" name="transferencia_cordoba" id="hiddenTransferenciaCordoba">
+
+                    <input type="hidden" name="transferencia_dolar" id="hiddenTransferenciaDolar">
+
+                    <!-- TARJETA -->
+                    <input type="hidden" name="tarjeta_cordoba" id="hiddenTarjetaCordoba">
+
+                    <input type="hidden" name="tarjeta_dolar" id="hiddenTarjetaDolar">
+
+                    <div class="grid-2">
+                        <!-- =====================================
+                    TOTAL
+                    ===================================== -->
 
                     <div class="form-group">
 
-                        <label>Efectivo C$</label>
+                        <label>Total Factura</label>
 
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="efectivoCordoba"
-                               class="input-cobro">
+                        <input type="text" id="totalCobro" readonly>
 
                     </div>
+
+                    <!-- =====================================
+                    TIPO CAMBIO
+                    ===================================== -->
 
                     <div class="form-group">
 
-                        <label>Efectivo USD</label>
+                        <label>Tipo de Cambio</label>
 
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="efectivoDolar"
-                               class="input-cobro">
+                        <input type="text" id="tipoCambio" value="{{ tasa }}" readonly>
+
+                    </div>
+                    </div>
+
+                    <!-- =====================================
+                    EFECTIVO
+                    ===================================== -->
+
+                    <div class="section-title">
+
+                        <i class="fas fa-money-bill-wave"></i>
+                        Pago en Efectivo
+
+                    </div>
+
+                    <div class="grid-2">
+
+                        <div class="form-group">
+
+                            <label>Efectivo C$</label>
+
+                            <input type="number" step="0.01" min="0" value="0" id="efectivoCordoba" class="input-cobro">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>Efectivo USD</label>
+
+                            <input type="text" inputmode="numeric" value="0" id="efectivoDolar" class="input-cobro">
+
+                            <small style="color:#6c757d;">
+                                Solo números enteros
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <!-- =====================================
+                    TRANSFERENCIA
+                    ===================================== -->
+
+                    <div class="section-title">
+
+                        <i class="fas fa-building-columns"></i>
+                        Transferencia
+
+                    </div>
+
+                    <div class="grid-2">
+
+                        <div class="form-group">
+
+                            <label>Transferencia C$</label>
+
+                            <input type="number" step="0.01" min="0" value="0" id="transferenciaCordoba"
+                                class="input-cobro">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>Transferencia USD</label>
+
+                            <input type="number" step="0.01" min="0" value="0" id="transferenciaDolar"
+                                class="input-cobro">
+
+                        </div>
+
+                    </div>
+
+                    <!-- =====================================
+                    TARJETA
+                    ===================================== -->
+
+                    <div class="section-title">
+
+                        <i class="fas fa-credit-card"></i>
+                        Tarjeta
+
+                    </div>
+
+                    <div class="grid-2">
+
+                        <div class="form-group">
+
+                            <label>Tarjeta C$</label>
+
+                            <input type="number" step="0.01" min="0" value="0" id="tarjetaCordoba" class="input-cobro">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>Tarjeta USD</label>
+
+                            <input type="number" step="0.01" min="0" value="0" id="tarjetaDolar" class="input-cobro">
+
+                        </div>
+
+                    </div>
+
+                    <!-- =====================================
+                    RESUMEN
+                    ===================================== -->
+
+                    <div class="resumen-cierre">
+
+                        <div>
+
+                            Efectivo:
+                            <strong>
+
+                                <input type="text" id="totalEfectivo" readonly>
+
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            Transferencia:
+                            <strong>
+
+                                <input type="text" id="totalTransferencia" readonly>
+
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            Tarjeta:
+                            <strong>
+
+                                <input type="text" id="totalTarjeta" readonly>
+
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            Total Pagado:
+                            <strong>
+
+                                <input type="text" id="totalPagado" readonly>
+
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            Vuelto:
+                            <strong>
+
+                                <input type="text" id="vuelto" readonly>
+
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            Faltante:
+                            <strong>
+
+                                <input type="text" id="faltante" readonly>
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn-secondary" onclick="cerrarModal('modalCobro')">
+
+                            Cancelar
+
+                        </button>
+
+                        <button type="submit" class="btn-primary">
+
+                            <i class="fas fa-check"></i>
+                            Confirmar Cobro
+
+                        </button>
 
                     </div>
 
                 </div>
 
-                <!-- =====================================
-                TRANSFERENCIA
-                ===================================== -->
+            </form>
 
-                <div class="section-title">
-
-                    <i class="fas fa-building-columns"></i>
-                    Transferencia
-
-                </div>
-
-                <div class="grid-2">
-
-                    <div class="form-group">
-
-                        <label>Transferencia C$</label>
-
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="transferenciaCordoba"
-                               class="input-cobro">
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Transferencia USD</label>
-
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="transferenciaDolar"
-                               class="input-cobro">
-
-                    </div>
-
-                </div>
-
-                <!-- =====================================
-                TARJETA
-                ===================================== -->
-
-                <div class="section-title">
-
-                    <i class="fas fa-credit-card"></i>
-                    Tarjeta
-
-                </div>
-
-                <div class="grid-2">
-
-                    <div class="form-group">
-
-                        <label>Tarjeta C$</label>
-
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="tarjetaCordoba"
-                               class="input-cobro">
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Tarjeta USD</label>
-
-                        <input type="number"
-                               step="0.01"
-                               min="0"
-                               value="0"
-                               id="tarjetaDolar"
-                               class="input-cobro">
-
-                    </div>
-
-                </div>
-
-                <!-- =====================================
-                RESUMEN
-                ===================================== -->
-
-                <div class="resumen-cierre">
-
-                    <div>
-
-                        Efectivo:
-                        <strong>
-
-                            <input type="text"
-                                   id="totalEfectivo"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                    <div>
-
-                        Transferencia:
-                        <strong>
-
-                            <input type="text"
-                                   id="totalTransferencia"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                    <div>
-
-                        Tarjeta:
-                        <strong>
-
-                            <input type="text"
-                                   id="totalTarjeta"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                    <div>
-
-                        Total Pagado:
-                        <strong>
-
-                            <input type="text"
-                                   id="totalPagado"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                    <div>
-
-                        Vuelto:
-                        <strong>
-
-                            <input type="text"
-                                   id="vuelto"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                    <div>
-
-                        Faltante:
-                        <strong>
-
-                            <input type="text"
-                                   id="faltante"
-                                   readonly>
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer">
-
-                    <button type="button"
-                            class="btn-secondary"
-                            onclick="cerrarModal('modalCobro')">
-
-                        Cancelar
-
-                    </button>
-
-                    <button type="submit"
-                            class="btn-primary">
-
-                        <i class="fas fa-check"></i>
-                        Confirmar Cobro
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 
@@ -1102,49 +1325,49 @@ MODAL COBRO
     ============================== */
     function cambiarDescuento(index, value) {
 
-    // VACIO = 0
-    if (
-        value === "" ||
-        value === null
-    ) {
+        // VACIO = 0
+        if (
+            value === "" ||
+            value === null
+        ) {
 
-        carrito[index].descuento = 0;
+            carrito[index].descuento = 0;
+
+            renderCarrito();
+
+            return;
+        }
+
+        let descuento =
+            parseFloat(value);
+
+        // SI NO ES NUMERO
+        if (isNaN(descuento)) {
+
+            descuento = 0;
+
+        }
+
+        // NO NEGATIVO
+        if (descuento < 0) {
+
+            alert(
+                "El descuento no puede ser negativo."
+            );
+
+            carrito[index].descuento = 0;
+
+            renderCarrito();
+
+            return;
+
+        }
+
+        carrito[index].descuento =
+            descuento;
 
         renderCarrito();
-
-        return;
     }
-
-    let descuento =
-        parseFloat(value);
-
-    // SI NO ES NUMERO
-    if (isNaN(descuento)) {
-
-        descuento = 0;
-
-    }
-
-    // NO NEGATIVO
-    if (descuento < 0) {
-
-        alert(
-            "El descuento no puede ser negativo."
-        );
-
-        carrito[index].descuento = 0;
-
-        renderCarrito();
-
-        return;
-
-    }
-
-    carrito[index].descuento =
-        descuento;
-
-    renderCarrito();
-}
 
     /* ==============================
        RENDER CARRITO
@@ -1442,211 +1665,160 @@ MODAL COBRO
 
 <script>
 
-/* =========================================================
-TIPO CAMBIO
-========================================================= */
+    /* =========================================================
+    TIPO CAMBIO
+    ========================================================= */
 
-const tasaCambio =
-    parseFloat(
-        "{{ tipo_cambio.valor|default:'36.50' }}"
+    const tasaCambio = parseFloat(
+        document.getElementById('tipoCambio').value
     );
 
-/* =========================================================
-ABRIR MODAL
+    /* =========================================================
+ERRORES MODAL
 ========================================================= */
 
-function abrirModalCobro(
-    ventaId,
-    total
-) {
+    function mostrarErrorCobro(mensaje) {
 
-    document.getElementById(
-        'venta_id_cobro'
-    ).value = ventaId;
-
-    document.getElementById(
-        'totalCobro'
-    ).value =
-        parseFloat(total).toFixed(2);
-
-    limpiarCobro();
-
-    abrirModal('modalCobro');
-
-}
-
-/* =========================================================
-LIMPIAR
-========================================================= */
-
-function limpiarCobro() {
-
-    document.querySelectorAll(
-        '.input-cobro'
-    ).forEach(input => {
-
-        input.value = 0;
-
-    });
-
-    calcularCobro();
-
-}
-
-/* =========================================================
-CALCULAR COBRO
-========================================================= */
-
-function calcularCobro() {
-
-    const totalFactura =
-        parseFloat(
+        const errorDiv =
             document.getElementById(
-                'totalCobro'
-            ).value
-        ) || 0;
+                'errorCobro'
+            );
 
-    // EFECTIVO
-    const efectivoCordoba =
-        parseFloat(
-            document.getElementById(
-                'efectivoCordoba'
-            ).value || 0
-        );
+        if (!errorDiv) return;
 
-    const efectivoDolar =
-        parseFloat(
-            document.getElementById(
-                'efectivoDolar'
-            ).value || 0
-        );
-
-    // TRANSFERENCIA
-    const transferenciaCordoba =
-        parseFloat(
-            document.getElementById(
-                'transferenciaCordoba'
-            ).value || 0
-        );
-
-    const transferenciaDolar =
-        parseFloat(
-            document.getElementById(
-                'transferenciaDolar'
-            ).value || 0
-        );
-
-    // TARJETA
-    const tarjetaCordoba =
-        parseFloat(
-            document.getElementById(
-                'tarjetaCordoba'
-            ).value || 0
-        );
-
-    const tarjetaDolar =
-        parseFloat(
-            document.getElementById(
-                'tarjetaDolar'
-            ).value || 0
-        );
-
-    // CONVERTIDOS
-    const totalEfectivo =
-        efectivoCordoba +
-        (efectivoDolar * tasaCambio);
-
-    const totalTransferencia =
-        transferenciaCordoba +
-        (transferenciaDolar * tasaCambio);
-
-    const totalTarjeta =
-        tarjetaCordoba +
-        (tarjetaDolar * tasaCambio);
-
-    const totalElectronico =
-        totalTransferencia +
-        totalTarjeta;
-
-    const totalPagado =
-        totalEfectivo +
-        totalElectronico;
-
-    // MOSTRAR
-    document.getElementById(
-        'totalEfectivo'
-    ).value =
-        `C$ ${totalEfectivo.toFixed(2)}`;
-
-    document.getElementById(
-        'totalTransferencia'
-    ).value =
-        `C$ ${totalTransferencia.toFixed(2)}`;
-
-    document.getElementById(
-        'totalTarjeta'
-    ).value =
-        `C$ ${totalTarjeta.toFixed(2)}`;
-
-    document.getElementById(
-        'totalPagado'
-    ).value =
-        `C$ ${totalPagado.toFixed(2)}`;
-
-    // VUELTO
-    let vuelto = 0;
-    let faltante = 0;
-
-    if (totalPagado > totalFactura) {
-
-        vuelto =
-            totalPagado - totalFactura;
+        errorDiv.innerHTML = mensaje;
+        errorDiv.style.display = 'block';
 
     }
 
-    if (totalPagado < totalFactura) {
+    function ocultarErrorCobro() {
 
-        faltante =
-            totalFactura - totalPagado;
+        const errorDiv =
+            document.getElementById(
+                'errorCobro'
+            );
+
+        if (!errorDiv) return;
+
+        errorDiv.innerHTML = '';
+        errorDiv.style.display = 'none';
 
     }
 
-    document.getElementById(
-        'vuelto'
-    ).value =
-        `C$ ${vuelto.toFixed(2)}`;
+    /* =========================================================
+    ABRIR MODAL
+    ========================================================= */
 
-    document.getElementById(
-        'faltante'
-    ).value =
-        `C$ ${faltante.toFixed(2)}`;
+    function abrirModalCobro(ventaId, total) {
 
-}
+        document.getElementById(
+            'venta_id_cobro'
+        ).value = ventaId;
 
-/* =========================================================
-EVENTOS
+        document.getElementById(
+            'totalCobro'
+        ).value =
+            parseFloat(total).toFixed(2);
+
+        limpiarCobro();
+
+        abrirModal('modalCobro');
+        ocultarErrorCobro();
+
+        
+
+    }
+
+    /* =========================================================
+    LIMPIAR
+    ========================================================= */
+
+    function limpiarCobro() {
+
+        document.querySelectorAll(
+            '.input-cobro'
+        ).forEach(input => {
+
+            input.value = 0;
+
+        });
+
+        calcularCobro();
+
+    }
+
+    /* =========================================================
+USD SOLO NUMEROS
 ========================================================= */
 
-document.querySelectorAll(
-    '.input-cobro'
-).forEach(input => {
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-    input.addEventListener(
-        'input',
-        calcularCobro
+            const efectivoUSD =
+                document.getElementById(
+                    'efectivoDolar'
+                );
+
+            if (!efectivoUSD) return;
+
+            efectivoUSD.addEventListener(
+                'keydown',
+                function (e) {
+                    ocultarErrorCobro();
+                    const permitidas = [
+                        'Backspace',
+                        'Delete',
+                        'Tab',
+                        'ArrowLeft',
+                        'ArrowRight',
+                        'Home',
+                        'End'
+                    ];
+
+                    if (
+                        permitidas.includes(
+                            e.key
+                        )
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        !/^[0-9]$/.test(
+                            e.key
+                        )
+                    ) {
+
+                        e.preventDefault();
+
+                    }
+
+                }
+
+            );
+
+            efectivoUSD.addEventListener(
+                'input',
+                function () {
+
+                    this.value =
+                        this.value.replace(
+                            /[^0-9]/g,
+                            ''
+                        );
+
+                }
+            );
+
+        }
     );
 
-});
+    /* =========================================================
+    CALCULAR COBRO
+    ========================================================= */
 
-/* =========================================================
-VALIDAR FORM
-========================================================= */
-
-document.getElementById(
-    'formCobro'
-).addEventListener(
-    'submit',
-    function (e) {
+    function calcularCobro() {
 
         const totalFactura =
             parseFloat(
@@ -1700,7 +1872,7 @@ document.getElementById(
                 ).value || 0
             );
 
-        // CONVERSION
+        // CONVERTIDOS
         const totalEfectivo =
             efectivoCordoba +
             (efectivoDolar * tasaCambio);
@@ -1721,103 +1893,264 @@ document.getElementById(
             totalEfectivo +
             totalElectronico;
 
-        // =====================================
-        // VALIDAR ELECTRONICOS
-        // =====================================
+        // MOSTRAR
+        document.getElementById(
+            'totalEfectivo'
+        ).value =
+            `C$ ${totalEfectivo.toFixed(2)}`;
 
-        if (
-            totalElectronico >
-            totalFactura
-        ) {
+        document.getElementById(
+            'totalTransferencia'
+        ).value =
+            `C$ ${totalTransferencia.toFixed(2)}`;
 
-            e.preventDefault();
+        document.getElementById(
+            'totalTarjeta'
+        ).value =
+            `C$ ${totalTarjeta.toFixed(2)}`;
 
-            mostrarErrorModal(
-                'modalCobro',
-                'La suma de transferencia y tarjeta excede el total.'
-            );
+        document.getElementById(
+            'totalPagado'
+        ).value =
+            `C$ ${totalPagado.toFixed(2)}`;
 
-            return;
+        // VUELTO
+        let vuelto = 0;
+        let faltante = 0;
+
+        if (totalPagado > totalFactura) {
+
+            vuelto =
+                totalPagado - totalFactura;
 
         }
 
-        // =====================================
-        // SI YA CUBRIO FACTURA
-        // =====================================
+        if (totalPagado < totalFactura) {
 
-        if (
-            totalElectronico ===
-            totalFactura &&
-            totalEfectivo > 0
-        ) {
-
-            e.preventDefault();
-
-            mostrarErrorModal(
-                'modalCobro',
-                'La factura ya fue cubierta completamente con pagos electrónicos.'
-            );
-
-            return;
+            faltante =
+                totalFactura - totalPagado;
 
         }
 
-        // =====================================
-        // VALIDAR TOTAL
-        // =====================================
-
-        if (
-            totalPagado <
-            totalFactura
-        ) {
-
-            e.preventDefault();
-
-            mostrarErrorModal(
-                'modalCobro',
-                'El monto pagado es menor al total de la factura.'
-            );
-
-            return;
-
-        }
-
-        // =====================================
-        // GUARDAR HIDDEN
-        // =====================================
+        document.getElementById(
+            'vuelto'
+        ).value =
+            `C$ ${vuelto.toFixed(2)}`;
 
         document.getElementById(
-            'hiddenEfectivoCordoba'
+            'faltante'
         ).value =
-            efectivoCordoba;
-
-        document.getElementById(
-            'hiddenEfectivoDolar'
-        ).value =
-            efectivoDolar;
-
-        document.getElementById(
-            'hiddenTransferenciaCordoba'
-        ).value =
-            transferenciaCordoba;
-
-        document.getElementById(
-            'hiddenTransferenciaDolar'
-        ).value =
-            transferenciaDolar;
-
-        document.getElementById(
-            'hiddenTarjetaCordoba'
-        ).value =
-            tarjetaCordoba;
-
-        document.getElementById(
-            'hiddenTarjetaDolar'
-        ).value =
-            tarjetaDolar;
+            `C$ ${faltante.toFixed(2)}`;
 
     }
-);
+
+    /* =========================================================
+    EVENTOS
+    ========================================================= */
+
+    document.querySelectorAll(
+        '.input-cobro'
+    ).forEach(input => {
+
+        input.addEventListener(
+            'input',
+            calcularCobro
+        );
+
+    });
+
+    /* =========================================================
+    VALIDAR FORM
+    ========================================================= */
+
+    document.getElementById(
+        'formCobro'
+    ).addEventListener(
+        'submit',
+        function (e) {
+
+            const totalFactura =
+                parseFloat(
+                    document.getElementById(
+                        'totalCobro'
+                    ).value
+                ) || 0;
+
+            // EFECTIVO
+            const efectivoCordoba =
+                parseFloat(
+                    document.getElementById(
+                        'efectivoCordoba'
+                    ).value || 0
+                );
+
+            const efectivoDolar =
+                parseFloat(
+                    document.getElementById(
+                        'efectivoDolar'
+                    ).value || 0
+                );
+
+            // TRANSFERENCIA
+            const transferenciaCordoba =
+                parseFloat(
+                    document.getElementById(
+                        'transferenciaCordoba'
+                    ).value || 0
+                );
+
+            const transferenciaDolar =
+                parseFloat(
+                    document.getElementById(
+                        'transferenciaDolar'
+                    ).value || 0
+                );
+
+            // TARJETA
+            const tarjetaCordoba =
+                parseFloat(
+                    document.getElementById(
+                        'tarjetaCordoba'
+                    ).value || 0
+                );
+
+            const tarjetaDolar =
+                parseFloat(
+                    document.getElementById(
+                        'tarjetaDolar'
+                    ).value || 0
+                );
+
+            // CONVERSION
+            const totalEfectivo =
+                efectivoCordoba +
+                (efectivoDolar * tasaCambio);
+
+            const totalTransferencia =
+                transferenciaCordoba +
+                (transferenciaDolar * tasaCambio);
+
+            const totalTarjeta =
+                tarjetaCordoba +
+                (tarjetaDolar * tasaCambio);
+
+            const totalElectronico =
+                totalTransferencia +
+                totalTarjeta;
+
+            const totalPagado =
+                totalEfectivo +
+                totalElectronico;
+
+            // =====================================
+            // VALIDAR ELECTRONICOS
+            // =====================================
+
+            if (
+                totalElectronico >
+                totalFactura
+            ) {
+
+                e.preventDefault();
+
+                mostrarErrorModal(
+                    'La suma de transferencia y tarjeta excede el total.'
+                );
+
+                return;
+
+            }
+
+            // =====================================
+            // SI YA CUBRIO FACTURA
+            // =====================================
+
+            if (
+                totalElectronico ===
+                totalFactura &&
+                totalEfectivo > 0
+            ) {
+
+                e.preventDefault();
+
+                mostrarErrorModal(
+                    'La factura ya fue cubierta completamente con pagos electrónicos.'
+                );
+
+                return;
+
+            }
+
+            // =====================================
+            // VALIDAR TOTAL
+            // =====================================
+
+            if (
+                totalPagado <
+                totalFactura
+            ) {
+
+                e.preventDefault();
+
+                mostrarErrorModal(
+                    'modalCobro',
+                    'El monto pagado es menor al total de la factura.'
+                );
+
+                return;
+
+            }
+
+            if (
+                totalPagado <= 0
+            ) {
+
+                e.preventDefault();
+
+                mostrarErrorCobro(
+                    'Debe ingresar al menos una forma de pago.'
+                );
+
+                return;
+
+            }
+
+            // =====================================
+            // GUARDAR HIDDEN
+            // =====================================
+
+            document.getElementById(
+                'hiddenEfectivoCordoba'
+            ).value =
+                efectivoCordoba;
+
+            document.getElementById(
+                'hiddenEfectivoDolar'
+            ).value =
+                efectivoDolar;
+
+            document.getElementById(
+                'hiddenTransferenciaCordoba'
+            ).value =
+                transferenciaCordoba;
+
+            document.getElementById(
+                'hiddenTransferenciaDolar'
+            ).value =
+                transferenciaDolar;
+
+            document.getElementById(
+                'hiddenTarjetaCordoba'
+            ).value =
+                tarjetaCordoba;
+
+            document.getElementById(
+                'hiddenTarjetaDolar'
+            ).value =
+                tarjetaDolar;
+
+        }
+    );
 
 </script>
 {% endblock %}

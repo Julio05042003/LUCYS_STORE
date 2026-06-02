@@ -7,309 +7,621 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-
-/* =========================================
+    /* =========================================
    CONTENEDOR
 ========================================= */
 
-.providers-wrapper{
-    padding:25px;
-}
+    .providers-wrapper {
+        padding: 25px;
+    }
 
-/* =========================================
+    /* =========================================
    HEADER
 ========================================= */
 
-.providers-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    margin-bottom:25px;
-    flex-wrap:wrap;
-}
+    .providers-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
 
-.providers-header h2{
-    margin:0;
-    font-size:2rem;
-    font-weight:700;
-    color:#111827;
-}
+    .providers-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+    }
 
-.btn-primary{
-    border:none;
-    background:linear-gradient(90deg,#ec4899,#f472b6);
-    color:white;
-    padding:13px 22px;
-    border-radius:14px;
-    font-weight:700;
-    cursor:pointer;
-    transition:.2s;
-}
+    .btn-primary {
+        border: none;
+        background: linear-gradient(90deg, #ec4899, #f472b6);
+        color: white;
+        padding: 13px 22px;
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+    }
 
-.btn-primary:hover{
-    transform:translateY(-2px);
-}
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
 
-/* =========================================
+    /* =========================================
    ALERTAS
 ========================================= */
 
-.alert-container{
-    margin-bottom:20px;
-}
-
-.alert{
-    padding:14px 18px;
-    border-radius:14px;
-    margin-bottom:10px;
-    font-weight:600;
-    animation:fadeIn .3s ease;
-}
-
-.alert-success{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.alert-error{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-@keyframes fadeIn{
-    from{
-        opacity:0;
-        transform:translateY(-10px);
+    .alert-container {
+        margin-bottom: 20px;
     }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
 
-/* =========================================
+    .alert {
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        animation: fadeIn .3s ease;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* =========================================
    FILTROS
 ========================================= */
 
-.filter-card{
-    background:white;
-    border-radius:18px;
-    padding:22px;
-    box-shadow:0 4px 18px rgba(0,0,0,.06);
-    margin-bottom:22px;
-}
+    .filter-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .06);
+        margin-bottom: 22px;
+    }
 
-.filter-form{
-    display:flex;
-    gap:15px;
-    flex-wrap:wrap;
-}
+    .filter-form {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
 
-.filter-form input{
-    flex:1;
-    min-width:260px;
-    height:50px;
-    border:1px solid #d1d5db;
-    border-radius:14px;
-    padding:0 15px;
-    font-size:.95rem;
-}
+    .filter-form input {
+        flex: 1;
+        min-width: 260px;
+        height: 50px;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        padding: 0 15px;
+        font-size: .95rem;
+    }
 
-.filter-form input:focus{
-    outline:none;
-    border-color:#ec4899;
-    box-shadow:0 0 0 3px rgba(236,72,153,.15);
-}
+    .filter-form input:focus {
+        outline: none;
+        border-color: #ec4899;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, .15);
+    }
 
-/* =========================================
+    /* =========================================
    TABLA
 ========================================= */
 
-.table-container{
-    background:white;
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .06);
+    }
+
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-container thead {
+        background: linear-gradient(90deg, #ec4899, #f472b6);
+    }
+
+    .table-container thead th {
+        color: white;
+        padding: 18px;
+        text-align: left;
+        font-size: .92rem;
+    }
+
+    .table-container tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: .93rem;
+        color: #374151;
+    }
+
+    .table-container tbody tr:hover {
+        background: #fff7fb;
+    }
+
+    /* =========================================
+   BADGES
+========================================= */
+
+    .phone-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #fce7f3;
+        color: #be185d;
+        border-radius: 999px;
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    /* =========================================
+   BOTONES
+========================================= */
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .btn-view {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .btn-edit {
+        background: #fef3c7;
+        color: #ca8a04;
+    }
+
+    .btn-products {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .btn-action:hover {
+        transform: scale(1.06);
+    }
+
+    /* =========================================
+   MODAL
+========================================= */
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 850px;
+        background: white;
+        border-radius: 22px;
+        overflow: hidden;
+        animation: modalFade .2s ease;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    @keyframes modalFade {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(90deg, #ec4899, #f472b6);
+        color: white;
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+    }
+
+    .modal-form {
+        padding: 25px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 18px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-group input,
+    .form-group select {
+        height: 48px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 0 14px;
+        font-size: .93rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #ec4899;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, .15);
+    }
+
+    .form-section-full {
+        grid-column: 1/-1;
+    }
+
+    .dynamic-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dynamic-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .dynamic-row input,
+    .dynamic-row select {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .btn-add-small {
+        width: 45px;
+        border: none;
+        border-radius: 12px;
+        background: #ec4899;
+        color: white;
+        cursor: pointer;
+    }
+
+    .btn-remove-small {
+        width: 45px;
+        border: none;
+        border-radius: 12px;
+        background: #fee2e2;
+        color: #dc2626;
+        cursor: pointer;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .btn-secondary {
+        border: none;
+        background: #374151;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+    }
+
+    /* =========================================
+   PRODUCTOS
+========================================= */
+
+    .product-card {
+        border: 1px solid #f1f5f9;
+        border-radius: 14px;
+        padding: 15px;
+        margin-bottom: 12px;
+        background: #fafafa;
+    }
+
+    .product-card h4 {
+        margin: 0 0 6px;
+    }
+
+    /* =========================================
+   RESPONSIVE
+========================================= */
+
+    @media(max-width:768px) {
+
+        .providers-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-primary {
+            width: 100%;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+    }
+
+    .proveedor-modal{
+    width:95%;
+    max-width:1000px;
     border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 4px 18px rgba(0,0,0,.06);
 }
 
-.table-container table{
+.info-card{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.info-card h4{
+    margin-bottom:15px;
+    color:#db2777;
+    font-size:1.05rem;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+.info-grid label,
+.info-full label{
+    display:block;
+    font-weight:700;
+    color:#6b7280;
+    margin-bottom:5px;
+}
+
+.info-grid span,
+.info-full span{
+    display:block;
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:12px;
+}
+
+.info-full{
+    margin-top:15px;
+}
+
+.tabla-telefonos{
     width:100%;
     border-collapse:collapse;
 }
 
-.table-container thead{
-    background:linear-gradient(90deg,#ec4899,#f472b6);
-}
-
-.table-container thead th{
+.tabla-telefonos th{
+    background:#ec4899;
     color:white;
-    padding:18px;
-    text-align:left;
-    font-size:.92rem;
+    padding:12px;
 }
 
-.table-container tbody td{
-    padding:16px;
-    border-bottom:1px solid #f1f5f9;
-    font-size:.93rem;
-    color:#374151;
+.tabla-telefonos td{
+    padding:12px;
+    border-bottom:1px solid #eee;
 }
 
-.table-container tbody tr:hover{
-    background:#fff7fb;
+.productos-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
 }
 
-/* =========================================
-   BADGES
-========================================= */
-
-.phone-badge{
-    display:inline-block;
-    padding:6px 12px;
+.producto-tag{
     background:#fce7f3;
     color:#be185d;
+    padding:8px 14px;
     border-radius:999px;
-    font-size:.8rem;
+    font-weight:600;
+}
+
+.sin-datos{
+    text-align:center;
+    padding:20px;
+    color:#6b7280;
+}
+
+/* =========================
+   TABLA TELÉFONOS
+========================= */
+
+.tabla-telefonos{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    table-layout:fixed;
+    overflow:hidden;
+    border-radius:14px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+}
+
+/* CABECERA */
+
+.tabla-telefonos thead th{
+    background:linear-gradient(
+        90deg,
+        #ec4899,
+        #f472b6
+    );
+
+    color:#fff;
+
+    padding:15px;
+
+    text-align:center;
+
+    font-size:.95rem;
+    font-weight:700;
+
+    letter-spacing:.3px;
+}
+
+/* CELDAS */
+
+.tabla-telefonos tbody td{
+
+    width:33.33%;
+
+    padding:16px;
+
+    text-align:center;
+    vertical-align:middle;
+
+    font-size:.95rem;
+    font-weight:500;
+
+    color:#374151;
+
+    border-bottom:1px solid #f1f5f9;
+}
+
+/* EFECTO HOVER */
+
+.tabla-telefonos tbody tr{
+    transition:.25s;
+}
+
+.tabla-telefonos tbody tr:hover{
+    background:#fff5fa;
+}
+
+/* ÚLTIMA FILA */
+
+.tabla-telefonos tbody tr:last-child td{
+    border-bottom:none;
+}
+
+/* NUMERO */
+
+.tabla-telefonos td:first-child{
+    font-weight:700;
+    color:#111827;
+}
+
+/* OPERADORA */
+
+.tabla-telefonos td:nth-child(2){
+    color:#4b5563;
+}
+
+/* TIPO */
+
+.tabla-telefonos td:nth-child(3){
+    color:#7c3aed;
+    font-weight:600;
+}
+
+/* TABLA VACÍA */
+
+.sin-datos{
+
+    text-align:center;
+
+    padding:25px;
+
+    color:#6b7280;
+
+    font-size:.95rem;
+
+    background:#fafafa;
+
+    border:1px dashed #d1d5db;
+
+    border-radius:12px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width:768px){
+
+    .tabla-telefonos{
+        display:block;
+        overflow-x:auto;
+    }
+
+    .tabla-telefonos th,
+    .tabla-telefonos td{
+        min-width:140px;
+    }
+
+}
+.badge-tipo{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#fce7f3;
+    color:#be185d;
+    font-size:.85rem;
     font-weight:700;
 }
 
-/* =========================================
-   BOTONES
-========================================= */
-
-.actions{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-.btn-action{
-    width:38px;
-    height:38px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.btn-view{
-    background:#dbeafe;
-    color:#2563eb;
-}
-
-.btn-edit{
-    background:#fef3c7;
-    color:#ca8a04;
-}
-
-.btn-products{
-    background:#ede9fe;
-    color:#7c3aed;
-}
-
-.btn-action:hover{
-    transform:scale(1.06);
-}
-
-/* =========================================
-   MODAL
-========================================= */
-
-.modal-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    z-index:9999;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-}
-
-.modal-content{
-    width:100%;
-    max-width:850px;
-    background:white;
-    border-radius:22px;
-    overflow:hidden;
-    animation:modalFade .2s ease;
-    max-height:95vh;
-    overflow-y:auto;
-}
-
-@keyframes modalFade{
-    from{
-        opacity:0;
-        transform:translateY(20px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-.modal-header{
-    background:linear-gradient(90deg,#ec4899,#f472b6);
-    color:white;
-    padding:18px 24px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.modal-header h3{
-    margin:0;
-}
-
-.close-btn{
-    background:none;
-    border:none;
-    color:white;
-    font-size:2rem;
-    cursor:pointer;
-}
-
-.modal-form{
-    padding:25px;
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:18px;
-}
-
-.form-group{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-
-.form-group label{
-    font-weight:600;
-    color:#374151;
-}
-
-.form-group input,
-.form-group select{
-    height:48px;
-    border:1px solid #d1d5db;
-    border-radius:12px;
-    padding:0 14px;
-    font-size:.93rem;
-}
-
-.form-group input:focus,
-.form-group select:focus{
-    outline:none;
-    border-color:#ec4899;
-    box-shadow:0 0 0 3px rgba(236,72,153,.15);
-}
-
-.form-section-full{
-    grid-column:1/-1;
-}
+/* =========================
+   TELEFONOS
+========================= */
 
 .dynamic-list{
     display:flex;
@@ -318,88 +630,125 @@
 }
 
 .dynamic-row{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap:12px;
+
+    padding:15px;
+
+    background:#f8fafc;
+
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+
+    transition:.25s;
+}
+
+.dynamic-row:hover{
+    border-color:#ec4899;
+    box-shadow:0 4px 12px rgba(236,72,153,.08);
 }
 
 .dynamic-row input,
 .dynamic-row select{
-    flex:1;
-    min-width:120px;
+    height:46px;
+
+    border:1px solid #d1d5db;
+    border-radius:10px;
+
+    padding:0 12px;
+
+    font-size:.95rem;
+
+    background:#fff;
+}
+
+.dynamic-row input:focus,
+.dynamic-row select:focus{
+    outline:none;
+    border-color:#ec4899;
+    box-shadow:0 0 0 3px rgba(236,72,153,.12);
 }
 
 .btn-add-small{
-    width:45px;
+    width:46px;
+    height:46px;
+
     border:none;
-    border-radius:12px;
+    border-radius:10px;
+
     background:#ec4899;
-    color:white;
+    color:#fff;
+
     cursor:pointer;
+
+    transition:.2s;
 }
 
-.btn-remove-small{
-    width:45px;
-    border:none;
+.btn-add-small:hover{
+    background:#db2777;
+    transform:scale(1.05);
+}
+
+.telefonos-container{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.telefono-row{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr 60px;
+    gap:12px;
+    align-items:center;
+}
+
+.telefono-row input,
+.telefono-row select{
+    width:100%;
+    height:48px;
+    border:1px solid #dcdcdc;
     border-radius:12px;
+    padding:0 14px;
+    font-size:14px;
+    background:#fff;
+}
+
+.telefono-row input:focus,
+.telefono-row select:focus{
+    border-color:#ec4899;
+    box-shadow:0 0 0 3px rgba(236,72,153,.15);
+    outline:none;
+}
+
+.btn-add-phone{
+    margin-top:15px;
+    background:#ec4899;
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-add-phone:hover{
+    transform:translateY(-2px);
+}
+
+.btn-remove-phone{
+    width:45px;
+    height:45px;
+    border:none;
+    border-radius:10px;
     background:#fee2e2;
     color:#dc2626;
     cursor:pointer;
 }
 
-.modal-footer{
-    display:flex;
-    justify-content:flex-end;
-    gap:12px;
-    margin-top:25px;
+.btn-remove-phone:hover{
+    background:#fecaca;
 }
-
-.btn-secondary{
-    border:none;
-    background:#374151;
-    color:white;
-    padding:12px 20px;
-    border-radius:12px;
-    cursor:pointer;
-}
-
-/* =========================================
-   PRODUCTOS
-========================================= */
-
-.product-card{
-    border:1px solid #f1f5f9;
-    border-radius:14px;
-    padding:15px;
-    margin-bottom:12px;
-    background:#fafafa;
-}
-
-.product-card h4{
-    margin:0 0 6px;
-}
-
-/* =========================================
-   RESPONSIVE
-========================================= */
-
-@media(max-width:768px){
-
-    .providers-header{
-        flex-direction:column;
-        align-items:stretch;
-    }
-
-    .btn-primary{
-        width:100%;
-    }
-
-    .table-container{
-        overflow-x:auto;
-    }
-
-}
-
 </style>
 
 <div class="providers-wrapper">
@@ -429,8 +778,7 @@
             Gestión de Proveedores
         </h2>
 
-        <button class="btn-primary"
-                onclick="abrirModal('modalProveedor')">
+        <button class="btn-primary" onclick="abrirModal('modalProveedor')">
 
             <i class="fas fa-plus"></i>
             Nuevo Proveedor
@@ -445,10 +793,7 @@
 
         <form method="GET" class="filter-form">
 
-            <input type="text"
-                   name="q"
-                   value="{{ busqueda }}"
-                   placeholder="Buscar proveedor por nombre...">
+            <input type="text" name="q" value="{{ busqueda }}" placeholder="Buscar proveedor por nombre...">
 
             <button class="btn-primary">
                 <i class="fas fa-search"></i>
@@ -460,114 +805,115 @@
     </div>
 
     <!-- TABLA -->
+    <div class="table-scroll">
+        <div class="table-container">
 
-    <div class="table-container">
+            <table>
 
-        <table>
+                <thead>
 
-            <thead>
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Contacto</th>
+                        <th>Correo</th>
+                        <th>Teléfonos</th>
+                        <th>Acciones</th>
+                    </tr>
 
-                <tr>
-                    <th>Proveedor</th>
-                    <th>Contacto</th>
-                    <th>Correo</th>
-                    <th>Teléfonos</th>
-                    <th>Acciones</th>
-                </tr>
+                </thead>
 
-            </thead>
+                <tbody>
 
-            <tbody>
+                    {% for p in proveedores %}
 
-                {% for p in proveedores %}
+                    <tr>
 
-                <tr>
+                        <td>
+                            <strong>{{ p.nombre }}</strong>
+                        </td>
 
-                    <td>
-                        <strong>{{ p.nombre }}</strong>
-                    </td>
+                        <td>
+                            {{ p.contacto }}
+                        </td>
 
-                    <td>
-                        {{ p.contacto }}
-                    </td>
+                        <td>
+                            {{ p.correo }}
+                        </td>
 
-                    <td>
-                        {{ p.correo }}
-                    </td>
+                        <td>
 
-                    <td>
-
-                        {% for t in p.telefonos.all %}
+                            {% for t in p.telefonos_activos %}
 
                             <span class="phone-badge">
                                 {{ t.numero }}
                             </span>
 
-                        {% empty %}
+                            {% empty %}
 
-                            Sin teléfonos
+                            <span style="color:#9ca3af;">
+            Sin teléfonos
+        </span>
 
-                        {% endfor %}
+                            {% endfor %}
 
-                    </td>
+                        </td>
 
-                    <td>
+                        <td>
 
-                        <div class="actions">
+                            <div class="actions">
 
-                            <!-- VER -->
+                                <!-- VER -->
 
-                            <button type="button"
-                                    class="btn-action btn-view"
+                                <button type="button" class="btn-action btn-view"
                                     onclick="abrirModal('modalView{{ p.id }}')">
 
-                                <i class="fas fa-eye"></i>
+                                    <i class="fas fa-eye"></i>
 
-                            </button>
+                                </button>
 
-                            <!-- EDITAR -->
+                                <!-- EDITAR -->
 
-                            <button type="button"
-                                    class="btn-action btn-edit"
+                                <button type="button" class="btn-action btn-edit"
                                     onclick="abrirModal('modalEdit{{ p.id }}')">
 
-                                <i class="fas fa-pen"></i>
+                                    <i class="fas fa-pen"></i>
 
-                            </button>
+                                </button>
 
-                            <!-- PRODUCTOS -->
+                                <!-- PRODUCTOS -->
 
-                            <button type="button"
-                                    class="btn-action btn-products"
+                                <button type="button" class="btn-action btn-products"
                                     onclick="abrirModal('modalProductos{{ p.id }}')">
 
-                                <i class="fas fa-boxes-stacked"></i>
+                                    <i class="fas fa-boxes-stacked"></i>
 
-                            </button>
+                                </button>
 
-                        </div>
+                            </div>
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% empty %}
+                    {% empty %}
 
-                <tr>
+                    <tr>
 
-                    <td colspan="5" style="text-align:center;">
-                        No hay proveedores registrados
-                    </td>
+                        <td colspan="5" style="text-align:center;">
+                            No hay proveedores registrados
+                        </td>
 
-                </tr>
+                    </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
-            </tbody>
+                </tbody>
 
-        </table>
+            </table>
 
+        </div>
     </div>
+
 
 </div>
 
@@ -586,8 +932,7 @@
                 Registro de Proveedor
             </h3>
 
-            <button class="close-btn"
-                    onclick="cerrarModal('modalProveedor')">
+            <button class="close-btn" onclick="cerrarModal('modalProveedor')">
 
                 &times;
 
@@ -595,15 +940,11 @@
 
         </div>
 
-        <form class="modal-form"
-              method="POST"
-              action="{% url 'crear_proveedor' %}">
+        <form class="modal-form" method="POST" action="{% url 'crear_proveedor' %}">
 
             {% csrf_token %}
 
-            <input type="hidden"
-                   name="origen"
-                   value="proveedores">
+            <input type="hidden" name="origen" value="proveedores">
 
             <div class="form-grid">
 
@@ -611,9 +952,7 @@
 
                     <label>Empresa</label>
 
-                    <input type="text"
-                           name="nombre"
-                           required>
+                    <input type="text" name="nombre" required>
 
                 </div>
 
@@ -621,8 +960,7 @@
 
                     <label>Contacto</label>
 
-                    <input type="text"
-                           name="contacto">
+                    <input type="text" name="contacto">
 
                 </div>
 
@@ -630,8 +968,7 @@
 
                     <label>Correo</label>
 
-                    <input type="email"
-                           name="correo">
+                    <input type="email" name="correo">
 
                 </div>
 
@@ -639,14 +976,11 @@
 
                     <label>Teléfono</label>
 
-                    <div id="lista-telefonos-prov"
-                         class="dynamic-list">
+                    <div id="lista-telefonos-prov" class="dynamic-list">
 
                         <div class="dynamic-row">
 
-                            <input type="text"
-                                   name="numero[]"
-                                   placeholder="Número">
+                            <input type="text" name="numero[]" placeholder="Número">
 
                             <select name="operadora[]">
 
@@ -662,9 +996,7 @@
 
                             </select>
 
-                            <button type="button"
-                                    class="btn-add-small"
-                                    onclick="agregarTelefono()">
+                            <button type="button" class="btn-add-small" onclick="agregarTelefono()">
 
                                 <i class="fas fa-plus"></i>
 
@@ -682,25 +1014,13 @@
 
                     <div class="dynamic-row">
 
-                        <input type="text"
-                               name="pais"
-                               placeholder="País"
-                               required>
+                        <input type="text" name="pais" placeholder="País" required>
 
-                        <input type="text"
-                               name="departamento"
-                               placeholder="Departamento"
-                               required>
+                        <input type="text" name="departamento" placeholder="Departamento" required>
 
-                        <input type="text"
-                               name="ciudad"
-                               placeholder="Ciudad"
-                               required>
+                        <input type="text" name="ciudad" placeholder="Ciudad" required>
 
-                        <input type="text"
-                               name="detalle"
-                               placeholder="Detalle"
-                               required>
+                        <input type="text" name="detalle" placeholder="Detalle" required>
 
                     </div>
 
@@ -710,9 +1030,7 @@
 
             <div class="modal-footer">
 
-                <button type="button"
-                        class="btn-secondary"
-                        onclick="cerrarModal('modalProveedor')">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalProveedor')">
 
                     Cancelar
 
@@ -738,67 +1056,173 @@
 
 <!-- VER -->
 
-<div id="modalView{{ p.id }}"
-     class="modal-overlay">
+<div id="modalView{{ p.id }}" class="modal-overlay">
 
-    <div class="modal-content">
+    <div class="modal-content proveedor-modal">
 
         <div class="modal-header">
 
             <h3>
+                <i class="fas fa-truck"></i>
                 Información del Proveedor
             </h3>
 
-            <button class="close-btn"
-                    onclick="cerrarModal('modalView{{ p.id }}')">
-
+            <button onclick="cerrarModal('modalView{{ p.id }}')">
                 &times;
-
             </button>
 
         </div>
 
-        <div class="modal-form">
+        <div class="modal-body">
 
-            <div class="form-grid">
+            <!-- DATOS GENERALES -->
 
-                <div class="form-group">
-                    <label>Empresa</label>
-                    <input type="text"
-                           value="{{ p.nombre }}"
-                           disabled>
+            <div class="info-card">
+
+                <h4>
+                    <i class="fas fa-building"></i>
+                    Datos Generales
+                </h4>
+
+                <div class="info-grid">
+
+                    <div>
+                        <label>Empresa</label>
+                        <span>{{ p.nombre }}</span>
+                    </div>
+
+                    <div>
+                        <label>Contacto</label>
+                        <span>{{ p.contacto }}</span>
+                    </div>
+
+                    <div>
+                        <label>Correo</label>
+                        <span>{{ p.correo }}</span>
+                    </div>
+
+                    <div>
+                        <label>Pais</label>
+                        <span>{{ p.direccion.pais }}</span>
+                    </div>
+
+                    <div>
+                        <label>Departamento/Region</label>
+                        <span>{{ p.direccion.departamento }}</span>
+                    </div>
+
+                    <div>
+                        <label>Ciudad</label>
+                        <span>{{ p.direccion.ciudad }}</span>
+                    </div>
+
                 </div>
 
-                <div class="form-group">
-                    <label>Contacto</label>
-                    <input type="text"
-                           value="{{ p.contacto }}"
-                           disabled>
-                </div>
-
-                <div class="form-group">
-                    <label>Correo</label>
-                    <input type="text"
-                           value="{{ p.correo }}"
-                           disabled>
-                </div>
-
-                <div class="form-group">
-                    <label>Ciudad</label>
-                    <input type="text"
-                           value="{{ p.direccion.ciudad }}"
-                           disabled>
-                </div>
-
-                <div class="form-section-full">
+                <div class="info-full">
 
                     <label>Dirección Completa</label>
 
-                    <input type="text"
-                           value="{{ p.direccion.detalle }}"
-                           disabled>
+                    <span>
+                        {{ p.direccion.detalle }}
+                    </span>
 
                 </div>
+
+            </div>
+
+            <!-- TELEFONOS -->
+
+            <div class="info-card">
+
+                <h4>
+                    <i class="fas fa-phone"></i>
+                    Teléfonos Registrados
+                </h4>
+
+                {% if p.telefonos.all %}
+
+                <table class="tabla-telefonos">
+
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Operadora</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for telefono in p.telefonos.all %}
+                            {% if telefono.estado.nombre == 'Activo' %}
+                            <tr>
+
+                            <td>{{ telefono.numero }}</td>
+
+                            <td>
+                                {{ telefono.operadora|default:"-" }}
+                            </td>
+
+                            <td>
+                                <span class="badge-tipo">
+                                    {{ telefono.tipo|default:"-" }}
+                                </span>
+                            </td>
+
+                        </tr>
+                            {% endif %}
+                        
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+                {% else %}
+
+                <div class="sin-datos">
+                    No hay teléfonos registrados
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <!-- PRODUCTOS -->
+
+            <div class="info-card">
+
+                <h4>
+                    <i class="fas fa-box"></i>
+                    Productos Suministrados
+                </h4>
+
+                {% if p.productos_proveedor %}
+
+                <div class="productos-grid">
+
+                    {% for producto in p.productos_proveedor %}
+
+                    <div class="producto-tag">
+
+                        {{ producto.nombre }}
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="sin-datos">
+                    Sin productos asociados
+                </div>
+
+                {% endif %}
 
             </div>
 
@@ -810,8 +1234,7 @@
 
 <!-- EDITAR -->
 
-<div id="modalEdit{{ p.id }}"
-     class="modal-overlay">
+<div id="modalEdit{{ p.id }}" class="modal-overlay">
 
     <div class="modal-content">
 
@@ -821,8 +1244,7 @@
                 Editar Proveedor
             </h3>
 
-            <button class="close-btn"
-                    onclick="cerrarModal('modalEdit{{ p.id }}')">
+            <button class="close-btn" onclick="cerrarModal('modalEdit{{ p.id }}')">
 
                 &times;
 
@@ -830,19 +1252,13 @@
 
         </div>
 
-        <form class="modal-form"
-              method="POST"
-              action="{% url 'editar_proveedor' %}">
+        <form class="modal-form" method="POST" action="{% url 'editar_proveedor' %}">
 
             {% csrf_token %}
 
-            <input type="hidden"
-                   name="origen"
-                   value="proveedores">
+            <input type="hidden" name="origen" value="proveedores">
 
-            <input type="hidden"
-                   name="proveedor_id"
-                   value="{{ p.id }}">
+            <input type="hidden" name="proveedor_id" value="{{ p.id }}">
 
             <div class="form-grid">
 
@@ -850,10 +1266,7 @@
 
                     <label>Empresa</label>
 
-                    <input type="text"
-                           name="nombre"
-                           value="{{ p.nombre }}"
-                           required>
+                    <input type="text" name="nombre" value="{{ p.nombre }}" required>
 
                 </div>
 
@@ -861,9 +1274,7 @@
 
                     <label>Contacto</label>
 
-                    <input type="text"
-                           name="contacto"
-                           value="{{ p.contacto }}">
+                    <input type="text" name="contacto" value="{{ p.contacto }}">
 
                 </div>
 
@@ -871,78 +1282,102 @@
 
                     <label>Correo</label>
 
-                    <input type="email"
-                           name="correo"
-                           value="{{ p.correo }}">
+                    <input type="email" name="correo" value="{{ p.correo }}">
 
                 </div>
 
                 <div class="form-section-full">
 
-                    <label>Teléfonos</label>
+    <label>Teléfonos</label>
 
-                    <div class="dynamic-list">
+    <div id="telefonos-edit-{{ p.id }}">
 
-                        {% for t in p.telefonos.all %}
+        {% for telefono in p.telefonos.all %}
 
-                        <div class="dynamic-row">
+            {% if telefono.estado.nombre == 'Activo' %}
 
-                            <input type="hidden"
-                                   name="telefono_id[]"
-                                   value="{{ t.id }}">
+            <div class="dynamic-row telefono-row">
 
-                            <input type="hidden"
-                                   name="telefono_eliminar[]"
-                                   value="0"
-                                   class="telefono-eliminar">
+                <input
+                    type="hidden"
+                    name="telefono_id[]"
+                    value="{{ telefono.id }}"
+                >
 
-                            <input type="text"
-                                   name="numero[]"
-                                   value="{{ t.numero }}">
+                <input
+                    type="hidden"
+                    name="telefono_eliminar[]"
+                    value="0"
+                    class="telefono-eliminar"
+                >
 
-                            <select name="operadora[]">
+                <input
+                    type="text"
+                    name="numero[]"
+                    value="{{ telefono.numero }}"
+                    placeholder="Número"
+                >
 
-                                <option value="Tigo"
-                                {% if t.operadora == 'Tigo' %}selected{% endif %}>
-                                    Tigo
-                                </option>
+                <select name="operadora[]">
 
-                                <option value="Claro"
-                                {% if t.operadora == 'Claro' %}selected{% endif %}>
-                                    Claro
-                                </option>
+                    <option value="Tigo"
+                        {% if telefono.operadora == 'Tigo' %}selected{% endif %}>
+                        Tigo
+                    </option>
 
-                            </select>
+                    <option value="Claro"
+                        {% if telefono.operadora == 'Claro' %}selected{% endif %}>
+                        Claro
+                    </option>
 
-                            <select name="tipo[]">
+                </select>
 
-                                <option value="Ventas"
-                                {% if t.tipo == 'Ventas' %}selected{% endif %}>
-                                    Ventas
-                                </option>
+                <select name="tipo[]">
 
-                                <option value="Cobros"
-                                {% if t.tipo == 'Cobros' %}selected{% endif %}>
-                                    Cobros
-                                </option>
+                    <option value="Ventas"
+                        {% if telefono.tipo == 'Ventas' %}selected{% endif %}>
+                        Ventas
+                    </option>
 
-                            </select>
+                    <option value="Cobros"
+                        {% if telefono.tipo == 'Cobros' %}selected{% endif %}>
+                        Cobros
+                    </option>
 
-                            <button type="button"
-                                    class="btn-remove-small"
-                                    onclick="eliminarTelefono(this)">
+                    <option value="Administración"
+                        {% if telefono.tipo == 'Administración' %}selected{% endif %}>
+                        Administración
+                    </option>
 
-                                <i class="fas fa-trash"></i>
+                </select>
 
-                            </button>
+                <button
+                    type="button"
+                    class="btn-remove-phone"
+                    onclick="eliminarTelefonoExistente(this)"
+                >
+                    <i class="fas fa-trash"></i>
+                </button>
 
-                        </div>
+            </div>
 
-                        {% endfor %}
+            {% endif %}
 
-                    </div>
+        {% endfor %}
 
-                </div>
+    </div>
+
+    <button
+        type="button"
+        class="btn-add-phone"
+        onclick="agregarTelefonoEdit('{{ p.id }}')"
+        style="margin-top:10px;"
+    >
+        <i class="fas fa-plus"></i>
+        Agregar Teléfono
+    </button>
+
+</div>
 
                 <div class="form-section-full">
 
@@ -950,25 +1385,13 @@
 
                     <div class="dynamic-row">
 
-                        <input type="text"
-                               name="pais"
-                               value="{{ p.direccion.pais }}"
-                               required>
+                        <input type="text" name="pais" value="{{ p.direccion.pais }}" required>
 
-                        <input type="text"
-                               name="departamento"
-                               value="{{ p.direccion.departamento }}"
-                               required>
+                        <input type="text" name="departamento" value="{{ p.direccion.departamento }}" required>
 
-                        <input type="text"
-                               name="ciudad"
-                               value="{{ p.direccion.ciudad }}"
-                               required>
+                        <input type="text" name="ciudad" value="{{ p.direccion.ciudad }}" required>
 
-                        <input type="text"
-                               name="detalle"
-                               value="{{ p.direccion.detalle }}"
-                               required>
+                        <input type="text" name="detalle" value="{{ p.direccion.detalle }}" required>
 
                     </div>
 
@@ -978,9 +1401,7 @@
 
             <div class="modal-footer">
 
-                <button type="button"
-                        class="btn-secondary"
-                        onclick="cerrarModal('modalEdit{{ p.id }}')">
+                <button type="button" class="btn-secondary" onclick="cerrarModal('modalEdit{{ p.id }}')">
 
                     Cancelar
 
@@ -1000,8 +1421,7 @@
 
 <!-- PRODUCTOS -->
 
-<div id="modalProductos{{ p.id }}"
-     class="modal-overlay">
+<div id="modalProductos{{ p.id }}" class="modal-overlay">
 
     <div class="modal-content">
 
@@ -1011,8 +1431,7 @@
                 Productos de {{ p.nombre }}
             </h3>
 
-            <button class="close-btn"
-                    onclick="cerrarModal('modalProductos{{ p.id }}')">
+            <button class="close-btn" onclick="cerrarModal('modalProductos{{ p.id }}')">
 
                 &times;
 
@@ -1065,55 +1484,55 @@
 
 <script>
 
-/* =========================================
-   MENSAJES
-========================================= */
+    /* =========================================
+       MENSAJES
+    ========================================= */
 
-setTimeout(() => {
+    setTimeout(() => {
 
-    document.querySelectorAll('.alert').forEach(el => {
+        document.querySelectorAll('.alert').forEach(el => {
 
-        el.style.transition = '0.4s';
-        el.style.opacity = '0';
+            el.style.transition = '0.4s';
+            el.style.opacity = '0';
 
-        setTimeout(() => {
-            el.remove();
-        }, 400);
+            setTimeout(() => {
+                el.remove();
+            }, 400);
 
-    });
+        });
 
-}, 3000);
+    }, 3000);
 
-/* =========================================
-   MODALES
-========================================= */
+    /* =========================================
+       MODALES
+    ========================================= */
 
-function abrirModal(id){
+    function abrirModal(id) {
 
-    document.getElementById(id).style.display = 'flex';
+        document.getElementById(id).style.display = 'flex';
 
-}
+    }
 
-function cerrarModal(id){
+    function cerrarModal(id) {
 
-    document.getElementById(id).style.display = 'none';
+        document.getElementById(id).style.display = 'none';
 
-}
+    }
 
-/* =========================================
-   TELEFONOS
-========================================= */
+    /* =========================================
+       TELEFONOS
+    ========================================= */
 
-function agregarTelefono(){
+    function agregarTelefono() {
 
-    let contenedor =
-        document.getElementById('lista-telefonos-prov');
+        let contenedor =
+            document.getElementById('lista-telefonos-prov');
 
-    let row = document.createElement('div');
+        let row = document.createElement('div');
 
-    row.className = 'dynamic-row';
+        row.className = 'dynamic-row';
 
-    row.innerHTML = `
+        row.innerHTML = `
 
         <input type="text"
                name="numero[]"
@@ -1143,34 +1562,104 @@ function agregarTelefono(){
 
     `;
 
-    contenedor.appendChild(row);
+        contenedor.appendChild(row);
 
+    }
+
+    /* =========================================
+       ELIMINAR TELEFONO EDIT
+    ========================================= */
+
+    function eliminarTelefono(btn) {
+
+        let row = btn.closest('.dynamic-row');
+
+        let eliminarInput =
+            row.querySelector('.telefono-eliminar');
+
+        if (eliminarInput) {
+
+            eliminarInput.value = '1';
+
+            row.style.display = 'none';
+
+        } else {
+
+            row.remove();
+
+        }
+
+    }
+
+
+
+function agregarTelefonoEdit(idProveedor){
+
+    const container =
+        document.getElementById(
+            'telefonos-edit-' + idProveedor
+        );
+
+    container.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div class="dynamic-row telefono-row">
+
+            <input type="hidden"
+                   name="telefono_id[]"
+                   value="">
+
+            <input type="hidden"
+                   name="telefono_eliminar[]"
+                   value="0"
+                   class="telefono-eliminar">
+
+            <input type="text"
+                   name="numero[]"
+                   placeholder="Número">
+
+            <select name="operadora[]">
+                <option value="Tigo">Tigo</option>
+                <option value="Claro">Claro</option>
+            </select>
+
+            <select name="tipo[]">
+                <option value="Ventas">Ventas</option>
+                <option value="Cobros">Cobros</option>
+                <option value="Administración">Administración</option>
+            </select>
+
+            <button
+                type="button"
+                class="btn-remove-phone"
+                onclick="this.closest('.telefono-row').remove()"
+            >
+                <i class="fas fa-trash"></i>
+            </button>
+
+        </div>
+        `
+    );
 }
 
-/* =========================================
-   ELIMINAR TELEFONO EDIT
-========================================= */
+function eliminarTelefonoExistente(btn){
 
-function eliminarTelefono(btn){
-
-    let row = btn.closest('.dynamic-row');
+    let fila = btn.closest('.telefono-row');
 
     let eliminarInput =
-        row.querySelector('.telefono-eliminar');
+        fila.querySelector('.telefono-eliminar');
 
     if(eliminarInput){
 
         eliminarInput.value = '1';
 
-        row.style.display = 'none';
-
-    }else{
-
-        row.remove();
+        fila.style.display = 'none';
 
     }
 
 }
+
+
 
 </script>
 

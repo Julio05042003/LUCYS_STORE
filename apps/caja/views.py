@@ -238,16 +238,10 @@ def caja_view(request):
         'aperturacaja_set__arqueocaja_set'
     )
 
-    # =====================================================
     # RECORRER CAJAS
-    # =====================================================
-
     for caja in cajas:
 
-        # =========================================
         # APERTURA ACTUAL
-        # =========================================
-
         apertura_actual = AperturaCaja.objects.filter(
             caja=caja,
             estado__nombre__in=[
@@ -352,10 +346,7 @@ def caja_view(request):
                 '-arqueo_id'
             )
 
-    # =====================================================
     # CONTEXTO BASE
-    # =====================================================
-
     contexto = {
 
         'empleado': empleado,
@@ -369,11 +360,8 @@ def caja_view(request):
             ),
     }
 
-    # =====================================================
     # GERENTE
-    # =====================================================
-
-    if empleado.rol.nombre == "Gerente":
+    if empleado.rol.nombre in ["Gerente", "Administrador"]:
 
         total_cajas = cajas.count()
 
@@ -391,10 +379,7 @@ def caja_view(request):
 
         tipo_cambio = Decimal('0.00')
 
-        # =========================================
         # RECORRER CAJAS
-        # =========================================
-
         for caja in cajas:
 
             if caja.apertura_actual:
@@ -518,11 +503,7 @@ def caja_view(request):
             **totales
         })
 
-    return render(
-        request,
-        'empleados/caja.html',
-        contexto
-    )
+    return render(request,'empleados/caja.html',contexto)
     
 # ============================================
 # ABRIR CAJA
@@ -548,14 +529,8 @@ def abrir_caja(request):
         ).first()
 
         if not caja:
-
             request.session['abrir_modal_apertura'] = True
-
-            messages.error(
-                request,
-                "La caja no existe."
-            )
-
+            messages.error(request, "La caja no existe.")
             return redirect('caja')
 
         caja_abierta = AperturaCaja.objects.filter(
@@ -564,19 +539,11 @@ def abrir_caja(request):
         ).exists()
 
         if caja_abierta:
-
             request.session['abrir_modal_apertura'] = True
-
-            messages.error(
-                request,
-                "La caja ya está abierta."
-            )
-
+            messages.error(request,"La caja ya está abierta.")
             return redirect('caja')
 
-        tipocambio = HistorialTipoCambio.objects.order_by(
-            '-fecha'
-        ).first()
+        tipocambio = HistorialTipoCambio.objects.order_by('-fecha').first()
 
         if not tipocambio:
 
@@ -589,10 +556,7 @@ def abrir_caja(request):
 
             return redirect('caja')
 
-        # ============================================
         # VALIDAR EFECTIVO
-        # ============================================
-
         denominaciones = Denominacion.objects.filter(
             moneda='CORDOBA'
         ).order_by('-valor')
@@ -600,30 +564,15 @@ def abrir_caja(request):
         total_temporal = Decimal('0')
 
         for denominacion in denominaciones:
-
-            cantidad = int(
-                request.POST.get(
-                    f'denominacion_{denominacion.denominacion_id}',
-                    0
-                )
-            )
+            cantidad = int(request.POST.get(f'denominacion_{denominacion.denominacion_id}', 0))
 
             if cantidad > 0:
 
-                total_temporal += (
-                    Decimal(cantidad) *
-                    denominacion.valor
-                )
+                total_temporal += (Decimal(cantidad) * denominacion.valor)
 
         if total_temporal <= 0:
-
             request.session['abrir_modal_apertura'] = True
-
-            messages.error(
-                request,
-                "Debe ingresar efectivo inicial."
-            )
-
+            messages.error(request,"Debe ingresar efectivo inicial.")
             return redirect('caja')
 
         estado = Estado.objects.get(nombre='Abierta')
@@ -636,20 +585,12 @@ def abrir_caja(request):
             saldo_inicial=Decimal('0')
         )
 
-        # ============================================
         # GUARDAR DETALLE APERTURA
-        # ============================================
-
         total_cordoba = Decimal('0')
 
         for denominacion in denominaciones:
 
-            cantidad = int(
-                request.POST.get(
-                    f'denominacion_{denominacion.denominacion_id}',
-                    0
-                )
-            )
+            cantidad = int(request.POST.get(f'denominacion_{denominacion.denominacion_id}',0))
 
             if cantidad > 0:
 
@@ -668,13 +609,8 @@ def abrir_caja(request):
                 total_cordoba += subtotal
 
         apertura.saldo_inicial = total_cordoba
-
         apertura.save()
-
-        messages.success(
-            request,
-            "Caja abierta correctamente."
-        )
+        messages.success(request,"Caja abierta correctamente.")
 
     return redirect('caja')
 
@@ -683,19 +619,11 @@ def abrir_caja(request):
 # ============================================
 
 def crear_movimiento(request):
-    
-
     empleado = request.user.empleado
 
     if empleado.rol.nombre != "Cajero":
-
         request.session['abrir_modal_movimiento'] = True
-
-        messages.error(
-            request,
-            "No tienes permisos."
-        )
-
+        messages.error(request,"No tienes permisos.")
         return redirect('caja')
 
     apertura = AperturaCaja.objects.filter(
@@ -706,14 +634,8 @@ def crear_movimiento(request):
     ).order_by('-apertura_id').first()
 
     if not apertura:
-
         request.session['abrir_modal_movimiento'] = True
-
-        messages.error(
-            request,
-            "No hay caja abierta."
-        )
-
+        messages.error(request,"No hay caja abierta.")
         return redirect('caja')
 
     tipo = request.POST.get('tipo')
@@ -722,33 +644,17 @@ def crear_movimiento(request):
     monto = Decimal(request.POST.get('monto') or 0)
 
     if monto <= 0:
-
         request.session['abrir_modal_movimiento'] = True
-
-        messages.error(
-            request,
-            "Ingrese un monto válido."
-        )
-
+        messages.error(request,"Ingrese un monto válido.")
         return redirect('caja')
 
     totales = calcular_totales_apertura(apertura)
 
-    disponible = (
-        totales['total_cordoba']
-        if moneda == 'CORDOBA'
-        else totales['total_dolar']
-    )
+    disponible = (totales['total_cordoba'] if moneda == 'CORDOBA' else totales['total_dolar'])
 
     if tipo == 'EGRESO' and monto > disponible:
-
         request.session['abrir_modal_movimiento'] = True
-
-        messages.error(
-            request,
-            f"No hay suficiente saldo en {moneda}."
-        )
-
+        messages.error(request,f"No hay suficiente saldo en {moneda}.")
         return redirect('caja')
     
 
@@ -810,54 +716,28 @@ from django.contrib import messages
 from django.utils import timezone
 
 def crear_arqueo(request):
-
     empleado = request.user.empleado
 
     if request.method == "POST":
-
         apertura = AperturaCaja.objects.filter(
             apertura_id=request.POST.get('apertura_id')
         ).select_related(
             'tipocambio'
         ).first()
 
-        # =========================================
         # VALIDAR APERTURA
-        # =========================================
-
         if not apertura:
-
             request.session['abrir_modal_arqueo'] = True
-
-            messages.error(
-                request,
-                "La apertura no existe."
-            )
-
+            messages.error(request, "La apertura no existe.")
             return redirect('caja')
 
-        # =========================================
         # TOTALES DEL SISTEMA
-        # =========================================
-
         totales = calcular_totales_apertura(apertura)
+        monto_sistema = Decimal(totales['total_general'])
+        total_cordoba_sistema = Decimal(totales['total_cordoba'])
+        total_dolar_sistema = Decimal(totales['total_dolar'])
 
-        monto_sistema = Decimal(
-            totales['total_general']
-        )
-
-        total_cordoba_sistema = Decimal(
-            totales['total_cordoba']
-        )
-
-        total_dolar_sistema = Decimal(
-            totales['total_dolar']
-        )
-
-        # =========================================
         # RECORRER DENOMINACIONES
-        # =========================================
-
         total_cordoba = Decimal('0')
         total_dolar = Decimal('0')
 
@@ -866,18 +746,9 @@ def crear_arqueo(request):
         denominaciones = Denominacion.objects.all()
 
         for denominacion in denominaciones:
+            cantidad = int(request.POST.get(f'denominacion_{denominacion.denominacion_id}', 0))
 
-            cantidad = int(
-                request.POST.get(
-                    f'denominacion_{denominacion.denominacion_id}',
-                    0
-                )
-            )
-
-            # =====================================
             # SOLO SI HAY CANTIDAD
-            # =====================================
-
             if cantidad > 0:
 
                 subtotal = (
@@ -891,89 +762,35 @@ def crear_arqueo(request):
                     'subtotal': subtotal
                 })
 
-                # =================================
                 # SUMAR SEGUN MONEDA
-                # =================================
-
                 if denominacion.moneda == 'CORDOBA':
-
                     total_cordoba += subtotal
-
                 else:
-
                     total_dolar += subtotal
 
-        # =========================================
         # VALIDAR CORDOBAS
-        # =========================================
-
-        if (
-            total_cordoba_sistema <= 0
-            and total_cordoba > 0
-        ):
-
+        if (total_cordoba_sistema <= 0 and total_cordoba > 0):
             request.session['abrir_modal_arqueo'] = True
-
-            messages.error(
-                request,
-                "El sistema no tiene saldo en córdobas."
-            )
-
+            messages.error(request, "El sistema no tiene saldo en córdobas.")
             return redirect('caja')
 
-        # =========================================
         # VALIDAR DOLARES
-        # =========================================
-
-        if (
-            total_dolar_sistema <= 0
-            and total_dolar > 0
-        ):
-
+        if (total_dolar_sistema <= 0 and total_dolar > 0):
             request.session['abrir_modal_arqueo'] = True
-
-            messages.error(
-                request,
-                "El sistema no tiene saldo en dólares."
-            )
-
+            messages.error(request,"El sistema no tiene saldo en dólares.")
             return redirect('caja')
 
-        # =========================================
         # SI HAY USD DEBE COINCIDIR
-        # =========================================
-
-        if (
-            total_dolar_sistema > 0
-            and total_dolar != total_dolar_sistema
-        ):
-
+        if (total_dolar_sistema > 0 and total_dolar != total_dolar_sistema):
             request.session['abrir_modal_arqueo'] = True
-
-            messages.error(
-                request,
-                "El efectivo en dólares no coincide con el sistema."
-            )
-
+            messages.error(request,"El efectivo en dólares no coincide con el sistema.")
             return redirect('caja')
 
-        # =========================================
         # CONVERTIR DOLARES
-        # =========================================
-
-        conversion_dolar = (
-            total_dolar
-            * apertura.tipocambio.valor
-        )
-
-        # =========================================
+        conversion_dolar = (total_dolar * apertura.tipocambio.valor)
+        
         # TOTAL FISICO
-        # =========================================
-
-        total_fisico = (
-            total_cordoba
-            + conversion_dolar
-        )
+        total_fisico = (total_cordoba + conversion_dolar)
 
         # OBSERVACION AUTOMATICA
         observacion = request.POST.get('observacion')
@@ -982,20 +799,11 @@ def crear_arqueo(request):
         justificacion = request.POST.get('justificacion')
 
         if not justificacion:
-
             request.session['abrir_modal_arqueo'] = True
-
-            messages.error(
-                request,
-                "Debe ingresar una justificación."
-            )
-
+            messages.error(request,"Debe ingresar una justificación.")
             return redirect('caja')
 
-        # =========================================
         # CREAR ARQUEO
-        # =========================================
-
         arqueo = ArqueoCaja.objects.create(
 
             apertura=apertura,
@@ -1012,10 +820,7 @@ def crear_arqueo(request):
 
         )
 
-        # =========================================
         # CREAR DETALLES
-        # =========================================
-
         for detalle in detalles_guardar:
 
             DetalleArqueo.objects.create(
@@ -1026,10 +831,7 @@ def crear_arqueo(request):
 
             )
 
-        # =========================================
         # SI ES CIERRE FINAL
-        # =========================================
-
         if arqueo.tipo == 'FINAL':
             estado_cerrada = Estado.objects.get(nombre='Cerrada')
             apertura.estado = estado_cerrada
@@ -1037,15 +839,8 @@ def crear_arqueo(request):
             apertura.saldo_final = total_fisico
             apertura.save()
 
-        # =========================================
         # MENSAJE
-        # =========================================
-
-        messages.success(
-            request,
-            "Arqueo realizado correctamente."
-        )
-
+        messages.success(request,"Arqueo realizado correctamente.")
         return redirect('caja')
 
     return redirect('caja')

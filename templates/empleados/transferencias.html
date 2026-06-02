@@ -1,23 +1,6 @@
 {% extends 'empleados/base_empleados.html' %}
 {% load static %}
 
-{% if messages %}
-
-<div class="messages-container">
-
-    {% for message in messages %}
-
-    <div class="alert-message {{ message.tags }}">
-
-        {{ message }}
-
-    </div>
-
-    {% endfor %}
-
-</div>
-
-{% endif %}
 
 {% block content %}
 
@@ -290,12 +273,27 @@
     }
 
     .modal-content {
-        width: 100%;
-        max-width: 950px;
-        background: white;
-        border-radius: 22px;
-        overflow: hidden;
+        width: 95%;
+    max-width: 1400px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     }
+
+    .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
+}
 
     .modal-header {
         background: linear-gradient(90deg, #ec4899, #f472b6);
@@ -390,6 +388,23 @@
 
     </div>
 
+
+    {% if messages %}
+
+    <div class="messages-container">
+
+        {% for message in messages %}
+
+        <div class="alert-message {{ message.tags }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
     <form method="POST" action="{% url 'crear_transferencia' %}">
 
         {% csrf_token %}
@@ -418,27 +433,12 @@
 
                     {% for b in bodegas %}
 
-                    <!-- NO MOSTRAR SU PROPIA BODEGA -->
-                    {% if b.bodega_id != empleado.sucursal.bodega.bodega_id %}
-
                     <option value="{{ b.bodega_id }}">
                         {{ b.nombre }}
                     </option>
-
-                    {% endif %}
-
                     {% endfor %}
 
                 </select>
-
-            </div>
-
-            <!-- NOTA -->
-            <div class="field">
-
-                <label>Nota:</label>
-
-                <input type="text" name="nota">
 
             </div>
 
@@ -450,7 +450,7 @@
 
             <input type="text" id="producto" placeholder="Buscar producto por código o nombre">
 
-            <input type="number" id="cantidad" value="1" min="1">
+            <input type="number" id="cantidad" value="3" min="3">
 
             <button type="button" onclick="agregarProducto()">
 
@@ -512,10 +512,15 @@
 
 <!-- HISTORIAL -->
 
+<!-- =========================
+     MODAL HISTORIAL
+========================= -->
+
 <div id="modalHistorial" class="modal-overlay">
 
-    <div class="modal-content">
+    <div class="modal-content" style="max-width:1400px; width:95%; max-height:90vh;">
 
+        <!-- HEADER -->
         <div class="modal-header">
 
             <h3>
@@ -529,77 +534,162 @@
 
         </div>
 
-        <div class="table-container" style="margin:20px;">
+        <!-- BODY -->
+        <div class="modal-body" style="padding:20px; overflow-y:auto;">
 
-            <table>
+            <!-- FILTRO -->
+            <div class="filters-card" style="margin-bottom:20px;">
 
-                <thead>
+                <div class="field">
 
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Estado</th>
-                        <th>Visualizar</th>
-                    </tr>
+                    <label>Buscar traslado</label>
 
-                </thead>
+                    <input
+                        type="text"
+                        id="buscarTransferencia"
+                        placeholder="Buscar por origen, destino o estado..."
+                        onkeyup="filtrarTransferencias()"
+                    >
 
-                <tbody>
+                </div>
 
-                    {% for t in transferencias %}
+            </div>
 
-                    <tr>
+            <!-- TABLA -->
+            <div class="table-container">
 
-                        <td>
-                            {{ t.fecha|date:"d/m/Y H:i" }}
-                        </td>
+                <div class="table-scroll" style="max-height:500px; overflow:auto;">
 
-                        <td>
-                            {{ t.origen.nombre }}
-                        </td>
+                    <table id="tablaTransferencias">
 
-                        <td>
-                            {{ t.destino.nombre }}
-                        </td>
+                        <thead>
 
-                        <td>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Estado</th>
+                                <th>Empleado</th>
+                                <th>Visualizar</th>
+                            </tr>
 
-                            <span class="estado-badge estado-{{ t.estado.nombre|lower }}">
-                                {{ t.estado.nombre }}
-                            </span>
+                        </thead>
 
-                        </td>
+                        <tbody>
 
-                        <td>
+                            {% for t in transferencias %}
 
-                            <button class="btn-view">
+                            <tr>
 
-                                <i class="fas fa-eye"></i>
+                                <td>
+                                    {{ t.fecha|date:"d/m/Y H:i" }}
+                                </td>
 
-                            </button>
+                                <td>
+                                    {{ t.origen.nombre }}
+                                </td>
 
-                        </td>
+                                <td>
+                                    {{ t.destino.nombre }}
+                                </td>
 
-                    </tr>
+                                <td>
 
-                    {% empty %}
+                                    <span class="estado-badge estado-{{ t.estado.nombre|lower }}">
+                                        {{ t.estado.nombre }}
+                                    </span>
 
-                    <tr>
+                                </td>
 
-                        <td colspan="5" style="text-align:center;">
+                                <td>
+                                    {{ t.empleado.user.first_name }}
+                                    {{ t.empleado.user.last_name }}
+                                </td>
 
-                            No hay traslados registrados
+                                <td>
 
-                        </td>
+                                    <button
+                                        type="button"
+                                        class="btn-view"
+                                        onclick="verDetalle('{{ t.id }}')"
+                                        title="Ver detalle"
+                                    >
 
-                    </tr>
+                                        <i class="fas fa-eye"></i>
 
-                    {% endfor %}
+                                    </button>
 
-                </tbody>
+                                </td>
 
-            </table>
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td colspan="6" style="text-align:center;padding:30px;">
+
+                                    No hay traslados registrados
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="modalDetalle" class="modal-overlay">
+
+    <div class="modal-content" style="max-width:900px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-list"></i>
+                Detalle del Traslado
+            </h3>
+
+            <button onclick="cerrarModal('modalDetalle')">
+                &times;
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="detalleTransferenciaBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </div>
 
@@ -617,7 +707,8 @@
 
     let productos = JSON.parse('{{ productos_json|escapejs }}');
 
-    let detalles = [];
+    let detalles = JSON.parse('{{ detalles_json|default:"[]"|escapejs }}');
+
 
     let seleccionado = null;
 
@@ -672,34 +763,155 @@
 
     function agregarProducto() {
 
-        let cantidad = document.getElementById('cantidad').value;
+        let cantidad = parseInt(
+            document.getElementById('cantidad').value
+        );
 
         if (!seleccionado) {
-
             alert("Seleccione un producto");
+            return;
+        }
+
+        if (cantidad <= 0) {
+            alert("La cantidad debe ser mayor a 0");
+            return;
+        }
+
+        if (cantidad % 3 !== 0) {
+            alert("La cantidad debe ser múltiplo de 3");
+            return;
+        }
+
+        // Buscar si ya existe
+        let existente = detalles.find(
+            d => d.producto == seleccionado.id
+        );
+
+        let cantidadTotal = cantidad;
+
+        if (existente) {
+            cantidadTotal += existente.cantidad;
+        }
+
+        // VALIDAR STOCK
+        if (cantidadTotal > seleccionado.stock) {
+
+            alert(
+                `Stock insuficiente para ${seleccionado.nombre}\n` +
+                `Stock disponible: ${seleccionado.stock}`
+            );
 
             return;
         }
 
-        detalles.push({
+        if (existente) {
 
-            producto: seleccionado.id,
+            existente.cantidad += cantidad;
 
-            nombre: seleccionado.nombre,
+        } else {
 
-            cantidad: parseInt(cantidad)
+            detalles.push({
+                producto: seleccionado.id,
+                nombre: seleccionado.nombre,
+                cantidad: cantidad
+            });
 
-        });
+        }
 
         render();
 
         seleccionado = null;
 
         document.getElementById('producto').value = '';
-
-        document.getElementById('cantidad').value = 1;
-
+        document.getElementById('cantidad').value = 3;
     }
+
+    const detalleUrlBase = "{% url 'detalle_transferencia' 0 %}".replace('0/', '');
+
+function verDetalle(id) {
+
+    fetch(`/inventario/transferencias/detalle/${id}/`)
+
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        console.log("DATA:", data);
+
+        let body =
+            document.getElementById(
+                'detalleTransferenciaBody'
+            );
+
+        console.log("BODY:", body);
+
+        body.innerHTML = '';
+
+        data.detalles.forEach(item => {
+
+            body.innerHTML += `
+                <tr>
+                    <td>${item.producto}</td>
+                    <td>${item.cantidad}</td>
+                </tr>
+            `;
+
+        });
+
+        console.log(
+            "MODAL:",
+            document.getElementById('modalDetalle')
+        );
+
+        abrirModal('modalDetalle');
+
+        console.log("MODAL ABIERTA");
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+    });
+
+}
+
+
+
+    function filtrarTransferencias() {
+
+    let filtro =
+        document.getElementById(
+            'buscarTransferencia'
+        ).value.toLowerCase();
+
+    let filas =
+        document.querySelectorAll(
+            '#tablaTransferencias tbody tr'
+        );
+
+    filas.forEach(fila => {
+
+        let texto =
+            fila.innerText.toLowerCase();
+
+        fila.style.display =
+            texto.includes(filtro)
+                ? ''
+                : 'none';
+
+    });
+
+}
 
     /* =========================
        RENDER
@@ -812,6 +1024,10 @@
         });
 
     }, 3000);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        render();
+    });
 
 
 </script>

@@ -541,9 +541,7 @@
                     <label>Rol</label>
                     <select name="rol_id" id="rol_id" onchange="filtrarUbicaciones()" required>
                         {% for r in roles %}
-                        {% if r.nombre|lower != "administrador" and r.nombre|lower != "gerente" %}
                         <option value="{{ r.rol_id }}">{{ r.nombre }}</option>
-                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>

@@ -125,7 +125,7 @@ def proveedores(request):
     proveedores = Proveedor.objects.select_related(
         'direccion'
     ).prefetch_related(
-        'telefonos'
+        'telefonos__estado'
     ).all().order_by(
         'nombre'
     )
@@ -136,6 +136,11 @@ def proveedores(request):
 
     # PRODUCTOS POR PROVEEDOR
     for proveedor in proveedores:
+        
+        # TELEFONOS ACTIVOS
+        proveedor.telefonos_activos = proveedor.telefonos.filter(
+            estado__nombre='Activo'
+        )
 
         productos_ids = DetalleCompra.objects.filter(
             compra__proveedor=proveedor
@@ -421,6 +426,7 @@ def editar_proveedor(request):
                 telefono.estado = estado_activo
 
                 telefono.save()
+
 
             messages.success(request,'Proveedor actualizado correctamente')
             return redireccion()

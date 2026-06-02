@@ -138,12 +138,21 @@ def vista_ventas(request):
 
     clientes = Cliente.objects.all()
     metodos = MetodoPago.objects.all()
-
+    apertura = AperturaCaja.objects.filter(
+        empleado=empleado,
+        estado__nombre='Abierta'
+    ).select_related(
+        'tipocambio'
+    ).first()
+    
+    tasa = apertura.tipocambio.valor if apertura else 36.62
+    
     return render(request, 'empleados/ventas.html', {
         'ventas': ventas,
         'clientes': clientes,
         'metodos': metodos,
-        'numero_factura': generar_numero_factura(empleado)
+        'numero_factura': generar_numero_factura(empleado),
+        'tasa': tasa
     })
 
 @login_required
@@ -438,35 +447,22 @@ def cobrar_venta(request):
         if efectivo_cordoba > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo='INGRESO',
-
                 moneda='CORDOBA',
-
                 monto=efectivo_cordoba,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Efectivo C$'
-
             )
 
         # EFECTIVO DOLAR
         if efectivo_dolar > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo=tipo_ingreso,
-
                 moneda='DOLAR',
-
                 monto=efectivo_dolar,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Efectivo USD'
 
@@ -478,20 +474,12 @@ def cobrar_venta(request):
         if transferencia_cordoba > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo=tipo_ingreso,
-
                 moneda='CORDOBA',
-
                 monto=transferencia_cordoba,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Transferencia C$',
-
-                afecta_caja=False
 
             )
 
@@ -499,20 +487,12 @@ def cobrar_venta(request):
         if transferencia_dolar > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo=tipo_ingreso,
-
                 moneda='DOLAR',
-
                 monto=transferencia_dolar,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Transferencia USD',
-
-                afecta_caja=False
 
             )
 
@@ -520,20 +500,12 @@ def cobrar_venta(request):
         if tarjeta_cordoba > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo=tipo_ingreso,
-
                 moneda='CORDOBA',
-
                 monto=tarjeta_cordoba,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Tarjeta C$',
-
-                afecta_caja=False
 
             )
 
@@ -541,20 +513,12 @@ def cobrar_venta(request):
         if tarjeta_dolar > 0:
 
             MovimientoCaja.objects.create(
-
                 apertura=apertura,
-                empleado=empleado,
-
                 tipo=tipo_ingreso,
-
                 moneda='DOLAR',
-
                 monto=tarjeta_dolar,
-
                 descripcion=
                 f'Cobro factura #{venta.venta_id} - Tarjeta USD',
-
-                afecta_caja=False
 
             )
 
