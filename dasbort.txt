@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Profesional de Ventas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    
+    <style>
+        /* Estilos personalizados para adaptar DataTables al modo oscuro/moderno */
+        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+            color: #9ca3af !important;
+        }
+        table.dataTable tbody tr {
+            background-color: #1f2937 !important;
+            color: #e5e7eb !important;
+        }
+        table.dataTable thead th {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+            border-bottom: 1px solid #4b5563 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <header class="bg-gray-800 border-b border-gray-700 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">Panel de Control Analítico</h1>
+                    <p class="text-sm text-gray-400 mt-1">
+                        Vistas autorizadas para: <span class="text-indigo-400 font-semibold uppercase">{{ rol_usuario }}</span>
+                        {% if sucursal_usuario %} | Sucursal: <span class="text-emerald-400 font-semibold">{{ sucursal_usuario.nombre }}</span>{% endif %}
+                    </p>
+                </div>
+                
+                <form method="GET" class="w-full md:w-auto flex flex-wrap items-end gap-3 bg-gray-850 p-2 rounded-lg border border-gray-700">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1 uppercase">Inicio</label>
+                        <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}" class="bg-gray-700 text-white text-sm rounded p-2 border border-gray-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1 uppercase">Fin</label>
+                        <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}" class="bg-gray-700 text-white text-sm rounded p-2 border border-gray-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    {% if rol_usuario == 'admin' %}
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1 uppercase">Sucursal</label>
+                        <select name="sucursal" class="bg-gray-700 text-white text-sm rounded p-2 border border-gray-600 focus:outline-none focus:border-indigo-500">
+                            <option value="">Todas las Sucursales</option>
+                            {% for suc in sucursales %}
+                                <option value="{{ suc.sucursal_id }}" {% if sucursal_seleccionada == suc.sucursal_id|stringformat:"i" %}selected{% endif %}>{{ suc.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-4 py-2 rounded shadow transition duration-150">
+                        Filtrar
+                    </button>
+                    <a href="{% url 'dashboard_view' %}" class="bg-gray-600 hover:bg-gray-500 text-white font-medium text-sm px-3 py-2 rounded transition duration-150">
+                        Limpiar
+                    </a>
+                </form>
+            </header>
+
+            <main class="p-6 space-y-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 flex items-center shadow-lg">
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg mr-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-400 uppercase">Ventas Totales</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">${{ total_ventas|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 flex items-center shadow-lg">
+                        <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg mr-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-400 uppercase">Transacciones</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">{{ cantidad_ventas }} u.</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-4">Rendimiento de Ventas por Empleado</h2>
+                        <div class="relative h-64">
+                            <canvas id="chartEmpleados"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg">
+                        <h2 class="text-lg font-bold text-white mb-4">Distribución por Categorías</h2>
+                        <div class="relative h-64 flex justify-center">
+                            <canvas id="chartCategorias"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg overflow-x-auto">
+                        <h2 class="text-lg font-bold text-emerald-400 mb-4 flex items-center gap-2">
+                            <span>🔥 Productos Más Vendidos</span>
+                        </h2>
+                        <table id="tablaMasVendidos" class="w-full text-sm text-left">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Marca</th>
+                                    <th>Cant. Vendida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in productos_mas_vendidos %}
+                                <tr>
+                                    <td class="font-semibold text-white">{{ item.producto__nombre }}</td>
+                                    <td>{{ item.producto__categoria__nombre }}</td>
+                                    <td>{{ item.producto__marca__nombre }}</td>
+                                    <td class="text-emerald-400 font-bold text-right">{{ item.cantidad_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg overflow-x-auto">
+                        <h2 class="text-lg font-bold text-rose-400 mb-4 flex items-center gap-2">
+                            <span>⚠️ Productos Menos Vendidos (Críticos)</span>
+                        </h2>
+                        <table id="tablaMenosVendidos" class="w-full text-sm text-left">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Cant. Vendida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in productos_menos_vendidos %}
+                                <tr>
+                                    <td class="text-gray-400">{{ item.producto__codigo }}</td>
+                                    <td class="font-semibold text-white">{{ item.producto__nombre }}</td>
+                                    <td>{{ item.producto__categoria__nombre }}</td>
+                                    <td class="text-rose-400 font-bold text-right">{{ item.cantidad_total|default:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- 1. Contenedores seguros para pasar datos de Django a JS sin romper el linter del editor -->
+    <script id="data-empleados-labels" type="application/json">{{ chart_empleados_labels|safe }}</script>
+    <script id="data-empleados-data" type="application/json">{{ chart_empleados_data|safe }}</script>
+    <script id="data-categorias-labels" type="application/json">{{ chart_categorias_labels|safe }}</script>
+    <script id="data-categorias-valores" type="application/json">{{ chart_categorias_valores|safe }}</script>
+
+    <!-- 2. Scripts interactivos del Dashboard -->
+    <script>
+        $(document).ready(function() {
+            // Inicialización de Tablas Interactivas (DataTables)
+            $('#tablaMasVendidos').DataTable({
+                "pageLength": 5,
+                "lengthMenu": [5, 10, 25],
+                "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
+            });
+            $('#tablaMenosVendidos').DataTable({
+                "pageLength": 5,
+                "lengthMenu": [5, 10, 25],
+                "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
+            });
+        });
+
+        // Extraer y parsear los datos de forma segura
+        const empleadosLabels = JSON.parse(document.getElementById('data-empleados-labels').textContent);
+        const empleadosData = JSON.parse(document.getElementById('data-empleados-data').textContent);
+        
+        const categoriasLabels = JSON.parse(document.getElementById('data-categorias-labels').textContent);
+        const categoriasValores = JSON.parse(document.getElementById('data-categorias-valores').textContent);
+
+        // Renderizado de Gráfico de Barras - Empleados
+        const ctxEmp = document.getElementById('chartEmpleados').getContext('2d');
+        new Chart(ctxEmp, {
+            type: 'bar',
+            data: {
+                labels: empleadosLabels,
+                datasets: [{
+                    label: 'Ventas ($)',
+                    data: empleadosData,
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                    x: { grid: { display: false }, ticks: { color: '#fff' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Renderizado de Gráfico de Torta - Categorías
+        const ctxCat = document.getElementById('chartCategorias').getContext('2d');
+        new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: categoriasLabels,
+                datasets: [{
+                    data: categoriasValores,
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.6)',
+                        'rgba(245, 158, 11, 0.6)',
+                        'rgba(59, 130, 246, 0.6)',
+                        'rgba(239, 68, 68, 0.6)',
+                        'rgba(139, 92, 246, 0.6)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#fff' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

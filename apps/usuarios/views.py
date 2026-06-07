@@ -9,6 +9,7 @@ from apps.usuarios.helpers import *
 from apps.usuarios.models import *
 from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 import re, json
 from django.http import JsonResponse
 from django.db import connection
@@ -25,6 +26,7 @@ from apps.productos.models import Producto
 from apps.inventario.models import Kardex
 from apps.usuarios.models import Empleado
 from apps.caja.models import MovimientoCaja
+
 
 # =========================
 # LISTADO PRINCIPAL
@@ -406,67 +408,110 @@ def cambiar_estado_sucursal(request, id):
 
 @login_required
 def dashboard_view(request):
-    empleado = request.user.empleado
-    rol = empleado.rol.nombre.lower()
+    usuario = request.user
+    
+    # 1. Control de Permisos por Rol / Sucursal
+    try:
+        empleado_perfil = usuario.empleado
+        rol_usuario = empleado_perfil.rol.nombre.lower() # 'admin', 'gerente', etc.
+        sucursal_usuario = empleado_perfil.sucursal
+    except Empleado.DoesNotExist:
+        # En caso de que sea un superusuario de Django sin perfil de empleado
+        rol_usuario = 'admin'
+        sucursal_usuario = None
 
-    # 1. FILTRO BASE (GERENTE / ADMIN)
-    ventas_qs = Venta.objects.filter(estado__nombre='Pagada')
-    if rol == 'gerente':
-        ventas_qs = ventas_qs.filter(empleado__sucursal=empleado.sucursal)
+    # Base de querysets filtrados por seguridad
+    ventas_qs = Venta.objects.filter(estado__nombre__iexact='Pagada')
+    detalles_qs = DetalleVenta.objects.filter(venta__estado__nombre__iexact='Pagada')
+    
+    # Si es Gerente, limitar estrictamente a su sucursal
+    if rol_usuario == 'gerente' and sucursal_usuario:
+        ventas_qs = ventas_qs.filter(empleado__sucursal=sucursal_usuario)
+        detalles_qs = detalles_qs.filter(venta__empleado__sucursal=sucursal_usuario)
+    elif rol_usuario == 'admin':
+        # Si es admin y seleccionó una sucursal específica en el filtro HTML
+        sucursal_id = request.GET.get('sucursal')
+        if sucursal_id:
+            ventas_qs = ventas_qs.filter(empleado__sucursal_id=sucursal_id)
+            detalles_qs = detalles_qs.filter(venta__empleado__sucursal_id=sucursal_id)
 
-    # 2. FECHAS (últimos 30 días)
-    fecha_inicio = now() - timedelta(days=30)
-    ventas_qs = ventas_qs.filter(fecha__gte=fecha_inicio)
+    # 2. Filtros de Fecha (Por defecto: últimos 30 días)
+    fecha_inicio_str = request.GET.get('fecha_inicio')
+    fecha_fin_str = request.GET.get('fecha_fin')
+    
+    if fecha_inicio_str:
+        ventas_qs = ventas_qs.filter(fecha__date__gte=parse_date(fecha_inicio_str))
+        detalles_qs = detalles_qs.filter(venta__fecha__date__gte=parse_date(fecha_inicio_str))
+    if fecha_fin_str:
+        ventas_qs = ventas_qs.filter(fecha__date__lte=parse_date(fecha_fin_str))
+        detalles_qs = detalles_qs.filter(venta__fecha__date__lte=parse_date(fecha_fin_str))
 
-    # 3. INGRESOS GENERALES
-    ingreso_total = ventas_qs.aggregate(total=Sum('total'))['total'] or Decimal('0')
-
-    # 4. VENTAS POR EMPLEADO
-    ventas_por_empleado = ventas_qs.values('empleado__user__first_name').annotate(
-        total=Sum('total')
-    ).order_by('-total')
-
-    # 5. PRODUCTOS MÁS VENDIDOS
-    productos_top = DetalleVenta.objects.filter(venta__in=ventas_qs).values(
-        'producto__nombre'
-    ).annotate(
-        total_vendido=Sum('cantidad')
-    ).order_by('-total_vendido')[:10]
-
-    # 6. MOVIMIENTOS CAJA
-    movimientos = MovimientoCaja.objects.filter(apertura__empleado=empleado)
-    if rol == 'gerente':
-        movimientos = movimientos.filter(apertura__empleado__sucursal=empleado.sucursal)
-
-    stats_caja = movimientos.aggregate(
-        ingresos=Sum('monto', filter=Q(tipo='INGRESO')),
-        egresos=Sum('monto', filter=Q(tipo='EGRESO'))
+    # 3. Métrica: Ventas Totales y cantidad de transacciones
+    metricas_generales = ventas_qs.aggregate(
+        total_dinero=Sum('total'),
+        total_transacciones=Count('venta_id')
     )
-    ingresos_caja = stats_caja['ingresos'] or Decimal('0')
-    egresos_caja = stats_caja['egresos'] or Decimal('0')
-    saldo_caja = ingresos_caja - egresos_caja
+    total_ventas = metricas_generales['total_dinero'] or 0
+    cantidad_ventas = metricas_generales['total_transacciones'] or 0
 
-    # 7. VENTAS DIARIAS (Para gráfico)
-    ventas_diarias = ventas_qs.annotate(dia=TruncDate('fecha')).values('dia').annotate(
-        total=Sum('total')
-    ).order_by('dia')
+    # 4. Métrica: Ventas por Empleado
+    ventas_empleado_qs = ventas_qs.values(
+        'empleado__user__first_name', 'empleado__user__last_name', 'empleado__user__username'
+    ).annotate(
+        total_vendido=Sum('total')
+    ).order_by('-total_vendido')
 
-    # CONTEXTO CON SERIALIZACIÓN SEGURA (Decimal -> float)
+    empleados_labels = []
+    empleados_data = []
+    for emp in ventas_empleado_qs:
+        nombre = f"{emp['empleado__user__first_name']} {emp['empleado__user__last_name']}".strip() or emp['empleado__user__username']
+        empleados_labels.append(nombre)
+        empleados_data.append(float(emp['total_vendido']))
+
+    # 5. Métrica: Productos Más Vendidos (Top 10 con su Categoría y Marca)
+    productos_mas_vendidos = detalles_qs.values(
+        'producto__nombre', 'producto__categoria__nombre', 'producto__marca__nombre'
+    ).annotate(
+        cantidad_total=Sum('cantidad'),
+        ingreso_total=Sum('precio') # O cantidad * precio si guardas precio unitario
+    ).filter(
+    cantidad_total__gte=18  # __gte significa "Greater Than or Equal" (Mayor o igual a 21)
+).order_by('-cantidad_total')[:10]
+
+    # Datos estructurados para gráficos de torta/barras de categorías/marcas más vendidas
+    cat_data = detalles_qs.values('producto__categoria__nombre').annotate(total=Sum('cantidad')).order_by('-total')[:5]
+    categorias_labels = [c['producto__categoria__nombre'] for c in cat_data]
+    categorias_valores = [c['total'] for c in cat_data]
+
+    # 6. Métrica: Productos Menos Vendidos (Flop 10)
+    productos_menos_vendidos = detalles_qs.values(
+    'producto__nombre', 'producto__codigo', 'producto__categoria__nombre'
+).annotate(
+    cantidad_total=Sum('cantidad')
+).filter(
+    cantidad_total__lt=18  # __lt significa "Less Than" (Menor que 21)
+).order_by('cantidad_total')[:10]
+
+    # Lista de sucursales para el combo de filtro (solo útil para el Admin)
+    sucursales = Sucursal.objects.all() if rol_usuario == 'admin' else None
+
     context = {
-        'ingreso_total': float(ingreso_total),
-        'saldo_caja': float(saldo_caja),
-        'ingresos_caja': float(ingresos_caja),
-        'egresos_caja': float(egresos_caja),
-        
-        # Serializamos a JSON convirtiendo Decimal a float
-        'ventas_diarias_json': json.dumps([
-            {'dia': v['dia'].isoformat(), 'total': float(v['total'])} 
-            for v in ventas_diarias
-        ]),
-        'productos_top_json': json.dumps([
-            {'nombre': p['producto__nombre'], 'cantidad': float(p['total_vendido'])} 
-            for p in productos_top
-        ]),
+        'rol_usuario': rol_usuario,
+        'sucursal_usuario': sucursal_usuario,
+        'sucursales': sucursales,
+        'total_ventas': total_ventas,
+        'cantidad_ventas': cantidad_ventas,
+        'productos_mas_vendidos': productos_mas_vendidos,
+        'productos_menos_vendidos': productos_menos_vendidos,
+        # JSON para renderizar en Chart.js de forma nativa
+        'chart_empleados_labels': json.dumps(empleados_labels),
+        'chart_empleados_data': json.dumps(empleados_data),
+        'chart_categorias_labels': json.dumps(categorias_labels),
+        'chart_categorias_valores': json.dumps(categorias_valores),
+        # Mantener los filtros en la UI
+        'fecha_inicio': fecha_inicio_str,
+        'fecha_fin': fecha_fin_str,
+        'sucursal_seleccionada': request.GET.get('sucursal', '')
     }
 
     return render(request, 'empleados/dashboard.html', context)

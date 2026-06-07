@@ -1,7 +1,5 @@
 /* === LÓGICA DEL SIDEBAR (GLOBAL) === */
 // Usamos comprobación de existencia para evitar errores si el elemento no existe en alguna página
-
-/* modal editar */
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.btn-editar').forEach(btn => {
@@ -21,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
-
-
 
 /* === LÓGICA DE MODALES GENÉRICA === */
 // Esta función sirve para cualquier modal del sistema
@@ -83,7 +79,9 @@ document.addEventListener('input', function (e) {
  */
 // 🟢 ABRIR MODAL EDITAR
 function editarProducto(id, codigo, nombre, descripcion, categoria, marca, imagenUrl) {
+console.log("Entró a editarProducto");
 
+    abrirModal('modalProductoEditar');
     abrirModal('modalProductoEditar');
 
     const modal = document.getElementById('modalProductoEditar');
@@ -97,22 +95,23 @@ function editarProducto(id, codigo, nombre, descripcion, categoria, marca, image
     document.getElementById('categoria_edit').value = categoria;
     document.getElementById('marca_edit').value = marca;
 
-    // ✅ DESCRIPCIÓN FIX
+    // Descripción
     document.getElementById('descripcion_edit').value =
-        JSON.parse('"' + btn.dataset.descripcion + '"');
+        descripcion || '';
 
-    // ✅ IMAGEN FIX
+    // Imagen
     const preview = modal.querySelector('#imagePreviewEdit img');
     const icon = modal.querySelector('#imagePreviewEdit i');
 
-    if (imagenUrl && imagenUrl !== "None") {
+    if (imagenUrl && imagenUrl.trim() !== '') {
         preview.src = imagenUrl;
+        preview.style.display = 'block';
+        icon.style.display = 'none';
     } else {
         preview.src = '/static/img/no-image.png';
+        preview.style.display = 'block';
+        icon.style.display = 'none';
     }
-
-    preview.style.display = 'block';
-    icon.style.display = 'none';
 }
 
 

@@ -14,7 +14,13 @@ views y models de compras
 
 templates
 1. 
-
+productos_mas_vendidos = detalles_qs.values(
+    'producto__nombre', 'producto__codigo', 'producto__categoria__nombre', 'producto__marca__nombre'
+).annotate(
+    cantidad_total=Sum('cantidad')
+).filter(
+    cantidad_total__gte=21  # __gte significa "Greater Than or Equal" (Mayor o igual a 21)
+).order_by('-cantidad_total')[:10]  # El signo menos '-' es para ordenar de mayor a menor
 
 instalar esta libreria o dependencia para general reporte
 pip install reportlab

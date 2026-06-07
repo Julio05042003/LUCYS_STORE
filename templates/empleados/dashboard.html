@@ -1,87 +1,316 @@
 {% extends 'empleados/base_empleados.html' %}
-{% load static %}
 
 {% block content %}
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- CDN de Tailwind CSS v3 (El más estable y compatible para inyección directa mediante script) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts para un look elegante -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
-    .card { border: none; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .stat-card { background: linear-gradient(135deg, #ffffff 0%, #fdfdfd 100%); }
-    .chart-container { height: 300px; }
+    /* Estilos nativos de respaldo por si el CDN de Tailwind tarda en responder */
+    .dashboard-wrapper {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #FFF0F2 !important;
+        min-height: 100vh;
+    }
+    
+    /* Forzar que los SVGs oculten excesos si falla Tailwind */
+    svg {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Customización Profesional de DataTables Claro/Rosa */
+    .dataTables_wrapper {
+        padding-top: 1rem;
+    }
+    .dataTables_wrapper .dataTables_length select, 
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #f2d6da !important;
+        border-radius: 8px !important;
+        padding: 6px 12px !important;
+        background-color: #fff !important;
+        color: #4b5563 !important;
+        outline: none !important;
+    }
+    table.dataTable thead th {
+        border-bottom: 2px solid #fbcfe8 !important;
+        padding: 12px 16px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        font-size: 0.75rem !important;
+    }
+    table.dataTable tbody td {
+        padding: 14px 16px !important;
+        border-bottom: 1px solid #fff5f6 !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #db2777 !important;
+        color: white !important;
+        border: 1px solid #db2777 !important;
+        border-radius: 6px !important;
+    }
 </style>
 
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between mb-4">
-        <h3 class="fw-bold text-dark">Dashboard Ejecutivo</h3>
+<!-- Contenedor Principal Adaptado de Lucy's System -->
+<div class="dashboard-wrapper p-6 space-y-6 bg-[#FFF0F2] text-gray-700 w-full min-h-screen">
+    
+    <!-- CONTENEDOR ENCABEZADO -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-pink-100/50">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-pink-600"></span>
+                <span class="text-xs font-bold text-pink-600 uppercase tracking-widest">Métricas en Tiempo Real</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight mt-1">Panel Analítico Corporativo</h1>
+            <p class="text-xs text-gray-400 font-medium mt-1">
+                Sesión: <span class="bg-pink-50 text-pink-700 px-2 py-0.5 rounded font-bold uppercase text-[10px]">{{ rol_usuario }}</span>
+                {% if sucursal_usuario %} | <span class="text-gray-500 font-semibold">{{ sucursal_usuario.nombre }}</span>{% endif %}
+            </p>
+        </div>
+        
+        <!-- COMPONENTE FILTRADO PREMIUM -->
+        <form method="GET" class="w-full lg:w-auto flex flex-wrap items-end gap-3 bg-[#FFF8F9] p-4 rounded-xl border border-pink-100">
+            <div class="flex-1 sm:flex-none">
+                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Fecha Inicio</label>
+                <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner">
+            </div>
+            <div class="flex-1 sm:flex-none">
+                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Fecha Fin</label>
+                <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner">
+            </div>
+
+            {% if rol_usuario == 'admin' %}
+            <div class="w-full sm:w-auto">
+                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Filtrar Sucursal</label>
+                <select name="sucursal" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner pr-8">
+                    <option value="">Todas las Sucursales</option>
+                    {% for suc in sucursales %}
+                        <option value="{{ suc.sucursal_id }}" {% if sucursal_seleccionada == suc.sucursal_id|stringformat:"i" %}selected{% endif %}>{{ suc.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button type="submit" class="flex-1 sm:flex-none bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition transform hover:-translate-y-0.5 cursor-pointer">
+                    Aplicar
+                </button>
+                <a href="." class="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold text-xs px-4 py-2.5 rounded-lg transition text-center flex items-center justify-center">
+                    Limpiar
+                </a>
+            </div>
+        </form>
     </div>
 
-    <!-- KPIs -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card stat-card p-4">
-                <small class="text-muted text-uppercase fw-bold">Ingresos Totales</small>
-                <h2 class="fw-bold mt-2 text-primary">$ {{ ingreso_total }}</h2>
+    <!-- SECCIÓN INDICADORES CLAVE (KPIs) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <!-- KPI: Ingresos de Caja -->
+        <div class="bg-white rounded-2xl p-6 flex items-center justify-between shadow-sm border border-pink-100/60 relative overflow-hidden group hover:shadow-md transition duration-300">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-pink-50 rounded-full group-hover:scale-110 transition transform duration-300"></div>
+            <div class="relative z-10 flex items-center">
+                <!-- Se forzó un ancho y alto fijo style="..." para evitar deformaciones si falla Tailwind -->
+                <div class="p-4 bg-pink-50 text-pink-600 rounded-xl mr-4 shadow-sm flex items-center justify-center" style="width: 60px; height: 60px; min-width: 60px;">
+                    <svg style="width: 28px; height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Ventas Totales Netas</p>
+                    <h3 class="text-2xl font-extrabold text-gray-900 mt-1">C$ {{ total_ventas|floatformat:2 }}</h3>
+                </div>
+            </div>
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-bold self-start relative z-10 border border-emerald-100">PAGADAS</span>
+        </div>
+
+        <!-- KPI: Transacciones Emitidas -->
+        <div class="bg-white rounded-2xl p-6 flex items-center justify-between shadow-sm border border-pink-100/60 relative overflow-hidden group hover:shadow-md transition duration-300">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-50 rounded-full group-hover:scale-110 transition transform duration-300"></div>
+            <div class="relative z-10 flex items-center">
+                <div class="p-4 bg-purple-50 text-purple-600 rounded-xl mr-4 shadow-sm flex items-center justify-center" style="width: 60px; height: 60px; min-width: 60px;">
+                    <svg style="width: 28px; height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Volumen de Facturación</p>
+                    <h3 class="text-2xl font-extrabold text-gray-900 mt-1">{{ cantidad_ventas }} <span class="text-sm font-semibold text-gray-400">fcts.</span></h3>
+                </div>
+            </div>
+            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-md font-bold self-start relative z-10 border border-purple-100">EFECTIVAS</span>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE GRÁFICOS ANALÍTICOS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+        <!-- Panel Gráfico 1 -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
+            <div class="border-b border-gray-50 pb-3 mb-4">
+                <h2 class="text-base font-bold text-gray-900">Rendimiento por Colaborador</h2>
+                <p class="text-xs text-gray-400">Total acumulado de ventas facturadas por cada empleado</p>
+            </div>
+            <div class="relative h-64 w-full">
+                <canvas id="chartEmpleados"></canvas>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card stat-card p-4">
-                <small class="text-muted text-uppercase fw-bold">Saldo de Caja</small>
-                <h2 class="fw-bold mt-2 text-success">$ {{ saldo_caja }}</h2>
+
+        <!-- Panel Gráfico 2 -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
+            <div class="border-b border-gray-50 pb-3 mb-4">
+                <h2 class="text-base font-bold text-gray-900">Participación por Categoría</h2>
+                <p class="text-xs text-gray-400">Distribución de categorías preferidas de los clientes</p>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stat-card p-4">
-                <small class="text-muted text-uppercase fw-bold">Flujo Neto</small>
-                <h2 class="fw-bold mt-2 text-info">$ {{ ingresos_caja|add:"-"|add:egresos_caja }}</h2>
+            <div class="relative h-64 w-full flex justify-center">
+                <canvas id="chartCategorias"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Gráficos -->
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card p-4">
-                <h5 class="fw-bold mb-3">Tendencia de Ventas</h5>
-                <div class="chart-container"><canvas id="ventasChart"></canvas></div>
+    <!-- SECCIÓN TABLAS OPERATIVAS -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
+        
+        <!-- Tabla: Productos Más Vendidos -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
+            <div class="flex items-center justify-between border-b border-gray-50 pb-3 mb-2">
+                <div>
+                    <h2 class="text-base font-bold text-pink-700 flex items-center gap-1.5">
+                        Top 10 Productos Más Vendidos
+                    </h2>
+                    <p class="text-xs text-gray-400">Artículos con mayor demanda en inventario</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto w-full">
+                <table id="tablaMasVendidos" class="w-full text-sm text-left">
+                    <thead>
+                        <tr class="text-pink-900 bg-pink-50/50">
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Marca</th>
+                            <th class="text-center">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        {% for item in productos_mas_vendidos %}
+                        <tr class="hover:bg-pink-50/30 transition duration-150">
+                            <td class="font-semibold text-gray-900">{{ item.producto__nombre }}</td>
+                            <td><span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{{ item.producto__categoria__nombre }}</span></td>
+                            <td class="text-gray-500 text-xs">{{ item.producto__marca__nombre }}</td>
+                            <td class="text-center font-extrabold text-pink-600 bg-pink-50/20 rounded-lg">{{ item.cantidad_total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card p-4">
-                <h5 class="fw-bold mb-3">Productos Top</h5>
-                <div class="chart-container"><canvas id="productosChart"></canvas></div>
+
+        <!-- Tabla: Productos Menos Vendidos -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
+            <div class="flex items-center justify-between border-b border-gray-50 pb-3 mb-2">
+                <div>
+                    <h2 class="text-base font-bold text-amber-800 flex items-center gap-1.5">
+                        Artículos de Baja Rotación
+                    </h2>
+                    <p class="text-xs text-gray-400">Productos críticos con riesgo de estancamiento</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto w-full">
+                <table id="tablaMenosVendidos" class="w-full text-sm text-left">
+                    <thead>
+                        <tr class="text-amber-900 bg-amber-50/50">
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        {% for item in productos_menos_vendidos %}
+                        <tr class="hover:bg-amber-50/30 transition duration-150">
+                            <td class="font-mono text-xs text-gray-400 font-semibold">{{ item.producto__codigo }}</td>
+                            <td class="font-semibold text-gray-900">{{ item.producto__nombre }}</td>
+                            <td><span class="bg-amber-50 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ item.producto__categoria__nombre }}</span></td>
+                            <td class="text-center font-extrabold text-amber-700 bg-amber-50/30 rounded-lg">{{ item.cantidad_total|default:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
+
     </div>
 </div>
 
-{{ ventas_diarias_json|json_script:"ventas-data" }}
-{{ productos_top_json|json_script:"productos-data" }}
+<!-- INYECCIÓN ASÍNCRONA DE DATOS -->
+<script id="data-empleados-labels" type="application/json">{{ chart_empleados_labels|safe }}</script>
+<script id="data-empleados-data" type="application/json">{{ chart_empleados_data|safe }}</script>
+<script id="data-categorias-labels" type="application/json">{{ chart_categorias_labels|safe }}</script>
+<script id="data-categorias-valores" type="application/json">{{ chart_categorias_valores|safe }}</script>
 
+<!-- DEPENDENCIAS REQUERIDAS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ventas = JSON.parse(document.getElementById('ventas-data').textContent);
-    const productos = JSON.parse(document.getElementById('productos-data').textContent);
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    // Configuración Gráfico Lineal
-    new Chart(document.getElementById('ventasChart'), {
-        type: 'line',
-        data: {
-            labels: ventas.map(v => v.dia),
-            datasets: [{ label: 'Ventas ($)', data: ventas.map(v => v.total), borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
+<script>
+    $(document).ready(function() {
+        const dtConfig = {
+            "pageLength": 5,
+            "lengthMenu": [5, 10, 25],
+            "responsive": true,
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
+        };
+        $('#tablaMasVendidos').DataTable(dtConfig);
+        $('#tablaMenosVendidos').DataTable(dtConfig);
     });
 
-    // Configuración Gráfico Dona
-    new Chart(document.getElementById('productosChart'), {
+    const empleadosLabels = JSON.parse(document.getElementById('data-empleados-labels').textContent);
+    const empleadosData = JSON.parse(document.getElementById('data-empleados-data').textContent);
+    const categoriasLabels = JSON.parse(document.getElementById('data-categorias-labels').textContent);
+    const categoriasValores = JSON.parse(document.getElementById('data-categorias-valores').textContent);
+
+    const ctxEmp = document.getElementById('chartEmpleados').getContext('2d');
+    new Chart(ctxEmp, {
+        type: 'bar',
+        data: {
+            labels: empleadosLabels,
+            datasets: [{
+                label: 'Ingresos Mensuales',
+                data: empleadosData,
+                backgroundColor: 'rgba(219, 39, 119, 0.75)',
+                borderColor: '#db2777',
+                borderWidth: 1,
+                borderRadius: 8,
+                barThickness: 28
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    const ctxCat = document.getElementById('chartCategorias').getContext('2d');
+    new Chart(ctxCat, {
         type: 'doughnut',
         data: {
-            labels: productos.map(p => p.nombre),
-            datasets: [{ data: productos.map(p => p.cantidad), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] }]
+            labels: categoriasLabels,
+            datasets: [{
+                data: categoriasValores,
+                backgroundColor: ['#db2777', '#f472b6', '#f9a8d4', '#fda4af', '#cbd5e1'],
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right' }
+            }
+        }
     });
 </script>
 {% endblock %}

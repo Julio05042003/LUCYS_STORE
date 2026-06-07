@@ -37,7 +37,8 @@ def buscar_pedidos(request):
             .select_related('cliente')
             .prefetch_related('detallepedido_set__producto')
             .filter(
-                Q(id_string__icontains=term)
+                Q(id_string__icontains=term),
+                estado__nombre='Preparado'
             )[:10]
         )
 
@@ -60,7 +61,7 @@ def buscar_pedidos(request):
 
                 "id": p.id,
 
-                "text": f"Pedido #{p.id} - {p.cliente}",
+                "text": f"Pedido #{p.codigo} - {p.cliente}",
 
                 "cliente": str(p.cliente),
 
@@ -76,6 +77,8 @@ def buscar_pedidos(request):
         return JsonResponse({
             "error": str(e)
         }, status=500)
+
+
 
 def generar_numero_factura(empleado):
     sucursal = empleado.sucursal
