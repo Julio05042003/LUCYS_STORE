@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -402,6 +402,28 @@ def editar_y_actualizar_pedido(request, pedido_id):
             pedido = Pedido.objects.select_related(
                 'cliente', 'vendedor', 'sucursal', 'estado', 'tipo_entrega', 'metodo_envio', 'direccion_envio'
             ).get(pk=pedido_id)
+            
+            # VALIDACIONES DE SEGURIDAD
+            if hasattr(request.user, 'empleado'):
+
+                empleado = request.user.empleado
+                rol = empleado.rol.nombre.lower()
+
+                if rol == 'vendedor':
+
+                    if pedido.vendedor != empleado:
+
+                            return JsonResponse({
+                            'success': False,
+                            'message': 'No posee permisos para visualizar este pedido.'
+                        })
+
+            if pedido.estado.nombre.lower() != 'borrador':
+
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Este pedido ya no puede modificarse.'
+                })
 
             direcciones_query = ClienteDireccion.objects.filter(
                 cliente=pedido.cliente
@@ -427,13 +449,29 @@ def editar_y_actualizar_pedido(request, pedido_id):
                 })
 
             detalles = []
+            bodega = Bodega.objects.filter(sucursal=pedido.sucursal).first()
+            if not bodega:
+                raise Exception(f'La sucursal {pedido.sucursal.nombre} no tiene una bodega asignada.')
+            
             detalles_query = DetallePedido.objects.filter(pedido=pedido).select_related('producto')
             for d in detalles_query:
+                inventario = Inventario.objects.filter(
+                    producto=d.producto,
+                    bodega=bodega
+                ).first()
+                
+                stock_disponible = 0
+                
+                if inventario:
+                    stock_disponible = inventario.stock
+                
+                
                 detalles.append({
                     'id': d.producto_id,  
                     'producto': d.producto.nombre,
                     'precio': float(d.precio),
                     'cantidad': d.cantidad,
+                    'stock': stock_disponible,
                     'subtotal': float(d.cantidad * d.precio)
                 })
 
@@ -565,6 +603,7 @@ def editar_y_actualizar_pedido(request, pedido_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
  
+        
         
 @login_required
 def detalle_pedido(request, pedido_id):
@@ -757,3 +796,49 @@ def cambiar_estado_pedido(request, pedido_id):
             'success': False,
             'message': str(e)
         })
+        
+        
+@login_required
+def obtener_pedido(request, pedido_id):
+
+    pedido = get_object_or_404(
+        Pedido,
+        pk=pedido_id
+    )
+
+    bodega = Bodega.objects.filter(
+        sucursal=pedido.sucursal
+    ).first()
+
+    productos = []
+
+    for detalle in DetallePedido.objects.filter(
+        pedido=pedido
+    ).select_related('producto'):
+
+        inventario = Inventario.objects.filter(
+            producto=detalle.producto,
+            bodega=bodega
+        ).first()
+
+        stock = 0
+
+        if inventario:
+            stock = inventario.stock + detalle.cantidad
+
+        productos.append({
+
+            'producto_id': detalle.producto.producto_id,
+            'producto': detalle.producto.nombre,
+            'cantidad': detalle.cantidad,
+            'precio': float(detalle.precio),
+            'stock': stock
+
+        })
+
+    return JsonResponse({
+
+        'success': True,
+        'productos': productos
+
+    })

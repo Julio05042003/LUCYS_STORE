@@ -11,4 +11,5 @@ urlpatterns = [
     path('buscar-direcciones-cliente/', obtener_direcciones_cliente, name='Buscar_direcciones_cliente'),    
     path('buscar-productos/', buscar_productos_pedidos, name='buscar_productos_pedidos'),
     path('cambiar-estado/<int:pedido_id>/', cambiar_estado_pedido, name='cambiar_estado_pedido'),
+    path('pedidos/<int:pedido_id>/obtener/',obtener_pedido,name='obtener_pedido'),
 ]

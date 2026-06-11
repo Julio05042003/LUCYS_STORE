@@ -304,8 +304,46 @@ def editar_producto(request, id):
 def crear_categoria(request):
 
     if request.method == 'POST':
-        Categoria.objects.create(nombre=request.POST['nombre'])
-        messages.success(request, "Categoría creada")
+
+        nombre = request.POST.get(
+            'nombre',
+            ''
+        ).strip()
+
+        if not nombre:
+
+            messages.error(
+                request,
+                'Debe ingresar un nombre para la categoría.'
+            )
+
+            request.session['abrir_modal'] = 'modalCategoriaCrear'
+
+            return redirect('inventario')
+
+        existe = Categoria.objects.filter(
+            nombre__iexact=nombre
+        ).exists()
+
+        if existe:
+
+            messages.error(
+                request,
+                'La categoría ya existe.'
+            )
+
+            request.session['abrir_modal'] = 'modalCategoriaCrear'
+
+            return redirect('inventario')
+
+        Categoria.objects.create(
+            nombre=nombre
+        )
+
+        messages.success(
+            request,
+            'Categoría creada correctamente.'
+        )
 
     return redirect('inventario')
 
@@ -313,43 +351,166 @@ def crear_categoria(request):
 @login_required
 def editar_categoria(request, id):
 
-    c = get_object_or_404(Categoria, pk=id)
+    try:
 
-    if request.method == 'POST':
-        c.nombre = request.POST['nombre']
-        c.save()
+        categoria = get_object_or_404(
+            Categoria,
+            pk=id
+        )
 
-    return redirect('inventario')
+        nombre = request.POST.get(
+            'nombre',
+            ''
+        ).strip()
 
+        if not nombre:
+
+            return JsonResponse({
+
+                'success': False,
+                'message': 'Debe ingresar un nombre.'
+
+            })
+
+        existe = Categoria.objects.filter(
+            nombre__iexact=nombre
+        ).exclude(
+            pk=id
+        ).exists()
+
+        if existe:
+
+            return JsonResponse({
+
+                'success': False,
+                'message': 'Ya existe una categoría con ese nombre.'
+
+            })
+
+        categoria.nombre = nombre
+        categoria.save()
+
+        return JsonResponse({
+
+            'success': True,
+            'message': 'Categoría actualizada correctamente.'
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            'success': False,
+            'message': str(e)
+
+        })
 
 # 🔹 MARCA
 @login_required
 def crear_marca(request):
 
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
 
-        if nombre:
-            Marca.objects.create(nombre=nombre)
-            messages.success(request, "Marca creada correctamente")
-        else:
-            messages.error(request, "El nombre es obligatorio")
+        nombre = request.POST.get(
+            'nombre',
+            ''
+        ).strip()
+
+        if not nombre:
+
+            messages.error(
+                request,
+                'Debe ingresar un nombre para la marca.'
+            )
+
+            request.session['abrir_modal'] = 'modalMarcaCrear'
+
+            return redirect('inventario')
+
+        existe = Marca.objects.filter(
+            nombre__iexact=nombre
+        ).exists()
+
+        if existe:
+
+            messages.error(
+                request,
+                'La marca ya existe.'
+            )
+
+            request.session['abrir_modal'] = 'modalMarcaCrear'
+
+            return redirect('inventario')
+
+        Marca.objects.create(
+            nombre=nombre
+        )
+
+        messages.success(
+            request,
+            'Marca creada correctamente.'
+        )
 
     return redirect('inventario')
-
 
 @login_required
 def editar_marca(request, id):
 
-    m = get_object_or_404(Marca, pk=id)
+    try:
 
-    if request.method == 'POST':
-        m.nombre = request.POST['nombre']
-        m.save()
+        marca = get_object_or_404(
+            Marca,
+            pk=id
+        )
 
-    return redirect('inventario')
+        nombre = request.POST.get(
+            'nombre',
+            ''
+        ).strip()
 
+        if not nombre:
 
+            return JsonResponse({
+
+                'success': False,
+                'message': 'Debe ingresar un nombre.'
+
+            })
+
+        existe = Marca.objects.filter(
+            nombre__iexact=nombre
+        ).exclude(
+            pk=id
+        ).exists()
+
+        if existe:
+
+            return JsonResponse({
+
+                'success': False,
+                'message': 'Ya existe una marca con ese nombre.'
+
+            })
+
+        marca.nombre = nombre
+        marca.save()
+
+        return JsonResponse({
+
+            'success': True,
+            'message': 'Marca actualizada correctamente.'
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            'success': False,
+            'message': str(e)
+
+        })
 
 @login_required
 def producto_detalle_json(request, id):

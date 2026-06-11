@@ -61,7 +61,67 @@
         }
     }
 
-    
+    .catalogos-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .catalogo-box {
+        flex: 1;
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+    }
+
+    .tabla-catalogo {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .tabla-catalogo thead th {
+
+        background: #f48ca0;
+        color: white;
+        padding: 16px 18px;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .tabla-catalogo tbody td {
+
+        padding: 14px 18px;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .tabla-catalogo tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .tabla-catalogo th:last-child,
+    .tabla-catalogo td:last-child {
+
+        width: 70px;
+        text-align: center;
+    }
+
+    .tabla-catalogo button {
+
+        border: none;
+        background: #f3f4f6;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .tabla-catalogo button:hover {
+
+        background: #f48ca0;
+        color: white;
+    }
 </style>
 
 <div class="main-container">
@@ -201,59 +261,88 @@
                 </div>
             </div>
 
-            <!-- 📦 TABLA CATEGORÍAS -->
+
             {% if rol != "Vendedor" %}
-            <div class="table-container small-table" style="margin-top:20px;">
-                <div class="table-scroll">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th>Categoría</th>
-                                <th class="text-center">Acción</th>
-                            </tr>
-                        </thead>
+            <div class="catalogos-row">
 
-                        <tbody>
-                            {% for c in categorias %}
-                            <tr>
-                                <td>{{ c.nombre }}</td>
-                                <td class="text-center">
-                                    <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="catalogo-box">
+
+                    <div class="table-scroll">
+                        <table class="tabla-catalogo">
+
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for c in categorias %}
+                                <tr>
+
+                                    <td>{{ c.nombre }}</td>
+
+                                    <td>
+
+                                        <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
+
+                                            <i class="fas fa-edit"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+                    </div>
+
                 </div>
-            </div>
 
-            <!-- 🏷 MARCAS -->
-            <div class="table-container small-table" style="margin-top:20px;">
-                <div class="table-scroll">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th>Marca</th>
-                                <th class="text-center">Acción</th>
-                            </tr>
-                        </thead>
+                <div class="catalogo-box">
 
-                        <tbody>
-                            {% for m in marcas %}
-                            <tr>
-                                <td>{{ m.nombre }}</td>
-                                <td class="text-center">
-                                    <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-scroll">
+                        <table class="tabla-catalogo">
+
+                            <thead>
+                                <tr>
+                                    <th>Marca</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for m in marcas %}
+                                <tr>
+
+                                    <td>{{ m.nombre }}</td>
+
+                                    <td>
+
+                                        <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
+
+                                            <i class="fas fa-edit"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+                    </div>
+
                 </div>
+
             </div>
             <br>
 
@@ -490,6 +579,77 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modalMarcaEditar">
+
+    <div class="modal-content" style="max-width:400px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-edit"></i>
+                Editar Marca
+            </h3>
+
+            <button
+                type="button"
+                class="close-btn"
+                onclick="cerrarModalMarca()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <form
+            id="formEditarMarca"
+            class="modal-form"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                id="marca_id"
+            >
+
+            <div class="form-group">
+
+                <label>Nombre de la Marca</label>
+
+                <input
+                    type="text"
+                    id="marca_nombre"
+                    class="form-control"
+                    required
+                >
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="cerrarModalMarca()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+                    Guardar Cambios
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 <div id="modalCategoria" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
@@ -508,6 +668,77 @@
             </div>
         </form>
     </div>
+</div>
+
+<div class="modal-overlay" id="modalCategoriaEditar">
+
+    <div class="modal-content" style="max-width:400px;">
+
+        <div class="modal-header">
+
+            <h3>
+                <i class="fas fa-edit"></i>
+                Editar Categoría
+            </h3>
+
+            <button
+                type="button"
+                class="close-btn"
+                onclick="cerrarModalCategoria()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <form
+            id="formEditarCategoria"
+            class="modal-form"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                id="categoria_id"
+            >
+
+            <div class="form-group">
+
+                <label>Nombre de la Categoría</label>
+
+                <input
+                    type="text"
+                    id="categoria_nombre"
+                    class="form-control"
+                    required
+                >
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="cerrarModalCategoria()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+                    Guardar Cambios
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
 <div id="modalVerProducto" class="modal-overlay">
@@ -554,19 +785,19 @@
                 <div class="table-container" style="margin-top:5px;">
                     <div class="table-scroll">
                         <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th>Bodega</th>
-                                <th>Sucursal</th>
-                                <th>Stock</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla_bodegas">
-                            <tr>
-                                <td colspan="3">Cargando...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <thead>
+                                <tr>
+                                    <th>Bodega</th>
+                                    <th>Sucursal</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla_bodegas">
+                                <tr>
+                                    <td colspan="3">Cargando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -581,9 +812,10 @@
 
 {% endif %}
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
 <script>
-    
+
     setTimeout(() => {
 
         document.querySelectorAll('.custom-message').forEach(msg => {
@@ -599,17 +831,309 @@
     }, 3000);
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
 
-        const modal = "{{ abrir_modal }}";
+document.addEventListener('DOMContentLoaded', function(){
 
-        if (modal && typeof abrirModal === 'function') {
+    // Abrir modal automáticamente cuando Django lo indique
+    const modal = "{{ abrir_modal }}";
 
-            abrirModal(modal);
+    if(modal){
+
+        const modalElement = document.getElementById(modal);
+
+        if(modalElement){
+
+            modalElement.style.display = 'flex';
 
         }
 
-    });
+    }
+
+});
+
+
+/* ==========================================
+   TOKEN CSRF
+========================================== */
+
+function getCookie(name){
+
+    let cookieValue = null;
+
+    if(document.cookie && document.cookie !== ''){
+
+        const cookies = document.cookie.split(';');
+
+        for(let i = 0; i < cookies.length; i++){
+
+            const cookie = cookies[i].trim();
+
+            if(cookie.substring(0, name.length + 1) === (name + '=')){
+
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+
+                break;
+            }
+
+        }
+
+    }
+
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+
+/* ==========================================
+   CATEGORIAS
+========================================== */
+
+function editarCategoria(id,nombre){
+
+    document.getElementById('categoria_id').value = id;
+
+    document.getElementById('categoria_nombre').value = nombre;
+
+    document.getElementById(
+        'modalCategoriaEditar'
+    ).style.display = 'flex';
+
+}
+
+
+function cerrarModalCategoria(){
+
+    document.getElementById(
+        'modalCategoriaEditar'
+    ).style.display = 'none';
+
+}
+
+
+const formEditarCategoria =
+document.getElementById('formEditarCategoria');
+
+if(formEditarCategoria){
+
+    formEditarCategoria.addEventListener(
+        'submit',
+        function(e){
+
+            e.preventDefault();
+
+            const id =
+            document.getElementById(
+                'categoria_id'
+            ).value;
+
+            const nombre =
+            document.getElementById(
+                'categoria_nombre'
+            ).value.trim();
+
+            if(nombre === ''){
+
+                Swal.fire(
+                    'Error',
+                    'Debe ingresar un nombre',
+                    'error'
+                );
+
+                return;
+            }
+
+            fetch(
+                `/categoria/editar/${id}/`,
+                {
+
+                    method:'POST',
+
+                    headers:{
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With':'XMLHttpRequest'
+                    },
+
+                    body:new URLSearchParams({
+                        nombre:nombre
+                    })
+
+                }
+            )
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if(data.success){
+
+                    Swal.fire(
+                        'Correcto',
+                        data.message,
+                        'success'
+                    ).then(() => {
+
+                        location.reload();
+
+                    });
+
+                }else{
+
+                    Swal.fire(
+                        'Error',
+                        data.message,
+                        'error'
+                    );
+
+                }
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                Swal.fire(
+                    'Error',
+                    'Ocurrió un error inesperado',
+                    'error'
+                );
+
+            });
+
+        }
+    );
+
+}
+
+
+/* ==========================================
+   MARCAS
+========================================== */
+
+function editarMarca(id,nombre){
+
+    document.getElementById(
+        'marca_id'
+    ).value = id;
+
+    document.getElementById(
+        'marca_nombre'
+    ).value = nombre;
+
+    document.getElementById(
+        'modalMarcaEditar'
+    ).style.display = 'flex';
+
+}
+
+
+function cerrarModalMarca(){
+
+    document.getElementById(
+        'modalMarcaEditar'
+    ).style.display = 'none';
+
+}
+
+
+const formEditarMarca =
+document.getElementById('formEditarMarca');
+
+if(formEditarMarca){
+
+    formEditarMarca.addEventListener(
+        'submit',
+        function(e){
+
+            e.preventDefault();
+
+            const id =
+            document.getElementById(
+                'marca_id'
+            ).value;
+
+            const nombre =
+            document.getElementById(
+                'marca_nombre'
+            ).value.trim();
+
+            if(nombre === ''){
+
+                Swal.fire(
+                    'Error',
+                    'Debe ingresar un nombre',
+                    'error'
+                );
+
+                return;
+            }
+
+            fetch(
+                `/marca/editar/${id}/`,
+                {
+
+                    method:'POST',
+
+                    headers:{
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With':'XMLHttpRequest'
+                    },
+
+                    body:new URLSearchParams({
+                        nombre:nombre
+                    })
+
+                }
+            )
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if(data.success){
+
+                    Swal.fire(
+                        'Correcto',
+                        data.message,
+                        'success'
+                    ).then(() => {
+
+                        location.reload();
+
+                    });
+
+                }else{
+
+                    Swal.fire(
+                        'Error',
+                        data.message,
+                        'error'
+                    );
+
+                }
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                Swal.fire(
+                    'Error',
+                    'Ocurrió un error inesperado',
+                    'error'
+                );
+
+            });
+
+        }
+    );
+
+}
+
 </script>
 
 {% endblock %}
