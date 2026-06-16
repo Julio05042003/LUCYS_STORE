@@ -668,12 +668,17 @@ def cambiar_estado_producto(request, id):
     return JsonResponse({'ok': True})
 
 
+from django.http import JsonResponse
+from django.db.models import Q
+
+
 def buscar_productos(request):
 
-    term = request.GET.get('term', '')
+    term = request.GET.get('term', '').strip()
 
     productos = Producto.objects.filter(
-        nombre__icontains=term,
+        Q(nombre__icontains=term) |
+        Q(codigo__icontains=term),
         estado__nombre__iexact='Activo'
     )[:10]
 
@@ -683,9 +688,10 @@ def buscar_productos(request):
 
         data.append({
             'id': p.producto_id,
-            'text': f"{p.nombre} - ${p.precio_venta}",
+            'text': f"{p.codigo} - {p.nombre} - C$ {p.precio_venta}",
             'precio': float(p.precio_venta),
-            'nombre': p.nombre
+            'nombre': p.nombre,
+            'codigo': p.codigo
         })
 
     return JsonResponse(data, safe=False)

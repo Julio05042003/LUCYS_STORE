@@ -1341,30 +1341,63 @@ MODAL COBRO
         setFechaActual();
     }
 
+   /* ==============================
+   INICIALIZAR SELECT2
+============================== */
+$(document).ready(function () {
+
     /* ==============================
        SELECT2 CLIENTES
     ============================== */
     $('#cliente-select').select2({
+
+        dropdownParent: $('#modalVenta'),
+
         placeholder: "Buscar cliente",
+
         minimumInputLength: 1,
+
+        width: '100%',
+
         ajax: {
+
             url: "{% url 'buscar_clientes' %}",
+
             dataType: 'json',
+
             delay: 250,
-            data: params => ({ term: params.term }),
-            processResults: data => ({ results: data })
+
+            data: function (params) {
+
+                return {
+                    term: params.term
+                };
+            },
+
+            processResults: function (data) {
+
+                console.log("Clientes:", data);
+
+                return {
+                    results: data
+                };
+            }
         }
     });
 
-    /* ==============================
-   SELECT2 PEDIDOS
-============================== */
 
+    /* ==============================
+       SELECT2 PEDIDOS
+    ============================== */
     $('#pedido-select').select2({
+
+        dropdownParent: $('#modalVenta'),
 
         placeholder: "Buscar pedido terminado",
 
         minimumInputLength: 1,
+
+        width: '100%',
 
         ajax: {
 
@@ -1377,108 +1410,135 @@ MODAL COBRO
             data: function (params) {
 
                 return {
-
                     term: params.term
-                }
+                };
             },
 
             processResults: function (data) {
 
-                return {
+                console.log("Pedidos:", data);
 
+                return {
                     results: data
-                }
+                };
             }
         }
     });
 
-    /* ==============================
-   CARGAR PEDIDO COMPLETO
-============================== */
 
-    $('#pedido-select').on('select2:select', function (e) {
-
-        let data = e.params.data;
-        pedidoVinculado = true;
-        carrito = [];
-
-        /* =========================
-           CLIENTE
-        ========================= */
-
-        let option = new Option(
-            data.cliente,
-            data.cliente_id,
-            true,
-            true
-        );
-
-        $('#cliente-select')
-            .append(option)
-            .trigger('change');
-
-        /* =========================
-           BLOQUEAR CLIENTE
-        ========================= */
-
-        $('#cliente-select').prop(
-            'disabled',
-            true
-        );
-
-
-        /* =========================
-           PRODUCTOS
-        ========================= */
-
-        data.productos.forEach(p => {
-
-            carrito.push({
-
-                producto_id: p.producto_id,
-
-                nombre: p.producto,
-
-                precio: parseFloat(p.precio),
-
-                cantidad: parseInt(p.cantidad),
-
-                descuento: 0,
-                /*descuento_total: 0,*/
-
-                bloqueado: true
-            });
-        });
-
-        renderCarrito();
-
-        /* =========================
-           BLOQUEAR AGREGAR PRODUCTOS
-        ========================= */
-
-        $('#producto-select').prop(
-            'disabled',
-            true
-        );
-    });
     /* ==============================
        SELECT2 PRODUCTOS
     ============================== */
     $('#producto-select').select2({
+
+        dropdownParent: $('#modalVenta'),
+
         placeholder: "Buscar producto...",
+
         minimumInputLength: 1,
+
+        width: '100%',
+
         ajax: {
+
             url: "{% url 'buscar_productos' %}",
+
             dataType: 'json',
+
             delay: 250,
-            data: params => ({ term: params.term }),
-            processResults: data => ({ results: data })
+
+            data: function (params) {
+
+                return {
+                    term: params.term
+                };
+            },
+
+            processResults: function (data) {
+
+                console.log("Productos:", data);
+
+                return {
+                    results: data
+                };
+            }
         }
     });
 
-    /* ==============================
-       AGREGAR PRODUCTO
-    ============================== */
+});
+
+
+/* ==============================
+   CARGAR PEDIDO COMPLETO
+============================== */
+$('#pedido-select').on('select2:select', function (e) {
+
+    let data = e.params.data;
+
+    pedidoVinculado = true;
+
+    carrito = [];
+
+    /* =========================
+       CLIENTE
+    ========================= */
+
+    let option = new Option(
+        data.cliente,
+        data.cliente_id,
+        true,
+        true
+    );
+
+    $('#cliente-select')
+        .append(option)
+        .trigger('change');
+
+    /* =========================
+       BLOQUEAR CLIENTE
+    ========================= */
+
+    $('#cliente-select').prop(
+        'disabled',
+        true
+    );
+
+    /* =========================
+       PRODUCTOS
+    ========================= */
+
+    data.productos.forEach(p => {
+
+        carrito.push({
+
+            producto_id: p.producto_id,
+
+            nombre: p.producto,
+
+            precio: parseFloat(p.precio),
+
+            cantidad: parseInt(p.cantidad),
+
+            descuento: 0,
+
+            bloqueado: true
+        });
+
+    });
+
+    renderCarrito();
+
+    /* =========================
+       BLOQUEAR PRODUCTOS
+    ========================= */
+
+    $('#producto-select').prop(
+        'disabled',
+        true
+    );
+
+});
+
     function agregarProductoALista() {
         if (pedidoVinculado) {
 
