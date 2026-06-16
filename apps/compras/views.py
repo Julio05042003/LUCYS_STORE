@@ -19,34 +19,44 @@ from .models import *
 @login_required
 def compras_view(request):
 
+    proveedor_id = request.GET.get('proveedor')
+    fecha = request.GET.get('fecha')
+
     compras = Compra.objects.select_related(
         'proveedor',
         'bodega',
         'empleado'
-    ).all().order_by('-id')
+    ).order_by('-id')
 
-    proveedores = Proveedor.objects.all().order_by(
-        'nombre'
-    )
+    # FILTRO PROVEEDOR
+    if proveedor_id:
+        compras = compras.filter(
+            proveedor_id=proveedor_id
+        )
 
+    # FILTRO FECHA
+    if fecha:
+        compras = compras.filter(
+            fecha__date=fecha
+        )
+
+    proveedores = Proveedor.objects.all().order_by('nombre')
     bodegas = Bodega.objects.all()
-
     estados = Estado.objects.all()
 
     return render(
         request,
         'empleados/compras.html',
         {
-
             'compras': compras,
             'proveedores': proveedores,
             'bodegas': bodegas,
             'estados': estados,
             'today': date.today(),
-
+            'proveedor_seleccionado': proveedor_id,
+            'fecha_seleccionada': fecha,
         }
     )
-
 
 # =========================================
 # CREAR COMPRA
@@ -124,6 +134,46 @@ def crear_compra(request):
 
         })
 
+@login_required
+def detalle_compra(request, compra_id):
+
+    compra = get_object_or_404(
+        Compra.objects.select_related(
+            'proveedor',
+            'bodega',
+            'empleado__user'
+        ),
+        id=compra_id
+    )
+
+    detalles = DetalleCompra.objects.filter(
+        compra=compra
+    ).select_related(
+        'producto'
+    )
+
+    data = {
+        'compra': {
+            'id': compra.id,
+            'proveedor': compra.proveedor.nombre,
+            'bodega': compra.bodega.nombre,
+            'empleado': f'{compra.empleado.user.first_name} {compra.empleado.user.last_name}',
+            'total': str(compra.total),
+        },
+        'productos': [
+            {
+                'nombre': d.producto.nombre,
+                'cantidad': d.cantidad,
+                'precio': str(d.precio),
+                'subtotal': str(
+                    d.cantidad * d.precio
+                )
+            }
+            for d in detalles
+        ]
+    }
+
+    return JsonResponse(data)
 
 # =========================================
 # PROVEEDORES
