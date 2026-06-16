@@ -113,12 +113,13 @@ def vista_ventas(request):
         ventas = ventas.filter(
             empleado__sucursal=empleado.sucursal
         )
+        
 
     # CAJERO SOLO FACTURAS PENDIENTES
     elif rol == 'cajero':
         ventas = ventas.filter(
             empleado__sucursal=empleado.sucursal,
-            estado__nombre='Pendiente'
+            estado__nombre__in=['Pendiente', 'Pagada']
         )
 
     # VENDEDOR SOLO SUS FACTURAS
@@ -128,6 +129,23 @@ def vista_ventas(request):
         )
 
     ventas = ventas.order_by('-fecha')
+    
+    cliente = request.GET.get('cliente')
+    vendedor = request.GET.get('vendedor')
+    desde = request.GET.get('desde')
+    hasta = request.GET.get('hasta')
+
+    if cliente:
+        ventas = ventas.filter(cliente__nombre__icontains=cliente)
+
+    if vendedor:
+        ventas = ventas.filter(empleado__user__first_name__icontains=vendedor)
+
+    if desde:
+        ventas = ventas.filter(fecha__date__gte=desde)
+
+    if hasta:
+        ventas = ventas.filter(fecha__date__lte=hasta)
 
     clientes = Cliente.objects.all()
     metodos = MetodoPago.objects.all()
@@ -611,8 +629,74 @@ def cobrar_venta(request):
 
 
 
+def detalle_venta(request, venta_id):
 
+    venta = get_object_or_404(
+        Venta.objects.select_related(
+            'cliente',
+            'empleado__user',
+            'empleado__sucursal__direccion',
+            'metodo'
+        ),
+        pk=venta_id
+    )
 
+    sucursal = venta.empleado.sucursal
+    direccion = sucursal.direccion
 
+    items = []
+    subtotal = Decimal('0')
+    total_descuento = Decimal('0')
 
+    for d in venta.detalleventa_set.select_related('producto').all():
+
+        precio = Decimal(str(d.precio or 0))
+        cantidad = Decimal(str(d.cantidad or 0))
+        descuento = Decimal(str(d.descuento or 0))
+
+        item_total = precio * cantidad
+        item_descuento = descuento
+
+        subtotal += item_total
+        total_descuento += item_descuento
+
+        items.append({
+            "producto": d.producto.nombre,
+            "cantidad": int(cantidad),
+            "precio": float(precio),
+            "descuento": float(item_descuento),
+            "total": float(item_total - item_descuento)
+        })
+
+    user = venta.empleado.user
+    telefono = venta.cliente.telefonocliente_set.filter(estado__nombre="Activo").first()
+
+    data = {
+        "numero": venta.numero_factura or "",
+        "fecha": venta.fecha.strftime("%d/%m/%Y %H:%M") if venta.fecha else "",
+        "cliente": str(venta.cliente) if venta.cliente else "Sin cliente",
+        "telefono_cliente": telefono.numero if telefono else "",
+        "vendedor": (
+            f"{user.first_name} {user.last_name}".strip()
+            if user and (user.first_name or user.last_name)
+            else user.username if user else "Sin nombre"
+        ),
+
+        "metodo": venta.metodo.nombre if venta.metodo else "",
+
+        # 🔥 EVITA ERRORES DE JS
+        "subtotal": float(subtotal or 0),
+        "descuento": float(total_descuento or 0),
+        "total": float(venta.total or 0),
+
+        "direccion_sucursal": (
+            f"{direccion.detalle}, {direccion.ciudad}, "
+            f"{direccion.departamento}, {direccion.pais}"
+            if direccion else ""
+        ),
+
+        "items": items
+    }
+
+    return JsonResponse(data, safe=True)
 

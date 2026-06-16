@@ -282,6 +282,36 @@
         border-radius: 12px;
     }
 
+    @media print {
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #ticket-imprimible,
+    #ticket-imprimible * {
+        visibility: visible !important;
+    }
+
+    #ticket-imprimible {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        background: white !important;
+    }
+
+    .modal-footer {
+        display: none !important;
+    }
+
+    img {
+        max-width: 100%;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
     /* ==========================================
    RESPONSIVE MODAL COBRO
 ========================================== */
@@ -394,24 +424,34 @@
             </div>
 
             <div class="filters-card">
-                <div class="field">
-                    <label>Cliente:</label>
-                    <input type="text" placeholder="Nombre del cliente...">
-                </div>
-                <div class="field">
-                    <label>Vendedor:</label>
-                    <input type="text" placeholder="Nombre del vendedor...">
-                </div>
-                <div class="field">
-                    <label>Desde:</label>
-                    <input type="date">
-                </div>
-                <div class="field">
-                    <label>Hasta:</label>
-                    <input type="date">
-                </div>
-                <button class="btn-clear">Limpiar</button>
+                <form method="GET" class="filters-card">
+
+    <div class="field">
+        <label>Cliente:</label>
+        <input type="text" name="cliente" placeholder="Nombre del cliente...">
+    </div>
+
+    <div class="field">
+        <label>Vendedor:</label>
+        <input type="text" name="vendedor" placeholder="Nombre del vendedor...">
+    </div>
+
+    <div class="field">
+        <label>Desde:</label>
+        <input type="date" name="desde">
+    </div>
+
+    <div class="field">
+        <label>Hasta:</label>
+        <input type="date" name="hasta">
+    </div>
+
+    <button type="submit" class="btn-clear">Filtrar</button>
+
+</form>
             </div>
+
+
             {% if empleado.rol.nombre == "Vendedor" %}
             <div class="action-footer">
                 <button class="btn-primary" onclick="abrirModalVenta()">
@@ -460,7 +500,7 @@
                                 <div class="row-actions">
 
                                     <!-- TODOS -->
-                                    <button class="btn-row view" onclick="verVenta('{{ v.venta_id }}')">
+                                    <button class="btn-row view" onclick="abrirTicket('{{ v.venta_id }}')">
                                         <i class="fas fa-eye"></i>
                                     </button>
 
@@ -487,7 +527,7 @@
                                     <!-- CAJERO -->
                                     {% if empleado.rol.nombre == "Cajero" %}
 
-                                    {% if v.estado.nombre == "Pendiente" %}
+                                    {% if v.estado.nombre == "Pendiente"%}
                                     <button class="btn-row edit"
                                         onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}')">
                                         <i class="fas fa-cash-register"></i>
@@ -906,73 +946,206 @@ MODAL COBRO
 
 </div>
 
+<style>
+@media print {
 
+    body * {
+        visibility: hidden;
+    }
+
+    #ticket-imprimible, #ticket-imprimible * {
+        visibility: visible;
+    }
+
+    #ticket-imprimible {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        font-size: 12px;
+    }
+
+    .modal-footer {
+        display: none !important;
+    }
+}
+
+.ticket-header,
+.ticket-row {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    gap: 4px;
+}
+
+/* columnas controladas */
+.col-producto {
+    flex: 3;
+    text-align: left;
+}
+
+.col-cant {
+    flex: 1;
+    text-align: center;
+}
+
+.col-precio {
+    flex: 1.5;
+    text-align: right;
+}
+
+.col-total {
+    flex: 1.5;
+    text-align: right;
+}
+
+/* separador visual */
+.ticket-header {
+    font-weight: bold;
+    border-bottom: 1px dashed #000;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+}
+.col-cant {
+    min-width: 30px;
+}
+
+.col-precio, .col-total {
+    min-width: 70px;
+}
+</style>
 <!--Recibo digital-->
+<!-- RECIBO DIGITAL -->
 <div id="modalTicket" class="modal-overlay">
-    <div class="modal-content" style="max-width: 350px; background: white; border-radius: 0;">
-        <div class="ticket-container" id="ticket-imprimible"
+
+    <div class="modal-content"
+        style="max-width: 350px; background: white; border-radius: 0;">
+
+        <!-- TICKET -->
+        <div id="ticket-imprimible"
             style="padding: 10px; font-family: 'Courier New', Courier, monospace;">
-            <div class="ticket-header" style="text-align: center;">
-                <img src="img/logo_lucys.jpeg" alt="Logo" style="width: 70px; border-radius: 50%;">
-                <h2 style="margin: 5px 0; font-size: 1.2rem;">LUCY'S BOUTIQUE</h2>
-                <p style="font-size: 0.8rem; margin: 0;">RUC: J0310000000001</p>
-                <p style="font-size: 0.8rem; margin: 0;">Managua, Nicaragua</p>
-                <h3 style="margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px;">FACTURA DE VENTA</h3>
+
+            <!-- HEADER -->
+            <div style="text-align: center;">
+
+                <img src="{% static 'img/logo_lucys.jpeg' %}" alt="Logo" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
+
+                <h2 style="margin: 5px 0; font-size: 1.2rem;">
+                    LUCY'STORE
+                </h2>
+
+                <p style="font-size: 0.8rem; margin: 0;">
+                    RUC: J0310000000001
+                </p>
+
+                <!-- DIRECCIÓN SUCURSAL -->
+                <p style="font-size: 0.8rem; margin: 0;">
+                    <span id="t_direccion">---</span>
+                </p>
+
+                <h3 style="margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px;">
+                    FACTURA DE VENTA
+                </h3>
             </div>
 
-            <div class="ticket-info" style="font-size: 0.85rem; margin-top: 10px;">
-                <p><strong>No. Factura:</strong> <span id="t_folio">#V-1002</span></p>
-                <p><strong>Fecha:</strong> <span id="t_fecha">23/04/2026</span></p>
-                <p><strong>Cliente:</strong> <span id="t_cliente">Público General</span></p>
-                <p><strong>Atendido por:</strong> <span id="t_vendedor">Admin</span></p>
+            <!-- INFO GENERAL -->
+            <div style="font-size: 0.85rem; margin-top: 10px;">
+
+                <p><strong>No. Factura:</strong>
+                    <span id="t_folio">---</span>
+                </p>
+
+                <p><strong>Fecha:</strong>
+                    <span id="t_fecha">---</span>
+                </p>
+
+                <p><strong>Cliente:</strong>
+                    <span id="t_cliente">---</span>
+                </p>
+
+                <p><strong>Atendido por:</strong>
+                    <span id="t_vendedor">---</span>
+                </p>
             </div>
 
-            <div class="ticket-divider" style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+            <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
 
-            <div class="ticket-body" style="font-size: 0.85rem;">
-                <div class="ticket-row" style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>Descripción</span>
-                    <span>Cant</span>
-                    <span>Total</span>
-                </div>
-
-                <div id="ticket-items-lista">
-                    <div class="ticket-row" style="display: flex; justify-content: space-between; margin-top: 5px;">
-                        <span>Blusa Seda Rosa</span>
-                        <span>3</span>
-                        <span>$45.00</span>
-                    </div>
-                </div>
-
-                <div class="ticket-divider" style="border-top: 1px dashed #000; margin: 10px 0;"></div>
-
-                <div class="ticket-row"><span>Subtotal:</span> <span>$45.00</span></div>
-                <div class="ticket-row"><span>Descuento:</span> <span>-$0.00</span></div>
-                <div class="ticket-row"
-                    style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; margin-top: 5px;">
-                    <span>TOTAL:</span> <span>$45.00</span>
-                </div>
-                <div class="ticket-divider" style="border-top: 1px dashed #000; margin: 10px 0;"></div>
-                <div class="ticket-row"><span>Método Pago:</span> <span id="t_metodo">Efectivo</span></div>
+            <!-- HEADER ITEMS -->
+            <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                <span>Producto</span>
+                <span>Cant</span>
+                <span>Prec</span>
+                <span>Total</span>
             </div>
 
-            <div class="ticket-footer" style="text-align: center; margin-top: 15px; font-size: 0.8rem;">
+            <!-- ITEMS -->
+            <div id="ticket-items-lista"></div>
+
+            <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+
+            <!-- TOTALES -->
+            <div style="font-size: 0.85rem;">
+
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Subtotal:</span>
+                    <span id="t_subtotal">$0.00</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Descuento:</span>
+                    <span id="t_descuento">-$0.00</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                    font-weight:bold; font-size: 1.1rem; margin-top: 5px;">
+
+                    <span>TOTAL:</span>
+                    <span id="t_total">$0.00</span>
+                </div>
+            </div>
+
+            <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+
+            <!-- MÉTODO DE PAGO -->
+            <div style="font-size: 0.85rem;">
+                <span>Método Pago:</span>
+                <span id="t_metodo">---</span>
+            </div>
+
+            <!-- FOOTER -->
+            <div style="text-align:center; margin-top:15px; font-size:0.8rem;">
                 <p>¡Gracias por tu compra!</p>
                 <p>Síguenos en nuestras redes</p>
             </div>
+
         </div>
 
-        <div class="modal-footer" style="background: white; gap: 5px; flex-direction: column;">
-            <button class="btn-primary" onclick="window.print()" style="width: 100%;">
-                <i class="fas fa-print"></i> Imprimir Factura
+        <!-- BOTONES -->
+        <div class="modal-footer"
+            style="display:flex; flex-direction:column; gap:5px; background:white;">
+
+            {% if empleado.rol.nombre == "Cajero" %}
+
+    <button class="btn-primary" onclick="imprimirTicket()" style="width:100%;">
+        <i class="fas fa-print"></i> Imprimir Factura
+    </button>
+
+    <button class="btn-secondary"
+        onclick="enviarVentaWhatsApp()"
+        style="width:100%; background:#25d366; border:none;">
+        <i class="fab fa-whatsapp"></i> Enviar Comprobante
+    </button>
+
+    {% endif %}
+
+            <button class="btn-clear"
+                onclick="cerrarModal('modalTicket')"
+                style="width:100%;">
+                Finalizar y Salir
             </button>
-            <button class="btn-secondary" onclick="enviarVentaWhatsApp()"
-                style="width: 100%; background: #25d366; border: none;">
-                <i class="fab fa-whatsapp"></i> Enviar Comprobante
-            </button>
-            <button class="btn-clear" onclick="cerrarModal('modalTicket')" style="width: 100%;">Finalizar y
-                Salir</button>
+
         </div>
+
     </div>
 </div>
 
@@ -1136,42 +1309,10 @@ MODAL COBRO
 </div>
 
 
-<!--ver ventas-->
-
-<div id="modalVerVenta" class="modal-overlay">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-file-invoice"></i> Detalle de Venta #<span id="det_num_venta">001</span></h3>
-            <button class="close-btn" onclick="cerrarModal('modalVerVenta')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="info-venta-header">
-                <p><strong>Fecha:</strong> <span id="det_fecha">20/10/2023</span></p>
-                <p><strong>Cliente:</strong> <span id="det_cliente">Consumidor Final</span></p>
-                <p><strong>Vendedor:</strong> <span id="det_vendedor">Lucy</span></p>
-            </div>
-            <table class="table-detalle">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cant.</th>
-                        <th>Precio</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="lista_detalle_venta">
-                </tbody>
-            </table>
-            <div class="total-area-detalle">
-                <h4>Total: <span id="det_total">$0.00</span></h4>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 
     
@@ -1765,6 +1906,138 @@ MODAL COBRO
 
         contenedor.appendChild(fila);
     }
+
+    function abrirTicket(ventaId) {
+
+    if (!ventaId) {
+        console.error("ventaId vacío");
+        return;
+    }
+
+    fetch(`/ventas/detalle/${ventaId}/`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Error HTTP: " + res.status);
+            }
+            return res.json();
+        })
+        .then(data => {
+            window.dataGlobal = data;
+
+            // 🔥 FUNCIÓN SEGURA PARA EVITAR ERRORES NULL
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerText = value ?? '';
+                }
+            };
+
+            // =========================
+            // INFO GENERAL
+            // =========================
+            setText("t_folio", data.numero);
+            setText("t_fecha", data.fecha);
+            setText("t_cliente", data.cliente);
+            setText("t_vendedor", data.vendedor);
+            setText("t_metodo", data.metodo);
+            setText("t_direccion", data.direccion_sucursal);
+
+            // =========================
+            // ITEMS
+            // =========================
+            const contenedor = document.getElementById("ticket-items-lista");
+
+            if (contenedor) {
+                contenedor.innerHTML = "";
+
+                data.items.forEach(item => {
+                    contenedor.innerHTML += `
+                        <div class="ticket-row" style="display:flex; justify-content:space-between; margin-top:5px;">
+                            <span>${item.producto}</span>
+                            <span>${item.cantidad}</span>
+                            <span>$${item.precio.toFixed(2)}</span>
+                            <span>$${item.total.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // =========================
+            // TOTALES
+            // =========================
+            setText("t_subtotal", `$${data.subtotal.toFixed(2)}`);
+            setText("t_descuento", `-$${data.descuento.toFixed(2)}`);
+            setText("t_total", `$${data.total.toFixed(2)}`);
+
+            // =========================
+            // ABRIR MODAL
+            // =========================
+            const modal = document.getElementById("modalTicket");
+            if (modal) {
+                modal.style.display = "flex";
+            }
+
+        })
+        .catch(err => {
+            console.error("Error al cargar ticket:", err);
+        });
+}
+
+function imprimirTicket() {
+    const contenido = document.getElementById("ticket-imprimible").innerHTML;
+
+    const ventana = window.open('', '', 'width=400,height=600');
+
+    ventana.document.write(`
+        <html>
+        <head>
+            <title>Ticket</title>
+            <style>
+                body {
+                    font-family: monospace;
+                    width: 80mm;
+                }
+            </style>
+        </head>
+        <body onload="window.print(); window.close();">
+            ${contenido}
+        </body>
+        </html>
+    `);
+
+    ventana.document.close();
+}
+
+function enviarVentaWhatsApp() {
+
+    const telefono = window.dataGlobal.telefono_cliente;
+
+    if (!telefono) {
+        alert("No hay número");
+        return;
+    }
+
+    const ticket = document.getElementById("ticket-imprimible");
+
+    html2canvas(ticket).then(canvas => {
+
+        const img = canvas.toDataURL("image/png");
+
+        // 👇 descargar imagen automáticamente
+        const link = document.createElement("a");
+        link.href = img;
+        link.download = "ticket.png";
+        link.click();
+
+        // 👇 abrir WhatsApp con mensaje
+        const mensaje = "Aquí está su ticket de compra";
+
+        const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+        window.open(url, "_blank");
+    });
+}
+
 </script>
 
 
