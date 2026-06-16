@@ -4,6 +4,8 @@ from .views import *
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('password-reset/',password_reset_request,name='password_reset'),
+    path('password-reset/<int:user_id>/<str:token>/',password_reset_confirm,name='password_reset_confirm'),
     path('', index_empleados, name='index_empleados'),
     path('registro/', registro_cliente_view, name='registro_cliente'),
     path('activar/<int:uid>/<str:token>/', activar_cuenta, name='activar_cuenta'),
@@ -17,7 +19,7 @@ urlpatterns = [
     path('usuarios/crear/', crear_usuario, name='crear_usuario'),
     path('bloquear/<int:user_id>/', bloquear_usuario, name='bloquear_usuario'),
     path('desbloquear/<int:user_id>/', desbloquear_usuario, name='desbloquear_usuario'),
-    path('editar/', editar_usuario, name='editar_usuario'),
+    path('usuarios/editar/', editar_usuario, name='editar_usuario'),
     path('ubicaciones/', ubicaciones, name='ubicaciones'),
     path('crear-sucursal/', crear_sucursal, name='crear_sucursal'),
     path('editar-sucursal/<int:id>/', editar_sucursal, name='editar_sucursal'),

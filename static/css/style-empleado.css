@@ -47,6 +47,7 @@ body{
 
     position: relative;
     z-index: 1000;
+    flex-wrap: wrap;
 }
 
 .logo-area{
@@ -62,16 +63,18 @@ body{
 
 .status-labels{
     display: flex;
-    gap: 20px;
+    gap: 15px;
     align-items: center;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .status-labels span{
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: .9rem;
+    font-size: .85rem;
+    white-space: nowrap;
 }
 
 /* =========================================
@@ -93,8 +96,9 @@ body{
 ========================================= */
 
 .sidebar {
-    width: 240px;
-    min-width: 240px;
+    width: 260px;
+    min-width: 260px;
+    max-width: 80vw;
 
     background-color: var(--blanco);
     border-right: 1px solid #eee;
@@ -168,12 +172,10 @@ body{
 /* Área de Contenido */
 .content {
     flex: 1;
-
     overflow-y: auto;
     overflow-x: hidden;
-
-    padding: 25px;
-
+    padding: clamp(10px, 2vw, 25px);
+    width: 100%;
     height: 100%;
 }
 
@@ -282,20 +284,23 @@ body{
    RESPONSIVE PARA MÓVILES
 ========================================= */
 
-@media (max-width: 768px) {
+@media (max-width: 768px){
 
     .menu-toggle{
         display: block;
     }
 
+    .system-name{
+        font-size: 1rem;
+    }
+
     .sidebar{
         position: fixed;
-
         top: 60px;
-        left: -240px;
-
+        left: -100%;
+        width: 260px;
+        max-width: 80vw;
         height: calc(100vh - 60px);
-
         z-index: 999;
     }
 
@@ -309,14 +314,67 @@ body{
 
     .content{
         padding: 15px;
+        width: 100%;
     }
 
-    .big-logo-hero {
+    .big-logo-hero{
         width: 95%;
         height: auto;
     }
 
-    .welcome-text-section h1 {
+    .welcome-text-section h1{
         font-size: 1.2rem;
+    }
+
+    .welcome-text-section p{
+        font-size: .9rem;
+    }
+}
+
+@media (max-width: 1024px){
+
+    .status-labels{
+        gap: 10px;
+    }
+
+    .status-labels span{
+        font-size: .8rem;
+    }
+
+    .sidebar{
+        width: 220px;
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 480px){
+
+    .topbar{
+        padding: 0 10px;
+    }
+
+    .system-name{
+        font-size: .9rem;
+    }
+
+    .content{
+        padding: 10px;
+    }
+
+    .sidebar li a{
+        padding: 14px 15px;
+        font-size: .9rem;
+    }
+
+    .sidebar li i{
+        margin-right: 10px;
+    }
+
+    .welcome-text-section h1{
+        font-size: 1rem;
+    }
+
+    .welcome-text-section p{
+        font-size: .85rem;
     }
 }

@@ -14,19 +14,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.pedidos.models import Pedido, DetallePedido
 from django.db.models.functions import Cast
-
-
-# ======================================================
-# BUSCAR PEDIDOS TERMINADOS
-# ======================================================
-
 from django.http import JsonResponse
 from django.db.models import Q
 
 def buscar_pedidos(request):
-
     try:
-
         term = request.GET.get('term', '').strip()
 
         pedidos = (
@@ -115,9 +107,7 @@ def vista_ventas(request):
         'apertura'
     )
 
-    # =========================
     # GERENTE / ADMINISTRADOR
-    # =========================
     if rol in ['gerente', 'administrador']:
 
         ventas = ventas.filter(
@@ -183,15 +173,11 @@ def anular_venta(request, venta_id):
         venta_id=venta_id
     )
 
-    # =========================================================
     # SOLO POST
-    # =========================================================
     if request.method != 'POST':
         return redirect('ventas')
 
-    # =========================================================
     # VALIDACIONES DE PERMISOS
-    # =========================================================
     if rol not in ['gerente', 'administrador']:
         messages.error(request, 'No tienes permisos para anular ventas.')
         return redirect('ventas')
@@ -204,9 +190,7 @@ def anular_venta(request, venta_id):
         messages.error(request, 'La factura ya está anulada.')
         return redirect('ventas')
 
-    # =========================================================
     # SOLO SI ESTÁ PAGADA AFECTA CAJA
-    # =========================================================
     if venta.estado.nombre == 'Pagada':
 
         apertura = venta.apertura
@@ -219,9 +203,7 @@ def anular_venta(request, venta_id):
             messages.error(request, 'La caja está cerrada.')
             return redirect('ventas')
 
-        # =========================================================
         # SALDO REAL DE CAJA (INGRESOS - EGRESOS)
-        # =========================================================
         ingresos_cordoba = MovimientoCaja.objects.filter(
             apertura=apertura,
             moneda='CORDOBA',
@@ -287,9 +269,7 @@ def anular_venta(request, venta_id):
             m.monto for m in movimientos_factura if m.moneda == 'DOLAR'
         )
 
-        # =========================================================
         # VALIDACIÓN DE CAJA
-        # =========================================================
         if total_factura_cordoba > saldo_cordoba:
             messages.error(request, 'No hay suficiente efectivo en córdobas para anular esta factura.')
             return redirect('ventas')
@@ -298,9 +278,7 @@ def anular_venta(request, venta_id):
             messages.error(request, 'No hay suficiente efectivo en dólares para anular esta factura.')
             return redirect('ventas')
 
-        # =========================================================
         # REVERSA (EGRESO)
-        # =========================================================
         if total_factura_cordoba > 0:
             MovimientoCaja.objects.create(
                 apertura=apertura,
@@ -319,17 +297,13 @@ def anular_venta(request, venta_id):
                 descripcion=f'ANULACIÓN FACTURA #{venta.numero_factura}'
             )
 
-    # =========================================================
     # CANCELAR PEDIDO
-    # =========================================================
     if venta.pedido:
         estado_cancelado = Estado.objects.get(nombre='Cancelado')
         venta.pedido.estado = estado_cancelado
         venta.pedido.save()
 
-    # =========================================================
     # ANULAR FACTURA
-    # =========================================================
     estado_anulada = Estado.objects.get(nombre='Anulada')
     venta.estado = estado_anulada
     venta.save()
@@ -517,10 +491,7 @@ def cobrar_venta(request):
             total_tarjeta
         )
 
-        # =========================================
         # VALIDAR TOTAL
-        # =========================================
-
         if total_pagado < venta.total:
 
             messages.error(

@@ -27,54 +27,40 @@ body{
     border-radius:12px;
 }
 
-/* ALERTAS */
-.alert-custom{
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:15px;
-    font-size:14px;
-    font-weight:500;
-    opacity:1;
-    transition:opacity .5s ease;
+/* BASE PARA MENSAJES DJANGO */
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity .5s ease;
 }
 
-.alert-danger{
-    background:#ffe5e5;
-    color:#b30000;
-    border:1px solid #ffb3b3;
+/* SUCCESS */
+.alert-success {
+    background: #22c55e;
+    color: white;
 }
 
-.ocultar-alerta{
-    opacity:0;
+/* ERROR */
+.alert-error,
+.alert-danger {
+    background: #ffe5e5;
+    color: #b30000;
+    border: 1px solid #ffb3b3;
 }
 
-/* ALERTAS GLOBALES */
-.global-alert{
-    position:fixed;
-    top:20px;
-    right:20px;
-    z-index:9999;
-
-    padding:14px 18px;
-
-    border-radius:10px;
-
-    display:flex;
-    align-items:center;
-    gap:10px;
-
-    font-size:14px;
-    font-weight:600;
-
-    box-shadow:0 4px 12px rgba(0,0,0,.15);
-
-    animation:slideIn .3s ease;
-    transition:opacity .5s ease;
+/* INFO */
+.alert-info {
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 
-.success-alert{
-    background:#22c55e;
-    color:white;
+/* WARNING */
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
 }
 
 @keyframes slideIn{
@@ -302,30 +288,250 @@ body{
     margin-bottom:18px;
     color:#1f2937;
 }
+.btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+
+    border: 1px solid #e5e7eb;
+
+    padding: 12px 18px;
+    border-radius: 12px;
+
+    font-weight: 600;
+    font-size: 0.95rem;
+
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    transition: all 0.25s ease;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Hover */
+.btn-cancel:hover {
+    background: #e5e7eb;
+    color: #111827;
+
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Click */
+.btn-cancel:active {
+    transform: scale(0.97);
+}
+
+/* Focus accesible */
+.btn-cancel:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.4);
+}
+
+/* =========================
+   RESPONSIVE CAJA / INVENTARIO
+========================= */
+
+/* Tablets grandes */
+@media (max-width: 1200px) {
+
+    .search-box {
+        min-width: 260px;
+    }
+
+    .table-scroll {
+        max-height: 450px;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+
+    .caja-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .caja-title {
+        font-size: 32px;
+    }
+
+    .caja-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-box {
+        min-width: 100%;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 14px;
+        font-size: 13px;
+    }
+}
+
+/* Móviles grandes */
+@media (max-width: 768px) {
+
+    /* HEADER */
+    .caja-header {
+        text-align: center;
+        align-items: center;
+    }
+
+    .caja-title {
+        font-size: 26px;
+    }
+
+    /* STATS */
+    .caja-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 18px;
+    }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 24px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    /* TABLA */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table-modern {
+        min-width: 700px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 12px;
+    }
+
+    /* BUSCADOR */
+    .search-box {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    /* TÍTULOS */
+    .section-title {
+        font-size: 20px;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 576px) {
+
+    .inventory-wrapper {
+        padding: 15px;
+    }
+
+    .caja-title {
+        font-size: 22px;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .table-modern {
+        min-width: 600px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .tipo-cambio {
+        font-size: 16px;
+    }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+
+    .caja-title {
+        font-size: 18px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .search-box {
+        padding: 10px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+}
+
+/* Mejora scroll táctil */
+.table-scroll,
+.table-container {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Evitar desbordes */
+html, body {
+    overflow-x: hidden;
+}
 
 </style>
 
 <div class="inventory-wrapper">
 
-    {% if messages %}
-
-        {% for message in messages %}
-
-            {% if message.tags == 'success' %}
-
-                <div class="global-alert success-alert">
-
-                    <i class="fas fa-check-circle"></i>
-
-                    {{ message }}
-
-                </div>
-
-            {% endif %}
-
-        {% endfor %}
-
-    {% endif %}
 
     <!-- HEADER -->
     <div class="caja-header">
@@ -358,6 +564,20 @@ body{
         </button>
 
     </div>
+
+    {% if messages %}
+    <div class="alert-container">
+
+        {% for message in messages %}
+
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+    </div>
+    {% endif %}
 
     <!-- CORDOBAS -->
     <div class="section-title">
@@ -1297,36 +1517,25 @@ if (abrirModalCaja === "true") {
 setTimeout(() => {
 
     const alertas =
-        document.querySelectorAll('.alert-custom');
+        document.querySelectorAll('.alert, .alert-success, .alert-danger, .alert-error, .alert-info');
 
     alertas.forEach(alerta => {
 
-        alerta.classList.add('ocultar-alerta');
-
-        setTimeout(() => {
-
-            alerta.remove();
-
-        }, 500);
-
-    });
-
-    const globales =
-        document.querySelectorAll('.global-alert');
-
-    globales.forEach(alerta => {
-
+        alerta.style.transition = "opacity .5s ease";
         alerta.style.opacity = "0";
 
         setTimeout(() => {
-
             alerta.remove();
-
         }, 500);
 
     });
 
 }, 3000);
+
+document.querySelector('.modal-content')
+.addEventListener('click', function(e){
+    e.stopPropagation();
+});
 
 </script>
 

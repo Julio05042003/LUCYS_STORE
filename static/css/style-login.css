@@ -127,3 +127,56 @@ h2 {
         padding: 14px;
     }
 }
+
+.info-text {
+        text-align: center;
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-container input {
+        width: 100%;
+        padding-right: 45px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+        transition: .3s;
+    }
+
+    .toggle-password:hover {
+        color: #f58aa0;
+    }
+
+    .password-rules {
+        background: #fff7f9;
+        border: 1px solid #ffd6df;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .password-rules h4 {
+        margin-bottom: 10px;
+        color: #444;
+    }
+
+    .password-rules ul {
+        padding-left: 18px;
+        color: #666;
+    }
+
+    .password-rules li {
+        margin-bottom: 5px;
+    }

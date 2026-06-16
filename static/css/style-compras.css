@@ -44,3 +44,131 @@ body {
     padding: 8px;
     border-bottom: 1px solid #f1f1f1;
 }
+
+/* =========================================
+   RESPONSIVE GENERAL
+========================================= */
+
+/* Tablets */
+@media (max-width: 1024px) {
+
+    .detalle-compra-container {
+        padding: 12px;
+    }
+
+}
+
+/* Tablets y móviles */
+@media (max-width: 768px) {
+
+    body {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .detalle-compra-container {
+        padding: 12px;
+        margin-top: 8px;
+    }
+
+    .busqueda-producto-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .busqueda-producto-row input,
+    .busqueda-producto-row select,
+    .busqueda-producto-row button {
+        width: 100%;
+    }
+
+    .badge-recibido {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* Scroll horizontal para tablas */
+    .tabla-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    #lista-detalles-compra {
+        min-width: 700px;
+        width: 100%;
+    }
+}
+
+/* Celulares */
+@media (max-width: 576px) {
+
+    .detalle-compra-container {
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .badge-recibido {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+
+    .busqueda-producto-row input {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    #lista-detalles-compra tr td {
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    #lista-detalles-compra {
+        min-width: 600px;
+    }
+}
+
+/* Celulares muy pequeños */
+@media (max-width: 380px) {
+
+    .detalle-compra-container {
+        padding: 8px;
+    }
+
+    .badge-recibido {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+    }
+
+    .busqueda-producto-row input {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    #lista-detalles-compra tr td {
+        font-size: 12px;
+        padding: 5px;
+    }
+
+    #lista-detalles-compra {
+        min-width: 550px;
+    }
+}
+
+/* Pantallas grandes */
+@media (min-width: 1600px) {
+
+    .detalle-compra-container {
+        padding: 20px;
+    }
+
+    .badge-recibido {
+        font-size: 0.85rem;
+    }
+
+    #lista-detalles-compra tr td {
+        padding: 10px;
+    }
+}

@@ -226,6 +226,233 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     color: white;
 }
 
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+/* Pantallas grandes */
+@media (min-width: 1600px) {
+
+    .inventory-wrapper{
+        max-width: 1600px;
+        margin: auto;
+    }
+
+    .filters-card{
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Tablets horizontales */
+@media (max-width: 1200px){
+
+    .filters-card{
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .buttons{
+        grid-column: span 2;
+        justify-content: flex-end;
+    }
+
+    .kardex-table{
+        min-width: 900px;
+    }
+
+    .table-container{
+        overflow-x: auto;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px){
+
+    .inventory-wrapper{
+        padding: 15px;
+    }
+
+    .header-section h2{
+        font-size: 26px;
+    }
+
+    .filters-card{
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .buttons{
+        grid-column: auto;
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .buttons .btn-primary,
+    .buttons .btn-secondary{
+        flex: 1;
+        text-align: center;
+    }
+
+    .table-container{
+        overflow-x: auto;
+    }
+
+    .kardex-table{
+        min-width: 850px;
+    }
+}
+
+/* Móviles grandes */
+@media (max-width: 768px){
+
+    .inventory-wrapper{
+        padding: 12px;
+    }
+
+    .header-section{
+        text-align: center;
+    }
+
+    .header-section h2{
+        font-size: 24px;
+        line-height: 1.3;
+    }
+
+    .filters-card{
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .field input,
+    .field select{
+        font-size: 14px;
+        min-height: 45px;
+    }
+
+    .buttons{
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-primary,
+    .btn-secondary{
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .table-container{
+        overflow-x: auto;
+        border-radius: 12px;
+    }
+
+    .kardex-table{
+        min-width: 800px;
+    }
+
+    .producto-box{
+        min-width: 180px;
+    }
+
+    .producto-box img{
+        width: 45px;
+        height: 45px;
+    }
+
+    .badge-activo,
+    .badge-inactivo{
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .btn-kardex{
+        padding: 7px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 576px){
+
+    .inventory-wrapper{
+        padding: 10px;
+    }
+
+    .header-section h2{
+        font-size: 22px;
+    }
+
+    .filters-card{
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .field label{
+        font-size: 12px;
+    }
+
+    .field input,
+    .field select{
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .producto-box{
+        gap: 8px;
+    }
+
+    .producto-box img{
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    .btn-primary,
+    .btn-secondary{
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .btn-kardex{
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px){
+
+    .header-section h2{
+        font-size: 18px;
+    }
+
+    .filters-card{
+        padding: 10px;
+    }
+
+    .field input,
+    .field select{
+        font-size: 12px;
+    }
+
+    .btn-primary,
+    .btn-secondary{
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .badge-activo,
+    .badge-inactivo{
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .producto-box img{
+        width: 35px;
+        height: 35px;
+    }
+}
+
 </style>
 
 <div class="inventory-wrapper">

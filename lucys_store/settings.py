@@ -145,8 +145,8 @@ EMAIL_PORT = 587
 
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'julio.hernandezm05042003@gmail.com'
+EMAIL_HOST_USER = 'lucys.store2016@gmail.com'
 
-EMAIL_HOST_PASSWORD = 'wymo ftrc raej qkio'
+EMAIL_HOST_PASSWORD = 'qgev xtgz gfog sdtw'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

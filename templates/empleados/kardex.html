@@ -112,7 +112,8 @@
     <!-- 📊 TABLA KARDEX -->
     <div class="table-container">
 
-        <table class="table-modern kardex-table">
+        <div class="table-scroll">
+            <table class="table-modern kardex-table">
 
             <thead>
 
@@ -238,6 +239,7 @@
             </tbody>
 
         </table>
+        </div>
 
     </div>
 
@@ -344,30 +346,10 @@
 
                     <label>Motivo</label>
 
-                    <select name="motivo" required>
+                    <select name="motivo" id="motivoMovimiento" required>
 
                         <option value="">
                             Seleccione
-                        </option>
-
-                        <option value="PRODUCTO_DAÑADO">
-                            Producto Dañado
-                        </option>
-
-                        <option value="PERDIDA">
-                            Pérdida
-                        </option>
-
-                        <option value="REGALIA">
-                            Regalía
-                        </option>
-
-                        <option value="AJUSTE_MANUAL">
-                            Ajuste Manual
-                        </option>
-
-                        <option value="ERROR_INVENTARIO">
-                            Error de Inventario
                         </option>
 
                     </select>
@@ -626,6 +608,52 @@
 <!-- JAVASCRIPT -->
 
 <script>
+const tipoMovimiento = document.getElementById('tipoMovimiento');
+const motivoMovimiento = document.getElementById('motivoMovimiento');
+
+const motivos = {
+
+    ENTRADA: [
+        { value: 'COMPRA', text: 'Compra de Inventario' },
+        { value: 'DEVOLUCION_CLIENTE', text: 'Devolución de Cliente' },
+        { value: 'AJUSTE_POSITIVO', text: 'Ajuste por Error' },
+        { value: 'INVENTARIO_INICIAL', text: 'Inventario Inicial' },
+        { value: 'TRANSFERENCIA_RECIBIDA', text: 'Transferencia Recibida' }
+    ],
+
+    SALIDA: [
+        { value: 'PRODUCTO_DANADO', text: 'Producto Dañado' },
+        { value: 'PERDIDA', text: 'Pérdida' },
+        { value: 'REGALIA', text: 'Regalía' },
+        { value: 'AJUSTE_MANUAL', text: 'Ajuste Manual' },
+        { value: 'ERROR_INVENTARIO', text: 'Error de Inventario' },
+        { value: 'VENCIMIENTO', text: 'Producto Vencido' },
+        { value: 'TRANSFERENCIA_ENVIADA', text: 'Transferencia Enviada' }
+    ]
+
+};
+
+tipoMovimiento.addEventListener('change', function() {
+
+    const tipo = this.value;
+
+    motivoMovimiento.innerHTML =
+        '<option value="">Seleccione</option>';
+
+    if (!tipo || !motivos[tipo]) return;
+
+    motivos[tipo].forEach(function(motivo) {
+
+        const option = document.createElement('option');
+
+        option.value = motivo.value;
+        option.textContent = motivo.text;
+
+        motivoMovimiento.appendChild(option);
+
+    });
+
+});
 
 function abrirModalAjuste(){
 

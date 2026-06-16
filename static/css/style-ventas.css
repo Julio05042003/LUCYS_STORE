@@ -1,4 +1,3 @@
-@import url('style-inventario.css');
 
 /* Estilos específicos para Ventas */
 .field input[type="date"] {
@@ -145,3 +144,4 @@
     font-weight: bold;
     font-size: 0.8rem;
 }
+

@@ -281,6 +281,106 @@
     #modalCobro .btn-secondary {
         border-radius: 12px;
     }
+
+    /* ==========================================
+   RESPONSIVE MODAL COBRO
+========================================== */
+/*
+@media (max-width: 992px) {
+
+    #modalCobro .modal-header h3 {
+        font-size: 22px;
+    }
+
+    #modalCobro .grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    #modalCobro .table-scroll {
+        padding: 12px;
+        max-height: 60vh;
+    }
+
+    #modalCobro .resumen-cierre {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+
+    #modalCobro .modal-content {
+        width: 95%;
+        max-height: 95vh;
+        border-radius: 14px;
+    }
+
+    #modalCobro .modal-header {
+        padding: 14px 16px;
+    }
+
+    #modalCobro .modal-header h3 {
+        font-size: 18px;
+    }
+
+    #modalCobro .close-btn {
+        font-size: 22px;
+    }
+
+    #modalCobro .input-cobro {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #modalCobro .section-title {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    #modalCobro #totalCobro {
+        font-size: 18px;
+        padding: 10px;
+    }
+
+    #modalCobro .resumen-cierre {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    #modalCobro .modal-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #modalCobro .btn-primary,
+    #modalCobro .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    #modalCobro .modal-content {
+        width: 98%;
+    }
+
+    #modalCobro .table-scroll {
+        max-height: 55vh;
+        padding: 10px;
+    }
+
+    #modalCobro label {
+        font-size: 13px;
+    }
+
+    #modalCobro .input-cobro {
+        font-size: 13px;
+    }
+
+    #modalCobro .section-title {
+        font-size: 13px;
+    }
+}*/
 </style>
 
 <div class="main-container">
@@ -312,10 +412,22 @@
                 </div>
                 <button class="btn-clear">Limpiar</button>
             </div>
+            {% if empleado.rol.nombre == "Vendedor" %}
+            <div class="action-footer">
+                <button class="btn-primary" onclick="abrirModalVenta()">
+                    <i class="fas fa-plus"></i> Registrar Nueva Venta
+                </button>
+                <button class="btn-primary" onclick="abrirModal('modalCliente')">
+                    <i class="fas fa-users"></i> Registrar Nuevo Cliente
+                </button>
+            </div>
+            {% endif %}
+            <br>
 
             <!-- TABLA DINÁMICA -->
             <div class="table-container">
-                <table class="table-modern">
+                <div class="table-scroll">
+                    <table class="table-modern">
                     <thead>
                         <tr>
                             <th>Fecha/Hora</th>
@@ -377,7 +489,7 @@
 
                                     {% if v.estado.nombre == "Pendiente" %}
                                     <button class="btn-row edit"
-                                        onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}', '{{ v.metodo }}')">
+                                        onclick="abrirModalCobro('{{ v.venta_id }}', '{{ v.total }}')">
                                         <i class="fas fa-cash-register"></i>
                                     </button>
                                     {% endif %}
@@ -390,18 +502,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
 
-            {% if empleado.rol.nombre == "Vendedor" %}
-            <div class="action-footer">
-                <button class="btn-primary" onclick="abrirModalVenta()">
-                    <i class="fas fa-plus"></i> Registrar Nueva Venta
-                </button>
-                <button class="btn-primary" onclick="abrirModal('modalCliente')">
-                    <i class="fas fa-users"></i> Registrar Nuevo Cliente
-                </button>
-            </div>
-            {% endif %}
         </div>
     </main>
 </div>
@@ -1070,6 +1173,8 @@ MODAL COBRO
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+
+    
     /* ==============================
        VARIABLES GLOBALES
     ============================== */
@@ -1702,26 +1807,6 @@ ERRORES MODAL
 
         errorDiv.innerHTML = '';
         errorDiv.style.display = 'none';
-
-    }
-
-    /* =========================================================
-    ABRIR MODAL
-    ========================================================= */
-
-    function abrirModalCobro(ventaId, total, metodoPago) {
-
-        document.getElementById('venta_id_cobro').value = ventaId;
-
-        document.getElementById('totalCobro').value =
-            parseFloat(total).toFixed(2);
-
-        limpiarCobro();
-
-        abrirModal('modalCobro');
-        ocultarErrorCobro();
-
-        
 
     }
 

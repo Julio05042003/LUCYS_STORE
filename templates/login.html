@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Lucy's Boutique</title>
+    <title>Login - Lucy's Store</title>
 
     <link rel="stylesheet" href="{% static 'css/style-login.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,53 +13,89 @@
 
 <body>
 
-<div class="login-wrapper">
-    <div class="login-card">
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="{% static 'img/logo_lucys.jpeg' %}" alt="Lucy's">
+            </div>
 
-        <div class="logo-container">
-            <img src="{% static 'img/logo_lucys.jpeg' %}" alt="Lucy's">
-        </div>
+            <h2>Iniciar Sesión</h2>
 
-        <h2>Iniciar Sesión</h2>
-
-        <!-- 🔥 MENSAJES -->
-        {% if messages %}
+            {% if messages %}
             {% for message in messages %}
-                <div class="alert">{{ message }}</div>
+            <div class="alert">{{ message }}</div>
             {% endfor %}
-        {% endif %}
+            {% endif %}
 
-        <!-- 🔥 FORM CORRECTO -->
-        <form method="POST" action="{% url 'login' %}">
-            {% csrf_token %}
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
 
-            <div class="input-group">
-                <label>Usuario</label>
-                <input type="text" name="usuario" placeholder="Ej: correo@gmail.com" required>
+                <div class="input-group">
+                    <label>Usuario</label>
+                    <input type="text" name="usuario" placeholder="Ej: correo@gmail.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+
+                        <i class="fas fa-eye toggle-password"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-ingresar">
+                    Ingresar
+                </button>
+            </form>
+
+            <div class="toggle-auth">
+                <p>
+                    ¿Eres cliente nuevo?
+                    <a href="{% url 'registro_cliente' %}">
+                        Crear cuenta
+                    </a>
+                </p>
+
+                <p style="margin-top:10px;">
+                    <a href="{% url 'password_reset' %}">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </p>
             </div>
-
-            <div class="input-group">
-                <label>Contraseña</label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-
-            <button type="submit" class="btn-ingresar">
-                Ingresar
-            </button>
-        </form>
-
-        <!-- 🔥 REGISTRO -->
-        <div class="toggle-auth">
-            <p>
-                ¿Eres cliente nuevo?
-                <a href="{% url 'registro_cliente' %}">
-                    Crear cuenta
-                </a>
-            </p>
         </div>
-
     </div>
-</div>
+
+    <script>
+
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+
+            if (passwordInput.type === 'password') {
+
+                passwordInput.type = 'text';
+
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+
+            } else {
+
+                passwordInput.type = 'password';
+
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+
+            }
+
+        });
+
+    </script>
+
+
 
 </body>
+
 </html>

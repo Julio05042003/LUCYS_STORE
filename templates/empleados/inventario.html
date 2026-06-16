@@ -122,6 +122,143 @@
         background: #f48ca0;
         color: white;
     }
+    /* =========================================
+   TABLETS
+========================================= */
+@media (max-width: 1024px) {
+
+    .catalogos-row {
+        gap: 15px;
+    }
+
+    .tabla-catalogo thead th,
+    .tabla-catalogo tbody td {
+        padding: 12px 14px;
+    }
+
+}
+
+/* =========================================
+   MÓVILES
+========================================= */
+@media (max-width: 768px) {
+
+    /* Mensajes */
+    .messages-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+
+    .custom-message {
+        min-width: 100%;
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .custom-message button {
+        font-size: 18px;
+    }
+
+    /* Catálogos uno debajo del otro */
+    .catalogos-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .catalogo-box {
+        width: 100%;
+    }
+
+    /* Scroll horizontal para tablas */
+    .catalogo-box {
+        overflow-x: auto;
+    }
+
+    .tabla-catalogo {
+        min-width: 600px;
+    }
+
+    .tabla-catalogo thead th {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .tabla-catalogo tbody td {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .tabla-catalogo button {
+        width: 34px;
+        height: 34px;
+    }
+}
+
+/* =========================================
+   CELULARES PEQUEÑOS
+========================================= */
+@media (max-width: 480px) {
+
+    .messages-container {
+        top: 8px;
+        right: 8px;
+        left: 8px;
+    }
+
+    .custom-message {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    .custom-message button {
+        font-size: 16px;
+    }
+
+    .tabla-catalogo thead th {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .tabla-catalogo tbody td {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .tabla-catalogo th:last-child,
+    .tabla-catalogo td:last-child {
+        width: 60px;
+    }
+
+    .tabla-catalogo button {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+    }
+}
+
+/* =========================================
+   PANTALLAS GRANDES
+========================================= */
+@media (min-width: 1600px) {
+
+    .catalogos-row {
+        gap: 20px;
+    }
+
+    .tabla-catalogo thead th {
+        font-size: 18px;
+        padding: 18px 22px;
+    }
+
+    .tabla-catalogo tbody td {
+        font-size: 16px;
+        padding: 16px 22px;
+    }
+}
 </style>
 
 <div class="main-container">

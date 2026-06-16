@@ -10,6 +10,67 @@
 {% block content %}
 
 <style>
+    /* =========================================
+   ALERTAS
+========================================= */
+
+    .alert-container {
+        margin-bottom: 20px;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        animation: fadeIn .3s ease;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-container input {
+        width: 100%;
+        padding-right: 45px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #888;
+        transition: .3s;
+    }
+
+    .toggle-password:hover {
+        color: #ef7f9a;
+    }
+
     .inventory-wrapper {
         padding: 30px;
         max-width: 1400px;
@@ -336,31 +397,280 @@
                 #f59bb2);
         color: #fff;
     }
+/* =========================================
+   RESPONSIVE UNIVERSAL
+========================================= */
 
-    /* =========================
-       RESPONSIVE
-    ========================= */
+/* Pantallas grandes */
+@media (min-width: 1400px) {
 
-    @media(max-width:768px) {
-
-        .filters-card form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .field {
-            width: 100%;
-        }
-
-        .btn-clear {
-            width: 100%;
-        }
-
-        .action-footer {
-            justify-content: center;
-        }
-
+    .inventory-wrapper {
+        max-width: 1600px;
     }
+
+    .table-container table {
+        min-width: auto;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+
+    .inventory-wrapper {
+        padding: 20px;
+    }
+
+    .header-section h2 {
+        font-size: 1.7rem;
+    }
+
+    .filters-card {
+        padding: 20px;
+    }
+
+    .field {
+        flex: 1 1 calc(50% - 10px);
+        min-width: 250px;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
+
+/* Móviles */
+@media (max-width: 768px) {
+
+    .inventory-wrapper {
+        padding: 15px;
+    }
+
+    .header-section h2 {
+        font-size: 1.4rem;
+        flex-wrap: wrap;
+    }
+
+    .filters-card {
+        padding: 15px;
+        border-radius: 18px;
+    }
+
+    .filters-card form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .field {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .btn-primary,
+    .btn-clear {
+        width: 100%;
+    }
+
+    .action-footer {
+        justify-content: center;
+    }
+
+    .action-footer button {
+        width: 100%;
+    }
+
+    /* TABLA */
+
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-container table {
+        min-width: 850px;
+    }
+
+    .table-container thead th,
+    .table-container tbody td {
+        padding: 14px;
+        font-size: .85rem;
+    }
+
+    /* MODALES */
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 18px;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+
+    .close-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+
+    /* BADGES */
+
+    .badge-role {
+        font-size: .7rem;
+        padding: 4px 8px;
+    }
+
+    /* BOTONES DE ACCIONES */
+
+    .table-container tbody td button,
+    .btn-edit-user {
+        width: 36px;
+        height: 36px;
+        font-size: .85rem;
+    }
+}
+
+/* Celulares pequeños */
+@media (max-width: 480px) {
+
+    .inventory-wrapper {
+        padding: 10px;
+    }
+
+    .header-section h2 {
+        font-size: 1.2rem;
+        gap: 8px;
+    }
+
+    .filters-card {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .field label {
+        font-size: .85rem;
+    }
+
+    .field input,
+    .field select {
+        height: 44px;
+        font-size: .85rem;
+        padding: 0 12px;
+    }
+
+    .alert {
+        padding: 12px;
+        font-size: .85rem;
+    }
+
+    .btn-primary,
+    .btn-clear {
+        height: 44px;
+        font-size: .85rem;
+    }
+
+    .modal-header h3 {
+        font-size: .95rem;
+    }
+
+    .form-group label {
+        font-size: .85rem;
+    }
+
+    .form-group input,
+    .form-group select {
+        height: 44px;
+        font-size: .85rem;
+    }
+
+    .modal-footer button {
+        height: 44px;
+        font-size: .85rem;
+    }
+
+    .table-container thead th,
+    .table-container tbody td {
+        padding: 12px;
+        font-size: .8rem;
+    }
+
+    .table-container tbody td span {
+        font-size: .7rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Celulares muy pequeños */
+@media (max-width: 360px) {
+
+    .header-section h2 {
+        font-size: 1rem;
+    }
+
+    .close-btn {
+        width: 30px;
+        height: 30px;
+        font-size: .9rem;
+    }
+
+    .btn-primary,
+    .btn-clear {
+        font-size: .8rem;
+    }
+
+    .field input,
+    .field select,
+    .form-group input,
+    .form-group select {
+        font-size: .8rem;
+    }
+}
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img,
+table,
+input,
+select,
+button {
+    max-width: 100%;
+}
+
+.table-scroll,
+.table-container {
+    -webkit-overflow-scrolling: touch;
+}
+    
 </style>
 
 <div class="inventory-wrapper">
@@ -369,6 +679,20 @@
     <div class="header-section">
         <h2><i class="fas fa-users-cog"></i> Control de Accesos</h2>
     </div>
+
+    {% if messages %}
+    <div class="alert-container">
+
+        {% for message in messages %}
+
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+    </div>
+    {% endif %}
 
     <!-- FILTROS -->
     <div class="filters-card">
@@ -548,7 +872,12 @@
 
                 <div class="form-group">
                     <label>Contraseña</label>
-                    <input type="password" name="password" required>
+
+                    <div class="password-container">
+                        <input type="password" name="password" id="passwordCrear" required>
+
+                        <i class="fas fa-eye toggle-password" data-target="passwordCrear"></i>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -654,7 +983,37 @@
 </div>
 
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
+<script>
 
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+
+        icon.addEventListener('click', function () {
+
+            const input = document.getElementById(
+                this.dataset.target
+            );
+
+            if (input.type === 'password') {
+
+                input.type = 'text';
+
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+
+            } else {
+
+                input.type = 'password';
+
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+
+            }
+
+        });
+
+    });
+
+</script>
 <script>
 
     function filtrarUbicaciones() {
@@ -697,31 +1056,31 @@
 {% if abrir_modal %}
 <script>
 
-document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('DOMContentLoaded', function () {
 
-    abrirModal('{{ abrir_modal }}');
+        abrirModal('{{ abrir_modal }}');
 
-});
+    });
 
 </script>
 {% endif %}
 
 <script>
 
-setTimeout(() => {
+    setTimeout(() => {
 
-    document.querySelectorAll('.modal-alert').forEach(msg => {
+        document.querySelectorAll('.alert').forEach(el => {
 
-        msg.style.transition = '.5s';
-        msg.style.opacity = '0';
+            el.style.transition = '0.4s';
+            el.style.opacity = '0';
 
-        setTimeout(() => {
-            msg.remove();
-        }, 500);
+            setTimeout(() => {
+                el.remove();
+            }, 400);
 
-    });
+        });
 
-}, 3000);
+    }, 3000);
 
 </script>
 

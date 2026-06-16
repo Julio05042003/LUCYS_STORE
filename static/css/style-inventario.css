@@ -427,14 +427,51 @@
 }
 
 /* =========================================
-   RESPONSIVE
+   TABLETS GRANDES
 ========================================= */
+@media (max-width: 1024px) {
 
+    .inventory-wrapper {
+        padding: 0 10px;
+    }
+
+    .filters-card {
+        flex-wrap: wrap;
+    }
+
+    .table-modern {
+        min-width: 850px;
+    }
+
+    .modal-content {
+        max-width: 90%;
+    }
+
+    .product-detail-grid {
+        grid-template-columns: 180px 1fr;
+    }
+}
+
+/* =========================================
+   TABLETS
+========================================= */
 @media (max-width: 768px) {
+
+    .inventory-wrapper {
+        padding: 0;
+    }
 
     .filters-card {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .filters-card input,
+    .filters-card select,
+    .filters-card button {
+        width: 100%;
     }
 
     .form-grid {
@@ -445,35 +482,218 @@
         flex-direction: column;
     }
 
-    .action-footer button {
+    .action-footer button,
+    .action-footer a {
         width: 100%;
     }
 
+    .table-scroll {
+        overflow-x: auto;
+    }
+
     .table-modern {
-        min-width: 800px;
+        min-width: 750px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .table-modern img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        padding: 12px 15px;
+    }
+
+    .modal-form,
+    .modal-body {
+        padding: 15px;
     }
 
     .modal-footer {
         flex-direction: column;
+        gap: 8px;
     }
 
-    .modal-footer button {
+    .modal-footer button,
+    .modal-footer a {
         width: 100%;
     }
-}
-
-@media (max-width: 600px) {
 
     .product-detail-grid {
         grid-template-columns: 1fr;
         text-align: center;
     }
-}
 
-@media (max-width: 480px) {
+    .detail-image {
+        max-width: 250px;
+        margin: auto;
+    }
 
     .image-upload-container {
         flex-direction: column;
         text-align: center;
+    }
+
+    .image-controls {
+        width: 100%;
+    }
+
+    .preview-upload-container {
+        width: 120px;
+        height: 120px;
+        margin: auto;
+    }
+}
+
+/* =========================================
+   CELULARES
+========================================= */
+@media (max-width: 576px) {
+
+    .filters-card {
+        padding: 12px;
+    }
+
+    .table-modern {
+        min-width: 650px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .table-modern img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-clear {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .row-actions {
+        gap: 3px;
+    }
+
+    .btn-row,
+    .btn-editar,
+    .table-modern button,
+    .table-modern a {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .badge-activo,
+    .badge-inactivo {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .badge-type {
+        font-size: 10px;
+    }
+
+    .modal-header h3,
+    .modal-header h2 {
+        font-size: 1rem;
+    }
+
+    .modal-form,
+    .modal-body {
+        padding: 12px;
+    }
+
+    .preview-upload-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .image-preview {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* =========================================
+   CELULARES PEQUEÑOS
+========================================= */
+@media (max-width: 380px) {
+
+    .filters-card {
+        padding: 10px;
+    }
+
+    .table-modern {
+        min-width: 600px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        font-size: 12px;
+        padding: 6px;
+    }
+
+    .btn-row,
+    .btn-editar,
+    .table-modern button,
+    .table-modern a {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .image-preview {
+        width: 70px;
+        height: 70px;
+    }
+
+    .preview-upload-container {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+/* =========================================
+   PANTALLAS GRANDES
+========================================= */
+@media (min-width: 1600px) {
+
+    .inventory-wrapper {
+        max-width: 1600px;
+    }
+
+    .table-modern th,
+    .table-modern td {
+        padding: 14px 18px;
+    }
+
+    .filters-card {
+        padding: 25px;
+    }
+
+    .modal-content {
+        max-width: 700px;
     }
 }

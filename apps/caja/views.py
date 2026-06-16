@@ -65,41 +65,37 @@ CONCEPTOS_VALIDOS = {
 
 def crear_caja(request):
 
-    empleado = request.user.empleado
+    if request.method != "POST":
+        return redirect('caja')
 
-    if empleado.rol.nombre != "Gerente":
+    try:
+        empleado = request.user.empleado
+    except:
+        messages.error(request, "Usuario sin empleado asociado.")
+        return redirect('caja')
+
+    if empleado.rol.nombre.lower().strip() != "gerente":
         messages.error(request, "No tienes permisos.")
         return redirect('caja')
 
-    if request.method == "POST":
+    nombre = request.POST.get('nombre', '').strip()
 
-        nombre = request.POST.get('nombre', '').strip()
+    if not nombre:
+        messages.error(request, "Ingrese un nombre.")
+        request.session['abrir_modal_caja'] = True
+        return redirect('caja')
 
-        if not nombre:
-            request.session['abrir_modal_caja'] = True
-            messages.error(request, "Ingrese un nombre.")
-            return redirect('caja')
+    if Caja.objects.filter(nombre__iexact=nombre, sucursal=empleado.sucursal).exists():
+        messages.error(request, "Ya existe una caja con ese nombre.")
+        request.session['abrir_modal_caja'] = True
+        return redirect('caja')
 
-        existe = Caja.objects.filter(
-            nombre__iexact=nombre,
-            sucursal=empleado.sucursal
-        ).exists()
+    Caja.objects.create(
+        nombre=nombre,
+        sucursal=empleado.sucursal
+    )
 
-        if existe:
-            request.session['abrir_modal_caja'] = True
-            messages.error(
-                request,
-                f"Ya existe una caja con el nombre '{nombre}'."
-            )
-            return redirect('caja')
-
-        Caja.objects.create(
-            nombre=nombre,
-            sucursal=empleado.sucursal
-        )
-
-        messages.success(request, "Caja creada correctamente.")
-
+    messages.success(request, "Caja creada correctamente.")
     return redirect('caja')
 
 

@@ -3,159 +3,586 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Crear Cuenta</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta.</title>
     <link rel="stylesheet" href="{% static 'css/registro.css' %}">
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <div class="card">
+        <div class="card">
 
-        <h2>Crear Cuenta</h2>
+            <h2>Crear Cuenta</h2>
 
-        <!-- 🔥 MENSAJES DJANGO -->
-        {% if messages %}
+            <!-- 🔥 MENSAJES DJANGO -->
+            {% if messages %}
             {% for message in messages %}
-                <div class="alert">{{ message }}</div>
+            <div class="alert">{{ message }}</div>
             {% endfor %}
-        {% endif %}
+            {% endif %}
 
-        <form method="POST">
-            {% csrf_token %}
+            <form method="POST">
+                {% csrf_token %}
 
-            <!-- ========================= -->
-            <!-- DATOS PERSONALES -->
-            <!-- ========================= -->
-            <div class="section">
-                <h3>Datos Personales</h3>
+                <!-- ========================= -->
+                <!-- DATOS PERSONALES -->
+                <!-- ========================= -->
+                <div class="section">
+                    <h3>Datos Personales</h3>
 
-                <div class="grid-2">
-                    <input type="text" name="nombre" placeholder="Nombre" required>
-                    <input type="text" name="apellido" placeholder="Apellido" required>
-                </div>
-
-                <div class="grid-2">
-                    <input type="text" name="identificacion" placeholder="Identificación" required>
-                    <input type="email" name="email" placeholder="Correo" required>
-                </div>
-
-                <input type="password" name="password" placeholder="Contraseña" required minlength="6">
-            </div>
-
-            <!-- ========================= -->
-            <!-- DIRECCIONES -->
-            <!-- ========================= -->
-            <div class="section">
-                <h3>Direcciones</h3>
-
-                <div id="direcciones">
-
-                    <div class="direccion-item">
-                        <div class="grid-2">
-                            <input type="text" name="pais[]" placeholder="País" required>
-                            <input type="text" name="departamento[]" placeholder="Departamento" required>
-                        </div>
-
-                        <div class="grid-2">
-                            <input type="text" name="ciudad[]" placeholder="Ciudad" required>
-                            <input type="text" name="detalle[]" placeholder="Detalle" required>
-                        </div>
+                    <div class="grid-2">
+                        <input type="text" name="nombre" placeholder="Nombre" required>
+                        <input type="text" name="apellido" placeholder="Apellido" required>
                     </div>
 
-                </div>
-
-                <button type="button" onclick="agregarDireccion()" class="btn-add">
-                    + Agregar Dirección
-                </button>
-            </div>
-
-            <!-- ========================= -->
-            <!-- TELÉFONOS -->
-            <!-- ========================= -->
-            <div class="section">
-                <h3>Teléfonos</h3>
-
-                <div id="telefonos">
-
-                    <div class="telefono-item grid-3">
-                        <input type="text" name="telefono[]" placeholder="Número" required>
-
-                        <input type="text" name="operadora[]" placeholder="Operadora (Claro, Tigo)">
-
-                        <select name="tipo_tel[]">
-                            <option value="">Tipo</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Trabajo">Trabajo</option>
-                            <option value="Casa">Casa</option>
-                        </select>
+                    <div class="grid-2">
+                        <input type="text" name="identificacion" placeholder="Identificación" required>
+                        <input type="email" name="email" placeholder="Correo" required>
                     </div>
 
+                    <input type="password" name="password" placeholder="Contraseña" required minlength="6">
                 </div>
 
-                <button type="button" onclick="agregarTelefono()" class="btn-add">
-                    + Agregar Teléfono
+                <!-- ========================= -->
+                <!-- DIRECCIONES -->
+                <!-- ========================= -->
+                <div class="section">
+                    <h3>Direcciones</h3>
+
+                    <div id="direcciones">
+
+                        <div class="direccion-item">
+
+                            <div class="grid-3">
+
+                                <select name="tipo_direccion[]" required>
+                                    <option value="">Tipo Dirección</option>
+                                    <option value="Casa">Casa</option>
+                                    <option value="Trabajo">Trabajo</option>
+                                    <option value="Entrega">Entrega</option>
+                                </select>
+
+                                <input type="text" name="pais[]" value="Nicaragua" readonly>
+
+                                <select name="departamento[]" onchange="cargarMunicipios(this)" required>
+                                    <option value="">Departamento</option>
+                                </select>
+
+                            </div>
+
+                            <div class="grid-2">
+
+                                <select name="ciudad[]" required>
+                                    <option value="">Municipio</option>
+                                </select>
+
+                                <input type="text" name="detalle[]" placeholder="Dirección exacta" required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="acciones-direccion">
+
+                        <button type="button" onclick="agregarDireccion()" class="btn-add">
+                            + Agregar Dirección
+                        </button>
+
+                        <button type="button" class="btn-remove" onclick="eliminarDireccion()">
+                            − Eliminar Dirección
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- ========================= -->
+                <!-- TELÉFONOS -->
+                <!-- ========================= -->
+                <div class="section">
+                    <h3>Teléfonos</h3>
+
+                    <div id="telefonos">
+
+                        <div class="telefono-item">
+
+                            <div class="grid-4">
+
+                                <input type="text" value="+505" readonly class="codigo-pais">
+
+                                <input type="text" name="telefono[]" placeholder="Número" maxlength="8"
+                                    pattern="[0-9]{8}" required>
+
+                                <select name="operadora[]">
+                                    <option value="">Operadora</option>
+                                    <option value="Claro">Claro</option>
+                                    <option value="Tigo">Tigo</option>
+                                </select>
+
+                                <select name="tipo_tel[]">
+                                    <option value="">Tipo</option>
+                                    <option value="Personal">Personal</option>
+                                    <option value="Trabajo">Trabajo</option>
+                                    <option value="Casa">Casa</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="acciones-telefono">
+
+                        <button type="button" onclick="agregarTelefono()" class="btn-add">
+                            + Agregar Teléfono
+                        </button>
+
+                        <button type="button" class="btn-remove" onclick="eliminarTelefono()">
+                            − Eliminar Teléfono
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- ========================= -->
+                <!-- BOTÓN -->
+                <!-- ========================= -->
+                <button type="submit" class="btn-main">
+                    Registrarse
                 </button>
-            </div>
 
-            <!-- ========================= -->
-            <!-- BOTÓN -->
-            <!-- ========================= -->
-            <button type="submit" class="btn-main">
-                Registrarse
-            </button>
 
-            <p class="login-link">
-                ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
-            </p>
 
-        </form>
+                <p class="login-link">
+                    ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
+                </p>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        const departamentos = [
+            "Boaco",
+            "Carazo",
+            "Chinandega",
+            "Chontales",
+            "Estelí",
+            "Granada",
+            "Jinotega",
+            "León",
+            "Madriz",
+            "Managua",
+            "Masaya",
+            "Matagalpa",
+            "Nueva Segovia",
+            "Rivas",
+            "Río San Juan",
+            "Costa Caribe Norte",
+            "Costa Caribe Sur"
+        ];
+
+        const municipios = {
+
+            "Boaco": [
+                "Boaco", "Camoapa", "San José de los Remates",
+                "San Lorenzo", "Santa Lucía", "Teustepe"
+            ],
+
+            "Carazo": [
+                "Diriamba", "Dolores", "El Rosario",
+                "Jinotepe", "La Conquista", "La Paz de Carazo",
+                "San Marcos", "Santa Teresa"
+            ],
+
+            "Chinandega": [
+                "Chichigalpa", "Chinandega", "Cinco Pinos",
+                "Corinto", "El Realejo", "El Viejo",
+                "Posoltega", "Puerto Morazán",
+                "San Francisco del Norte",
+                "San Pedro del Norte",
+                "Santo Tomás del Norte",
+                "Somotillo", "Villanueva"
+            ],
+
+            "Chontales": [
+                "Acoyapa", "Comalapa", "Cuapa", "El Coral",
+                "Juigalpa", "La Libertad",
+                "San Pedro de Lóvago",
+                "Santo Domingo",
+                "Santo Tomás",
+                "Villa Sandino"
+            ],
+
+            "Estelí": [
+                "Condega", "Estelí", "La Trinidad",
+                "Pueblo Nuevo",
+                "San Juan de Limay",
+                "San Nicolás"
+            ],
+
+            "Granada": [
+                "Diriá", "Diriomo", "Granada", "Nandaime"
+            ],
+
+            "Jinotega": [
+                "El Cuá", "Jinotega", "La Concordia",
+                "San José de Bocay",
+                "San Rafael del Norte",
+                "San Sebastián de Yalí",
+                "Santa María de Pantasma",
+                "Wiwilí"
+            ],
+
+            "León": [
+                "Achuapa", "El Jicaral", "El Sauce",
+                "La Paz Centro", "Larreynaga",
+                "León", "Nagarote",
+                "Quezalguaque",
+                "Santa Rosa del Peñón",
+                "Telica"
+            ],
+
+            "Madriz": [
+                "Las Sabanas", "Palacagüina",
+                "San José de Cusmapa",
+                "San Juan del Río Coco",
+                "San Lucas", "Somoto",
+                "Telpaneca", "Totogalpa",
+                "Yalagüina"
+            ],
+
+            "Managua": [
+                "Ciudad Sandino",
+                "El Crucero",
+                "Managua",
+                "Mateare",
+                "San Francisco Libre",
+                "San Rafael del Sur",
+                "Ticuantepe",
+                "Tipitapa",
+                "Villa El Carmen"
+            ],
+
+            "Masaya": [
+                "Catarina", "La Concepción",
+                "Masatepe", "Masaya",
+                "Nandasmo", "Nindirí",
+                "Niquinohomo",
+                "San Juan de Oriente",
+                "Tisma"
+            ],
+
+            "Matagalpa": [
+                "Ciudad Darío",
+                "El Tuma-La Dalia",
+                "Esquipulas",
+                "Matagalpa",
+                "Matiguás",
+                "Muy Muy",
+                "Rancho Grande",
+                "Río Blanco",
+                "San Dionisio",
+                "San Isidro",
+                "San Ramón",
+                "Sébaco",
+                "Terrabona"
+            ],
+
+            "Nueva Segovia": [
+                "Ciudad Antigua",
+                "Dipilto",
+                "El Jícaro",
+                "Jalapa",
+                "Macuelizo",
+                "Mozonte",
+                "Murra",
+                "Ocotal",
+                "Quilalí",
+                "San Fernando",
+                "Santa María",
+                "Wiwilí"
+            ],
+
+            "Rivas": [
+                "Altagracia", "Belén",
+                "Buenos Aires",
+                "Cárdenas",
+                "Moyogalpa",
+                "Potosí",
+                "Rivas",
+                "San Jorge",
+                "San Juan del Sur",
+                "Tola"
+            ],
+
+            "Río San Juan": [
+                "El Almendro",
+                "El Castillo",
+                "Morrito",
+                "San Carlos",
+                "San Juan de Nicaragua",
+                "San Miguelito"
+            ],
+
+            "Costa Caribe Norte": [
+                "Bonanza",
+                "Mulukukú",
+                "Prinzapolka",
+                "Puerto Cabezas",
+                "Rosita",
+                "Siuna",
+                "Waslala",
+                "Waspam"
+            ],
+
+            "Costa Caribe Sur": [
+                "Bluefields",
+                "Corn Island",
+                "Desembocadura de Río Grande",
+                "El Ayote",
+                "El Rama",
+                "Kukra Hill",
+                "La Cruz de Río Grande",
+                "Laguna de Perlas",
+                "Muelle de los Bueyes",
+                "Nueva Guinea",
+                "Paiwas"
+            ]
+        };
+
+        function cargarDepartamentos() {
+
+            document
+                .querySelectorAll('select[name="departamento[]"]')
+                .forEach(select => {
+
+                    if (select.options.length > 1) return;
+
+                    departamentos.forEach(dep => {
+
+                        const option =
+                            document.createElement('option');
+
+                        option.value = dep;
+                        option.textContent = dep;
+
+                        select.appendChild(option);
+
+                    });
+
+                });
+        }
+
+        function cargarMunicipios(selectDepartamento) {
+
+            const departamento =
+                selectDepartamento.value;
+
+            const municipioSelect =
+                selectDepartamento
+                    .closest('.direccion-item')
+                    .querySelector('select[name="ciudad[]"]');
+
+            municipioSelect.innerHTML =
+                '<option value="">Municipio</option>';
+
+            if (!municipios[departamento]) return;
+
+            municipios[departamento].forEach(municipio => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = municipio;
+                option.textContent = municipio;
+
+                municipioSelect.appendChild(option);
+
+            });
+
+        }
+
+
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            cargarDepartamentos
+        );
+
+
+        function agregarDireccion() {
+
+            const container = document.getElementById('direcciones');
+
+            const html = `
+<div class="direccion-item">
+
+    <div class="grid-3">
+
+        <select name="tipo_direccion[]" required>
+            <option value="">Tipo Dirección</option>
+            <option value="Casa">Casa</option>
+            <option value="Trabajo">Trabajo</option>
+            <option value="Facturación">Facturación</option>
+            <option value="Entrega">Entrega</option>
+        </select>
+
+        <input type="text"
+               name="pais[]"
+               value="Nicaragua"
+               readonly>
+
+        <select name="departamento[]"
+                onchange="cargarMunicipios(this)"
+                required>
+            <option value="">Departamento</option>
+        </select>
 
     </div>
+
+    <div class="grid-2">
+
+        <select name="ciudad[]" required>
+            <option value="">Municipio</option>
+        </select>
+
+        <input type="text"
+               name="detalle[]"
+               placeholder="Dirección exacta"
+               required>
+
+    </div>
+
 </div>
+`;
 
-<script>
-    function agregarDireccion() {
-        const container = document.getElementById('direcciones');
+            container.insertAdjacentHTML('beforeend', html);
 
-        const html = `
-        <div class="direccion-item">
-            <div class="grid-2">
-                <input type="text" name="pais[]" placeholder="País" required>
-                <input type="text" name="departamento[]" placeholder="Departamento" required>
-            </div>
-            <div class="grid-2">
-                <input type="text" name="ciudad[]" placeholder="Ciudad" required>
-                <input type="text" name="detalle[]" placeholder="Detalle" required>
-            </div>
-        </div>
-        `;
+            cargarDepartamentos();
+        }
 
-        container.insertAdjacentHTML('beforeend', html);
-    }
+        function agregarTelefono() {
 
-    function agregarTelefono() {
-        const container = document.getElementById('telefonos');
+            const container = document.getElementById('telefonos');
 
-        const html = `
-        <div class="telefono-item grid-3">
-            <input type="text" name="telefono[]" placeholder="Número" required>
-            <input type="text" name="operadora[]" placeholder="Operadora">
-            <select name="tipo_tel[]">
-                <option value="">Tipo</option>
-                <option value="Personal">Personal</option>
-                <option value="Trabajo">Trabajo</option>
-                <option value="Casa">Casa</option>
-            </select>
-        </div>
-        `;
+            const html = `
+<div class="telefono-item">
 
-        container.insertAdjacentHTML('beforeend', html);
-    }
-</script>
+    <div class="grid-4">
+
+        <input type="text"
+               value="+505"
+               readonly
+               class="codigo-pais">
+
+        <input type="text"
+               name="telefono[]"
+               placeholder="Número"
+               maxlength="8"
+               required>
+
+        <select name="operadora[]">
+            <option value="">Operadora</option>
+            <option value="Claro">Claro</option>
+            <option value="Tigo">Tigo</option>
+        </select>
+
+        <select name="tipo_tel[]">
+            <option value="">Tipo</option>
+            <option value="Personal">Personal</option>
+            <option value="Trabajo">Trabajo</option>
+            <option value="Casa">Casa</option>
+            <option value="WhatsApp">WhatsApp</option>
+        </select>
+
+    </div>
+
+</div>
+`;
+
+            container.insertAdjacentHTML('beforeend', html);
+
+            aplicarValidacionTelefonos();
+        }
+
+        function aplicarValidacionTelefonos() {
+
+            document.querySelectorAll('input[name="telefono[]"]').forEach(input => {
+
+                if (input.dataset.validado) return;
+
+                input.dataset.validado = "true";
+
+                input.addEventListener('input', function () {
+
+                    this.value = this.value.replace(/\D/g, '');
+
+                    if (this.value.length === 8) {
+
+                        this.classList.add('telefono-correcto');
+
+                        setTimeout(() => {
+                            this.classList.remove('telefono-correcto');
+                        }, 1000);
+                    }
+
+                });
+
+            });
+
+        }
+
+
+        function eliminarDireccion() {
+
+            const direcciones =
+                document.querySelectorAll('.direccion-item');
+
+            if (direcciones.length === 1) {
+
+                alert(
+                    'Debe existir al menos una dirección.'
+                );
+
+                return;
+            }
+
+            direcciones[direcciones.length - 1].remove();
+
+        }
+
+        function eliminarTelefono() {
+
+            const telefonos =
+                document.querySelectorAll('.telefono-item');
+
+            if (telefonos.length === 1) {
+
+                alert(
+                    'Debe existir al menos un teléfono.'
+                );
+
+                return;
+            }
+
+            telefonos[telefonos.length - 1].remove();
+
+        }
+
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            aplicarValidacionTelefonos
+        );
+    </script>
 
 </body>
+
 </html>

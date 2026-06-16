@@ -61,14 +61,16 @@ def enviar_verificacion_email(request, user):
         )
     )
 
-    asunto = 'Verifica tu cuenta'
+    asunto = 'Verificación de cuenta'
 
     mensaje = f'''
-Hola {user.first_name}
+Hola {user.first_name} {user.last_name},
 
-Haz clic para verificar tu cuenta:
+Gracias por registrarte. Para activar tu cuenta, por favor haz clic en el siguiente enlace:
 
 {url}
+
+Si tú no solicitaste esta cuenta, puedes ignorar este mensaje.
 '''
 
     send_mail(

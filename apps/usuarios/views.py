@@ -26,6 +26,8 @@ from apps.productos.models import Producto
 from apps.inventario.models import Kardex
 from apps.usuarios.models import Empleado
 from apps.caja.models import MovimientoCaja
+from django.contrib.auth.tokens import default_token_generator
+
 
 
 # =========================
@@ -664,6 +666,149 @@ def logout_view(request):
     return redirect('login')
 
 
+
+def password_reset_request(request):
+
+    if request.method == 'POST':
+
+        correo = request.POST.get('email')
+
+        try:
+
+            usuario = User.objects.get(email=correo)
+
+            # Verificar si pertenece a un empleado
+            empleado = Empleado.objects.filter(
+                user=usuario
+            ).select_related('rol').first()
+
+            if empleado:
+
+                rol = empleado.rol.nombre.upper().strip()
+
+                # Solo ADMIN puede recuperar contraseña
+                if rol != 'ADMIN':
+
+                    messages.error(
+                        request,
+                        'Los empleados deben solicitar el cambio de contraseña al administrador.'
+                    )
+
+                    return redirect('password_reset')
+
+            token = default_token_generator.make_token(usuario)
+
+            url = request.build_absolute_uri(
+                reverse(
+                    'password_reset_confirm',
+                    args=[usuario.id, token]
+                )
+            )
+
+            asunto = 'Recuperación de contraseña'
+
+            mensaje = f'''
+Hola {usuario.first_name} {usuario.last_name},
+
+Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.
+
+Haz clic en el siguiente enlace:
+
+{url}
+
+Si no realizaste esta solicitud, puedes ignorar este mensaje.
+'''
+
+            send_mail(
+                asunto,
+                mensaje,
+                settings.DEFAULT_FROM_EMAIL,
+                [usuario.email],
+                fail_silently=False
+            )
+
+            messages.success(
+                request,
+                'Se ha enviado un enlace de recuperación a tu correo.'
+            )
+
+            return redirect('login')
+
+        except User.DoesNotExist:
+
+            messages.error(
+                request,
+                'No existe una cuenta asociada a ese correo.'
+            )
+
+    return render(
+        request,
+        'empleados/password_reset.html'
+    )
+    
+     
+#Vista para cambiar contraseña
+def password_reset_confirm(request, user_id, token):
+
+    try:
+        usuario = User.objects.get(id=user_id)
+
+    except User.DoesNotExist:
+        messages.error(request, 'Usuario no válido.')
+        return redirect('login')
+
+    if not default_token_generator.check_token(usuario, token):
+        messages.error(request, 'El enlace ha expirado o es inválido.')
+        return redirect('login')
+
+    if request.method == 'POST':
+
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if password1 != password2:
+
+            messages.error(
+                request,
+                'Las contraseñas no coinciden.'
+            )
+
+            return render(
+                request,
+                'empleados/password_reset_confirm.html',
+                {'usuario': usuario}
+            )
+
+        if not validar_password(password1):
+
+            messages.error(
+                request,
+                'La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un número y un carácter especial.'
+            )
+
+            return render(
+                request,
+                'empleados/password_reset_confirm.html',
+                {'usuario': usuario}
+            )
+
+        usuario.set_password(password1)
+        usuario.save()
+
+        messages.success(
+            request,
+            'Contraseña actualizada correctamente.'
+        )
+
+        return redirect('login')
+
+    return render(
+        request,
+        'empleados/password_reset_confirm.html',
+        {'usuario': usuario}
+    )
+    
+    
 # =========================
 # INDEX EMPLEADOS
 # =========================

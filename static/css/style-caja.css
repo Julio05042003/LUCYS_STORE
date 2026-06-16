@@ -362,19 +362,44 @@
     gap: 10px;
 }
 
-/* --- MEDIA QUERIES PARA MÓVILES --- */
-@media (max-width: 600px) {
-    /* El grid de estadísticas de caja ahora será de 1 sola columna */
+/* =========================
+   RESPONSIVE CAJA
+========================= */
+
+/* Tablets */
+@media (max-width: 992px) {
+
+    .caja-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .table-tools {
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .search-box:focus-within {
+        width: 100%;
+    }
+}
+
+/* Móviles grandes */
+@media (max-width: 768px) {
+
+    /* STATS */
     .caja-stats-grid {
         grid-template-columns: 1fr;
     }
 
-    /* El desglose de billetes pasa a 1 sola columna para que sea fácil de tocar */
-    .denominaciones-grid {
-        grid-template-columns: 1fr;
+    .stat-card {
+        flex-direction: row;
+        align-items: center;
     }
 
-    /* Los botones de acción se apilan */
+    /* BOTONES */
     .caja-actions {
         flex-direction: column;
     }
@@ -384,33 +409,90 @@
         justify-content: center;
     }
 
-    /* Ajuste del buscador (Table Tools) */
+    /* BUSCADOR */
     .table-tools {
         flex-direction: column;
         align-items: stretch;
     }
 
     .search-box {
-        width: 100% !important; /* Ocupa todo el ancho disponible */
+        width: 100% !important;
     }
 
-    /* Hacer que las tablas tengan scroll horizontal si no caben */
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    .search-box:focus-within {
+        width: 100% !important;
+    }
+
+    /* DENOMINACIONES */
+    .denominaciones-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .denom-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .denom-input {
+        width: 100%;
+    }
+
+    /* MODAL */
+    .modal-content {
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    .ticket-container {
+        width: 100%;
+        padding: 18px;
+    }
+
+    .ticket-row {
+        font-size: 0.75rem;
+    }
+
+    .ticket-header h2 {
+        font-size: 1rem;
     }
 }
 
+/* Móviles pequeños */
+@media (max-width: 480px) {
 
-/*agregado */
-html,
-body {
+    .cash-card {
+        min-width: 100%;
+        padding: 15px;
+    }
+
+    .stat-value.large {
+        font-size: 1.4rem;
+    }
+
+    .btn-action {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    .search-box {
+        padding: 2px 8px;
+    }
+
+    .search-box input {
+        font-size: 0.85rem;
+    }
+
+    .total-amount {
+        font-size: 1.2rem;
+    }
+
+    .ticket-container {
+        font-size: 0.85rem;
+    }
+}
+
+/* Evitar scroll horizontal global */
+html, body {
     overflow-x: hidden;
-}
-
-.content,
-.main-container,
-.inventory-wrapper {
-    overflow: visible !important;
-    height: auto !important;
 }
