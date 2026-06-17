@@ -128,9 +128,9 @@
     .field select:focus,
     #producto:focus,
     #cantidad:focus {
-        border-color: #ec4899;
+        border-color: #ff8fa3;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(236, 72, 153, .15);
+        box-shadow: 0 0 0 3px rgba(255, 143, 163, .15);
     }
 
     .filters-card button {
@@ -138,7 +138,7 @@
         padding: 0 20px;
         border: none;
         border-radius: 12px;
-        background: #ec4899;
+        background: #ff8fa3;
         color: white;
         font-weight: 600;
         cursor: pointer;
@@ -146,7 +146,7 @@
     }
 
     .filters-card button:hover {
-        background: #db2777;
+        background: #ff8fa3;
     }
 
     #sugerencias {
@@ -183,7 +183,7 @@
     }
 
     .table-container thead {
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: #ff8fa3;
     }
 
     .table-container thead th {
@@ -233,7 +233,7 @@
     }
 
     .btn-primary {
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: #ff8fa3;
         color: white;
         border: none;
         padding: 14px 28px;
@@ -287,7 +287,7 @@
 }
 
     .modal-header {
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: #ff8fa3;
         color: white;
         padding: 18px 24px;
 

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ub5z0!fntxna0-qg-fsxs4=40ae9a18_(7s+wed89u#b+t)all
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -85,11 +85,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'LUCYS_STORE',
-        'HOST': 'DESKTOP-FS5V3MM',
-        'PORT': '',
+        'USER': 'sa',
+        'PASSWORD': 'Lnfm220806*',
+        'HOST': 'localhost',
+        'PORT': '1433',
         'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',
+            'driver': 'ODBC Driver 18 for SQL Server',
+            'extra_params': 'TrustServerCertificate=yes',
         },
     }
 }

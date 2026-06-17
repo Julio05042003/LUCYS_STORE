@@ -29,7 +29,7 @@
 
     .btn-primary {
         border: none;
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: linear-gradient(90deg, #ff8fa3, #ff8fa3);
         color: white;
         padding: 13px 22px;
         border-radius: 14px;
@@ -110,8 +110,8 @@
 
     .filter-form input:focus {
         outline: none;
-        border-color: #ec4899;
-        box-shadow: 0 0 0 3px rgba(236, 72, 153, .15);
+        border-color: #ff8fa3;
+        box-shadow: 0 0 0 3px rgba(255, 143, 163, .15);
     }
 
     /* =========================================
@@ -131,7 +131,7 @@
     }
 
     .table-container thead {
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: #ff8fa3;
     }
 
     .table-container thead th {
@@ -160,7 +160,7 @@
         display: inline-block;
         padding: 6px 12px;
         background: #fce7f3;
-        color: #be185d;
+        color: #ff8fa3;
         border-radius: 999px;
         font-size: .8rem;
         font-weight: 700;
@@ -187,7 +187,7 @@
 
     .btn-view {
         background: #dbeafe;
-        color: #2563eb;
+        color: #000000;
     }
 
     .btn-edit {
@@ -243,7 +243,7 @@
     }
 
     .modal-header {
-        background: linear-gradient(90deg, #ec4899, #f472b6);
+        background: #ff8fa3;
         color: white;
         padding: 18px 24px;
         display: flex;
@@ -296,8 +296,8 @@
     .form-group input:focus,
     .form-group select:focus {
         outline: none;
-        border-color: #ec4899;
-        box-shadow: 0 0 0 3px rgba(236, 72, 153, .15);
+        border-color: #ff8fa3;
+        box-shadow: 0 0 0 3px rgba(255, 143, 163, .15);
     }
 
     .form-section-full {
@@ -326,7 +326,7 @@
         width: 45px;
         border: none;
         border-radius: 12px;
-        background: #ec4899;
+        background: #ff8fa3;
         color: white;
         cursor: pointer;
     }
@@ -446,7 +446,7 @@
 }
 
 .tabla-telefonos th{
-    background:#ec4899;
+    background:#ff8fa3;
     color:white;
     padding:12px;
 }
@@ -464,7 +464,7 @@
 
 .producto-tag{
     background:#fce7f3;
-    color:#be185d;
+    color:#ff8fa3;
     padding:8px 14px;
     border-radius:999px;
     font-weight:600;
@@ -496,7 +496,7 @@
 .tabla-telefonos thead th{
     background:linear-gradient(
         90deg,
-        #ec4899,
+        #ff8fa3,
         #f472b6
     );
 
@@ -606,7 +606,7 @@
     padding:6px 12px;
     border-radius:999px;
     background:#fce7f3;
-    color:#be185d;
+    color:#ff8fa3;
     font-size:.85rem;
     font-weight:700;
 }
@@ -637,8 +637,8 @@
 }
 
 .dynamic-row:hover{
-    border-color:#ec4899;
-    box-shadow:0 4px 12px rgba(236,72,153,.08);
+    border-color:#ff8fa3;
+    box-shadow:0 4px 12px rgba(255,143,163,.08);
 }
 
 .dynamic-row input,
@@ -658,8 +658,8 @@
 .dynamic-row input:focus,
 .dynamic-row select:focus{
     outline:none;
-    border-color:#ec4899;
-    box-shadow:0 0 0 3px rgba(236,72,153,.12);
+    border-color:#ff8fa3;
+    box-shadow:0 0 0 3px rgba(255, 143, 163, .12);
 }
 
 .btn-add-small{
@@ -669,7 +669,7 @@
     border:none;
     border-radius:10px;
 
-    background:#ec4899;
+    background:#ff8fa3;
     color:#fff;
 
     cursor:pointer;
@@ -678,7 +678,7 @@
 }
 
 .btn-add-small:hover{
-    background:#db2777;
+    background:#ff8fa3;
     transform:scale(1.05);
 }
 
@@ -708,14 +708,14 @@
 
 .telefono-row input:focus,
 .telefono-row select:focus{
-    border-color:#ec4899;
-    box-shadow:0 0 0 3px rgba(236,72,153,.15);
+    border-color:#ff8fa3;
+    box-shadow:0 0 0 3px rgba(255, 143, 163, .15);
     outline:none;
 }
 
 .btn-add-phone{
     margin-top:15px;
-    background:#ec4899;
+    background:#ff8fa3;
     color:white;
     border:none;
     padding:12px 18px;
