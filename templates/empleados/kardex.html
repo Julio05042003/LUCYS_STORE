@@ -614,21 +614,15 @@ const motivoMovimiento = document.getElementById('motivoMovimiento');
 const motivos = {
 
     ENTRADA: [
-        { value: 'COMPRA', text: 'Compra de Inventario' },
-        { value: 'DEVOLUCION_CLIENTE', text: 'Devolución de Cliente' },
-        { value: 'AJUSTE_POSITIVO', text: 'Ajuste por Error' },
-        { value: 'INVENTARIO_INICIAL', text: 'Inventario Inicial' },
-        { value: 'TRANSFERENCIA_RECIBIDA', text: 'Transferencia Recibida' }
+        { value: 'AJUSTE_MANUAL', text: 'Ajuste por Error' }
     ],
 
     SALIDA: [
-        { value: 'PRODUCTO_DANADO', text: 'Producto Dañado' },
+        { value: 'PRODUCTO_DAÑADO', text: 'Producto Dañado' },
         { value: 'PERDIDA', text: 'Pérdida' },
         { value: 'REGALIA', text: 'Regalía' },
         { value: 'AJUSTE_MANUAL', text: 'Ajuste Manual' },
-        { value: 'ERROR_INVENTARIO', text: 'Error de Inventario' },
-        { value: 'VENCIMIENTO', text: 'Producto Vencido' },
-        { value: 'TRANSFERENCIA_ENVIADA', text: 'Transferencia Enviada' }
+        { value: 'ERROR_INVENTARIO', text: 'Error de Inventario' }
     ]
 
 };
@@ -738,6 +732,21 @@ document.getElementById(
     }
 
 });
+
+setTimeout(() => {
+
+    document.querySelectorAll('.alert-message').forEach(el => {
+
+        el.style.transition = '0.4s';
+        el.style.opacity = '0';
+
+        setTimeout(() => {
+            el.remove();
+        }, 400);
+
+    });
+
+}, 3000);
 
 </script>
 

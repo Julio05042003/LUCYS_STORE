@@ -9,6 +9,7 @@ from apps.usuarios.helpers import *
 from apps.usuarios.models import *
 from django.db import transaction
 from django.utils import timezone
+from datetime import date
 from django.utils.dateparse import parse_date
 import re, json
 from django.http import JsonResponse
@@ -18,16 +19,17 @@ from apps.usuarios.tokens import token_generator
 from apps.caja.models import AperturaCaja
 from apps.inventario.models import Inventario
 from django.db.models.functions import TruncDate
-from django.db.models import Sum, Count, F
+from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper
 from django.utils.timezone import now, timedelta
 from decimal import Decimal
 from apps.ventas.models import Venta, DetalleVenta
 from apps.productos.models import Producto
-from apps.inventario.models import Kardex
+from apps.inventario.models import Kardex, AjusteInventario
 from apps.usuarios.models import Empleado
 from apps.caja.models import MovimientoCaja
 from django.contrib.auth.tokens import default_token_generator
-
+from openpyxl import Workbook
+from django.http import HttpResponse
 
 
 # =========================
@@ -419,34 +421,76 @@ def dashboard_view(request):
         sucursal_usuario = empleado_perfil.sucursal
     except Empleado.DoesNotExist:
         # En caso de que sea un superusuario de Django sin perfil de empleado
-        rol_usuario = 'admin'
+        rol_usuario = 'administrador'
         sucursal_usuario = None
 
     # Base de querysets filtrados por seguridad
     ventas_qs = Venta.objects.filter(estado__nombre__iexact='Pagada')
     detalles_qs = DetalleVenta.objects.filter(venta__estado__nombre__iexact='Pagada')
+    ajustes_qs = AjusteInventario.objects.filter(tipo='SALIDA')
     
     # Si es Gerente, limitar estrictamente a su sucursal
     if rol_usuario == 'gerente' and sucursal_usuario:
         ventas_qs = ventas_qs.filter(empleado__sucursal=sucursal_usuario)
         detalles_qs = detalles_qs.filter(venta__empleado__sucursal=sucursal_usuario)
-    elif rol_usuario == 'admin':
+        ajustes_qs = ajustes_qs.filter(empleado__sucursal=sucursal_usuario)
+    elif rol_usuario == 'administrador':
         # Si es admin y seleccionó una sucursal específica en el filtro HTML
         sucursal_id = request.GET.get('sucursal')
+
+        # 🔥 FIX AGREGADO
+        if sucursal_id in [None, '', 'None']:
+            sucursal_id = None
+
         if sucursal_id:
             ventas_qs = ventas_qs.filter(empleado__sucursal_id=sucursal_id)
             detalles_qs = detalles_qs.filter(venta__empleado__sucursal_id=sucursal_id)
+            ajustes_qs = ajustes_qs.filter(empleado__sucursal_id=sucursal_id)
 
     # 2. Filtros de Fecha (Por defecto: últimos 30 días)
     fecha_inicio_str = request.GET.get('fecha_inicio')
     fecha_fin_str = request.GET.get('fecha_fin')
     
+
+    # 🔥 FIX AGREGADO: limpiar "None"
+    if fecha_inicio_str in [None, '', 'None']:
+        fecha_inicio_str = None
+
+    if fecha_fin_str in [None, '', 'None']:
+        fecha_fin_str = None
+        
+    
+    
+    # 🔥 FIX AGREGADO: evitar parse_date(None)
     if fecha_inicio_str:
-        ventas_qs = ventas_qs.filter(fecha__date__gte=parse_date(fecha_inicio_str))
-        detalles_qs = detalles_qs.filter(venta__fecha__date__gte=parse_date(fecha_inicio_str))
+        fecha_inicio_parsed = parse_date(fecha_inicio_str)
+        ventas_qs = ventas_qs.filter(fecha__date__gte=fecha_inicio_parsed)
+        detalles_qs = detalles_qs.filter(venta__fecha__date__gte=fecha_inicio_parsed)
+        ajustes_qs = ajustes_qs.filter(fecha__date__gte=fecha_inicio_parsed)
+
     if fecha_fin_str:
-        ventas_qs = ventas_qs.filter(fecha__date__lte=parse_date(fecha_fin_str))
-        detalles_qs = detalles_qs.filter(venta__fecha__date__lte=parse_date(fecha_fin_str))
+        fecha_fin_parsed = parse_date(fecha_fin_str)
+        ventas_qs = ventas_qs.filter(fecha__date__lte=fecha_fin_parsed)
+        detalles_qs = detalles_qs.filter(venta__fecha__date__lte=fecha_fin_parsed)
+        ajustes_qs = ajustes_qs.filter(fecha__date__lte=fecha_fin_parsed)
+        
+    hoy = date.today()    
+    # CONVERTIR A DATE SEGURO
+    fecha_inicio = parse_date(fecha_inicio_str) if fecha_inicio_str else None
+    fecha_fin = parse_date(fecha_fin_str) if fecha_fin_str else None
+
+    # DEFAULTS
+    if not fecha_inicio:
+        fecha_inicio = hoy.replace(day=1)
+
+    if not fecha_fin:
+        fecha_fin = hoy
+
+    # VALIDACIÓN CORRECTA (YA COMO DATE, NO STRING)
+
+    if fecha_fin < fecha_inicio:
+        messages.error(request, "La fecha final no puede ser menor que la fecha inicial.")
+        fecha_inicio, fecha_fin = fecha_fin, fecha_inicio
 
     # 3. Métrica: Ventas Totales y cantidad de transacciones
     metricas_generales = ventas_qs.aggregate(
@@ -455,6 +499,63 @@ def dashboard_view(request):
     )
     total_ventas = metricas_generales['total_dinero'] or 0
     cantidad_ventas = metricas_generales['total_transacciones'] or 0
+    
+    # Metrica: Costo de ventas
+    costo_venta = detalles_qs.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('cantidad') * F('producto__precio_c'),
+                output_field=DecimalField(
+                    max_digits=15,
+                    decimal_places=2
+                )
+            )
+        )
+    )['total'] or 0
+    
+    # Metrica de utilidad bruta
+    utilidad_bruta = total_ventas - costo_venta
+
+    margen_bruto = 0
+
+    if total_ventas > 0:
+        margen_bruto = round(
+            (utilidad_bruta / total_ventas) * 100,
+            2
+        )
+        
+    # Metrica: perdidas
+    perdidas = ajustes_qs.filter(
+        motivo__in=[
+            'PRODUCTO_DAÑADO',
+            'PERDIDA'
+        ]
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('cantidad') * F('producto__precio_c'),
+                output_field=DecimalField(
+                    max_digits=15,
+                    decimal_places=2
+                )
+            )
+        )
+    )['total'] or 0
+    
+    #metrica regalias
+    regalias = ajustes_qs.filter(
+        motivo='REGALIA'
+    ).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('cantidad') * F('producto__precio_c'),
+                output_field=DecimalField(
+                    max_digits=15,
+                    decimal_places=2
+                )
+            )
+        )
+    )['total'] or 0
 
     # 4. Métrica: Ventas por Empleado
     ventas_empleado_qs = ventas_qs.values(
@@ -469,16 +570,17 @@ def dashboard_view(request):
         nombre = f"{emp['empleado__user__first_name']} {emp['empleado__user__last_name']}".strip() or emp['empleado__user__username']
         empleados_labels.append(nombre)
         empleados_data.append(float(emp['total_vendido']))
+        
 
     # 5. Métrica: Productos Más Vendidos (Top 10 con su Categoría y Marca)
     productos_mas_vendidos = detalles_qs.values(
         'producto__nombre', 'producto__categoria__nombre', 'producto__marca__nombre'
     ).annotate(
         cantidad_total=Sum('cantidad'),
-        ingreso_total=Sum('precio') # O cantidad * precio si guardas precio unitario
+        ingreso_total=Sum('precio')
     ).filter(
-    cantidad_total__gte=18  # __gte significa "Greater Than or Equal" (Mayor o igual a 21)
-).order_by('-cantidad_total')[:10]
+        cantidad_total__gte=18
+    ).order_by('-cantidad_total')[:10]
 
     # Datos estructurados para gráficos de torta/barras de categorías/marcas más vendidas
     cat_data = detalles_qs.values('producto__categoria__nombre').annotate(total=Sum('cantidad')).order_by('-total')[:5]
@@ -491,32 +593,269 @@ def dashboard_view(request):
 ).annotate(
     cantidad_total=Sum('cantidad')
 ).filter(
-    cantidad_total__lt=18  # __lt significa "Less Than" (Menor que 21)
+    cantidad_total__lt=18
 ).order_by('cantidad_total')[:10]
 
     # Lista de sucursales para el combo de filtro (solo útil para el Admin)
-    sucursales = Sucursal.objects.all() if rol_usuario == 'admin' else None
+    sucursales = Sucursal.objects.all() if rol_usuario == 'administrador' else None
 
     context = {
         'rol_usuario': rol_usuario,
         'sucursal_usuario': sucursal_usuario,
         'sucursales': sucursales,
         'total_ventas': total_ventas,
+        'costo_venta': costo_venta,
+        'utilidad_bruta': utilidad_bruta,
+        'perdidas': perdidas,
+        'regalias': regalias,
         'cantidad_ventas': cantidad_ventas,
         'productos_mas_vendidos': productos_mas_vendidos,
         'productos_menos_vendidos': productos_menos_vendidos,
-        # JSON para renderizar en Chart.js de forma nativa
         'chart_empleados_labels': json.dumps(empleados_labels),
         'chart_empleados_data': json.dumps(empleados_data),
         'chart_categorias_labels': json.dumps(categorias_labels),
         'chart_categorias_valores': json.dumps(categorias_valores),
-        # Mantener los filtros en la UI
         'fecha_inicio': fecha_inicio_str,
         'fecha_fin': fecha_fin_str,
         'sucursal_seleccionada': request.GET.get('sucursal', '')
     }
 
     return render(request, 'empleados/dashboard.html', context)
+
+@login_required
+def dashboard_excel(request):
+
+    from datetime import date
+    from django.utils.dateparse import parse_date
+    from django.db.models import Sum, F, Count
+    from openpyxl import Workbook
+
+    usuario = request.user
+
+    try:
+        empleado = usuario.empleado
+        rol_usuario = empleado.rol.nombre.lower()
+        sucursal_usuario = empleado.sucursal
+    except:
+        rol_usuario = 'administrador'
+        sucursal_usuario = None
+
+    ventas_qs = Venta.objects.filter(estado__nombre__iexact='Pagada')
+    detalles_qs = DetalleVenta.objects.filter(venta__estado__nombre__iexact='Pagada')
+    ajustes_qs = AjusteInventario.objects.filter(tipo='SALIDA')
+
+    # =====================
+    # SUCURSAL
+    # =====================
+
+    sucursal_id = request.GET.get('sucursal')
+
+    if sucursal_id in [None, '', 'None']:
+        sucursal_id = None
+
+    if rol_usuario == 'gerente' and sucursal_usuario:
+
+        sucursal_nombre = sucursal_usuario.nombre
+
+        ventas_qs = ventas_qs.filter(empleado__sucursal=sucursal_usuario)
+        detalles_qs = detalles_qs.filter(venta__empleado__sucursal=sucursal_usuario)
+        ajustes_qs = ajustes_qs.filter(empleado__sucursal=sucursal_usuario)
+
+    elif rol_usuario == 'administrador' and sucursal_id:
+
+        ventas_qs = ventas_qs.filter(empleado__sucursal_id=sucursal_id)
+        detalles_qs = detalles_qs.filter(venta__empleado__sucursal_id=sucursal_id)
+        ajustes_qs = ajustes_qs.filter(empleado__sucursal_id=sucursal_id)
+
+        sucursal_nombre = f"Sucursal ID {sucursal_id}"
+    else:
+        sucursal_nombre = "Todas las sucursales"
+
+    # =====================
+    # FECHAS
+    # =====================
+
+    hoy = date.today()
+
+    fecha_inicio_str = request.GET.get('fecha_inicio')
+    fecha_fin_str = request.GET.get('fecha_fin')
+
+    if fecha_inicio_str in [None, '', 'None']:
+        fecha_inicio = hoy.replace(day=1)
+    else:
+        fecha_inicio = parse_date(fecha_inicio_str)
+
+    if fecha_fin_str in [None, '', 'None']:
+        fecha_fin = hoy
+    else:
+        fecha_fin = parse_date(fecha_fin_str)
+
+    ventas_qs = ventas_qs.filter(fecha__date__range=(fecha_inicio, fecha_fin))
+    detalles_qs = detalles_qs.filter(venta__fecha__date__range=(fecha_inicio, fecha_fin))
+    ajustes_qs = ajustes_qs.filter(fecha__date__range=(fecha_inicio, fecha_fin))
+
+    # =====================
+    # KPIs
+    # =====================
+
+    total_ventas = ventas_qs.aggregate(total=Sum('total'))['total'] or 0
+    total_transacciones = ventas_qs.count()
+
+    costo_venta = detalles_qs.aggregate(
+        total=Sum(F('cantidad') * F('producto__precio_c'))
+    )['total'] or 0
+
+    utilidad = total_ventas - costo_venta
+
+    margen = (utilidad / total_ventas * 100) if total_ventas > 0 else 0
+
+    ticket_promedio = (total_ventas / total_transacciones) if total_transacciones > 0 else 0
+
+    # =====================
+    # AJUSTES (CORREGIDO SIN ExpressionWrapper)
+    # =====================
+
+    ajustes_con_costo = ajustes_qs.annotate(
+        costo_linea=F('cantidad') * F('producto__precio_c')
+    )
+
+    perdidas = ajustes_con_costo.filter(
+        motivo__in=['PRODUCTO_DAÑADO', 'PERDIDA']
+    ).aggregate(
+        total=Sum('costo_linea')
+    )['total'] or 0
+
+    regalias = ajustes_con_costo.filter(
+        motivo='REGALIA'
+    ).aggregate(
+        total=Sum('costo_linea')
+    )['total'] or 0
+
+    # =====================
+    # EXCEL
+    # =====================
+
+    wb = Workbook()
+
+    # =====================
+    # HOJA 1
+    # =====================
+    ws1 = wb.active
+    ws1.title = "Resumen"
+
+    ws1.append(["REPORTE EJECUTIVO"])
+    ws1.append(["Sucursal", sucursal_nombre])
+    ws1.append(["Fecha inicio", fecha_inicio])
+    ws1.append(["Fecha fin", fecha_fin])
+    ws1.append([])
+    ws1.append(["Ventas Totales", float(total_ventas)])
+    ws1.append(["Transacciones", total_transacciones])
+    ws1.append(["Ticket Promedio", float(ticket_promedio)])
+    ws1.append(["Costo Venta", float(costo_venta)])
+    ws1.append(["Utilidad", float(utilidad)])
+    ws1.append(["Margen %", round(margen, 2)])
+    ws1.append(["Pérdidas", float(perdidas)])
+    ws1.append(["Regalías", float(regalias)])
+
+    # =====================
+    # HOJA 2
+    # =====================
+    ws2 = wb.create_sheet("Ventas Detalladas")
+
+    ventas_det = ventas_qs.select_related('empleado', 'cliente')
+
+    ws2.append(["Fecha", "Cliente", "Empleado", "Sucursal", "Total"])
+
+    for v in ventas_det:
+        ws2.append([
+            v.fecha,
+            getattr(v.cliente, 'nombre', 'N/A'),
+            v.empleado.user.username,
+            v.empleado.sucursal.nombre,
+            float(v.total)
+        ])
+
+    # =====================
+    # HOJA 3
+    # =====================
+    ws3 = wb.create_sheet("Ventas Empleados")
+
+    ventas_emp = ventas_qs.values(
+        'empleado__user__username'
+    ).annotate(total=Sum('total')).order_by('-total')
+
+    ws3.append(["Empleado", "Total", "% Participación"])
+
+    for e in ventas_emp:
+        porcentaje = (e['total'] / total_ventas * 100) if total_ventas > 0 else 0
+        ws3.append([
+            e['empleado__user__username'],
+            float(e['total']),
+            round(porcentaje, 2)
+        ])
+
+    # =====================
+    # HOJA 4
+    # =====================
+    ws4 = wb.create_sheet("Productos Vendidos")
+
+    productos = detalles_qs.values(
+        'producto__nombre',
+        'producto__categoria__nombre',
+        'producto__marca__nombre'
+    ).annotate(
+        cantidad=Sum('cantidad'),
+        ingreso=Sum('precio')
+    ).order_by('-cantidad')
+
+    ws4.append(["Producto", "Categoría", "Marca", "Cantidad", "Ingreso"])
+
+    for p in productos:
+        ws4.append([
+            p['producto__nombre'],
+            p['producto__categoria__nombre'],
+            p['producto__marca__nombre'],
+            p['cantidad'],
+            float(p['ingreso'] or 0)
+        ])
+
+    # =====================
+    # HOJA 5
+    # =====================
+    ws5 = wb.create_sheet("Ajustes")
+
+    ajustes = ajustes_con_costo.values(
+        'motivo',
+        'producto__nombre'
+    ).annotate(
+        cantidad=Sum('cantidad'),
+        costo=Sum('costo_linea')
+    )
+
+    ws5.append(["Motivo", "Producto", "Cantidad", "Costo"])
+
+    for a in ajustes:
+        ws5.append([
+            a['motivo'],
+            a['producto__nombre'],
+            a['cantidad'],
+            float(a['costo'] or 0)
+        ])
+
+    # =====================
+    # RESPONSE
+    # =====================
+
+    from django.http import HttpResponse
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+    response['Content-Disposition'] = 'attachment; filename=REPORTE_ERP_DETALLADO.xlsx'
+
+    wb.save(response)
+    return response
 
 
 def login_view(request):

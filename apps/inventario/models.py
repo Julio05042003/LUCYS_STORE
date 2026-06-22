@@ -45,11 +45,16 @@ class AjusteInventario(models.Model):
     )
 
     MOTIVOS = (
-        ('PRODUCTO_DAÑADO', 'Producto dañado'),
-        ('PERDIDA', 'Pérdida'),
-        ('REGALIA', 'Regalía'),
-        ('AJUSTE_MANUAL', 'Ajuste manual'),
-        ('ERROR_INVENTARIO', 'Error inventario'),
+
+    # ENTRADAS
+    ('AJUSTE_MANUAL', 'Ajuste por Error'),
+
+    # SALIDAS
+    ('PRODUCTO_DAÑADO', 'Producto Dañado'),
+    ('PERDIDA', 'Pérdida'),
+    ('REGALIA', 'Regalía'),
+    ('AJUSTE_MANUAL', 'Ajuste Manual'),
+    ('ERROR_INVENTARIO', 'Error de Inventario'),
     )
 
     ajuste_id = models.AutoField(
@@ -104,6 +109,7 @@ class AjusteInventario(models.Model):
 
     class Meta:
         db_table = 'AjustesInventario'
+
 
 class Transferencia(models.Model):
     id = models.AutoField(db_column='Transferencia_id', primary_key=True)

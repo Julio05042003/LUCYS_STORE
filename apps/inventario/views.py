@@ -555,17 +555,49 @@ def crear_ajuste_inventario(request):
             return redirect('kardex_view', id=producto_id)
         
     
-    MOTIVOS_VALIDOS = [
-    'PRODUCTO_DAÑADO',
-    'PERDIDA',
-    'REGALIA',
-    'AJUSTE_MANUAL',
-    'ERROR_INVENTARIO'
+    # =========================================
+# VALIDAR MOTIVO SEGUN EL TIPO
+# =========================================
+
+    MOTIVOS_ENTRADA = [
+        'AJUSTE_MANUAL',
     ]
 
-    if motivo not in MOTIVOS_VALIDOS:
-        messages.error(request,'Motivo inválido')
-        return redirect('kardex_view', id=producto_id)
+    MOTIVOS_SALIDA = [
+        'PRODUCTO_DAÑADO',
+        'PERDIDA',
+        'REGALIA',
+        'AJUSTE_MANUAL',
+        'ERROR_INVENTARIO',
+    ]
+
+    if tipo == 'ENTRADA':
+
+        if motivo not in MOTIVOS_ENTRADA:
+
+            messages.error(
+                request,
+                'Motivo de entrada inválido'
+            )
+
+            return redirect(
+                'kardex_view',
+                id=producto_id
+            )
+
+    elif tipo == 'SALIDA':
+
+        if motivo not in MOTIVOS_SALIDA:
+
+            messages.error(
+                request,
+                'Motivo de salida inválido'
+            )
+
+            return redirect(
+                'kardex_view',
+                id=producto_id
+            )
 
     # =========================================
     # GENERAR DOCUMENTO

@@ -15,6 +15,7 @@ urlpatterns = [
     path('editar/', editar_cliente, name='editar_cliente'),
     path('crear-user', crear_user_cliente, name='crear_user_cliente'),
     path('dashboard/', dashboard_view, name='dashboard_view'),
+    path('dashboard/excel/',dashboard_excel,name='dashboard_excel'),
     path('usuarios/', usuarios_view, name='usuarios'),
     path('usuarios/crear/', crear_usuario, name='crear_usuario'),
     path('bloquear/<int:user_id>/', bloquear_usuario, name='bloquear_usuario'),
