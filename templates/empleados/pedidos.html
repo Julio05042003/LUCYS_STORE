@@ -748,7 +748,7 @@
 
         // 1. VALIDAR SI EL CARRITO TIENE ITEMS
         if (filasProductos.length === 0) {
-            alert("❌ Debe agregar al menos un producto al carrito antes de guardar.");
+            alert("Debe agregar al menos un producto al carrito antes de guardar.");
             return;
         }
 
@@ -771,7 +771,7 @@
         });
 
         if (errorMayorista) {
-            alert("❌ Por favor, corrija las cantidades. Deben ser múltiplos de 3.");
+            alert("Por favor, corrija las cantidades. Deben ser múltiplos de 3.");
             return;
         }
 
@@ -845,12 +845,12 @@
                     closeCreateModal();
                     window.location.reload();
                 } else {
-                    alert("❌ Error al crear pedido: " + data.message);
+                    alert("Error al crear pedido: " + data.message);
                 }
             })
             .catch(error => {
                 console.error("Error en la petición POST de guardado:", error);
-                alert("❌ Hubo un fallo crítico al procesar el pedido.");
+                alert("Hubo un fallo crítico al procesar el pedido.");
             });
     }
 
@@ -872,7 +872,7 @@
             })
             .then(data => {
                 if (data.success === false) {
-                    alert("⚠️ " + data.message);
+                    alert(data.message);
                     return;
                 }
 
@@ -898,7 +898,7 @@
                 }
 
                 // =====================================================================
-                // 🔥 CAMBIO CRUCIAL: EVALUAR VISIBILIDAD AQUÍ ANTES DE CARGAR LOS SELECTS
+                // CAMBIO CRUCIAL: EVALUAR VISIBILIDAD AQUÍ ANTES DE CARGAR LOS SELECTS
                 // Esto fuerza a que los contenedores "Delivery" se muestren en el DOM,
                 // evitando que los selectores se limpien solos por estar ocultos.
                 // =====================================================================
@@ -987,7 +987,7 @@
     }
 
 // ======================================================
-    // 🔎 MOTOR DE BÚSQUEDA DE PRODUCTOS EXACTO PARA EDITAR (SELECT2)
+    // MOTOR DE BÚSQUEDA DE PRODUCTOS EXACTO PARA EDITAR (SELECT2)
     // ======================================================
     function inicializarBuscadorProductosEdit(sucursalId) {
         const $searchSelect = $('#editProductoSearch');
@@ -1035,7 +1035,7 @@
     }
 
     // ==========================================================
-    // 📊 RENDERIZAR TABLA INTERACTIVA DE EDICIÓN EN TIEMPO REAL
+    // RENDERIZAR TABLA INTERACTIVA DE EDICIÓN EN TIEMPO REAL
     // ==========================================================
     function renderizarCarritoEdit() {
         const cuerpo = document.getElementById('editCarritoCuerpo');
@@ -1205,7 +1205,7 @@
         if (!pedidoIdActual) return;
 
         if (carritoEdit.length === 0) {
-            alert("⚠️ No puedes guardar un pedido sin productos.");
+            alert("No puedes guardar un pedido sin productos.");
             return;
         }
 
@@ -1221,7 +1221,7 @@
         });
 
         if (errorMayorista) {
-            alert("❌ Por favor, corrija las cantidades en la lista de edición (deben ser múltiplos de 3).");
+            alert("Por favor, corrija las cantidades en la lista de edición (deben ser múltiplos de 3).");
             return;
         }
 
@@ -1328,7 +1328,7 @@
     // Mensaje dinámico de confirmación según la acción
     let mensajeConfirmacion = `¿Está seguro de cambiar el estado de este pedido a "${nombreEstado}"?`;
     if (nombreEstado.toLowerCase() === 'cancelado') {
-        mensajeConfirmacion = "⚠️ ¿Está seguro de CANCELAR este pedido? Esta acción no se puede deshacer.";
+        mensajeConfirmacion = "¿Está seguro de CANCELAR este pedido? Esta acción no se puede deshacer.";
     } else if (nombreEstado.toLowerCase() === 'borrador') {
         mensajeConfirmacion = "¿Desea tomar este pedido para empezar a editarlo?";
     }
@@ -1356,10 +1356,10 @@
     .then(data => {
         if (data.success) {
             // Usamos una alerta limpia y recargamos la interfaz para ver los cambios reflejados
-            alert("✅ " + data.message);
+            alert(data.message);
             location.reload(); 
         } else {
-            alert("⚠️ Error: " + data.message);
+            alert("Error: " + data.message);
         }
     })
     .catch(error => {
