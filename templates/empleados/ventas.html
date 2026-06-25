@@ -411,6 +411,8 @@
         font-size: 13px;
     }
 }
+
+
 </style>
 
 <div class="main-container">
@@ -549,6 +551,14 @@
     </main>
 </div>
 
+
+<style>
+    .total-item.grand-total{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+</style>
 <!-- ========================= MODAL VENTA ========================= -->
 <div id="modalVenta" class="modal-overlay">
     <div class="modal-content" style="max-width: 1080px;">
@@ -639,8 +649,13 @@
             <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 12px 12px;">
                 <div class="total-section">
                     <div class="total-item grand-total">
-                        <span>TOTAL A PAGAR: <strong id="total-pagar">C$0.00</strong></span>
-                    </div>
+    <span style="font-size: 1.5rem;">
+        Total:
+        <strong id="total-pagar">C$ 0.00</strong>
+        <span style="margin: 0 20px;">|</span>
+        <strong id="total-pagar-usd">US$ 0.00</strong>
+    </span>
+</div>
                 </div>
                 <div class="btn-group">
                     <button type="button" class="btn-secondary" onclick="cerrarModal('modalVenta')">Cancelar</button>
@@ -729,6 +744,7 @@ MODAL COBRO
                         <label>Total Factura</label>
 
                         <input type="text" id="totalCobro" readonly>
+                        <input type="hidden" id="totalCobroValor">
 
                     </div>
 
@@ -1313,6 +1329,7 @@ MODAL COBRO
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <script>
 
     
@@ -1823,23 +1840,24 @@ $('#pedido-select').on('select2:select', function (e) {
     ============================== */
     function calcularTotal() {
 
-        let total = 0;
+    let total = 0;
 
-        carrito.forEach(item => {
+    carrito.forEach(item => {
 
-            let descuentoTotal =
-                item.descuento * item.cantidad;
+        let descuentoTotal =
+            item.descuento * item.cantidad;
 
-            total +=
-                (item.precio * item.cantidad)
-                - descuentoTotal;
-        });
+        total +=
+            (item.precio * item.cantidad)
+            - descuentoTotal;
+    });
 
-        document.getElementById(
-            "total-pagar"
-        ).innerText =
-            "C$ " + total.toFixed(2);
-    }
+    document.getElementById("total-pagar").innerText =
+        "C$ " + total.toFixed(2);
+
+    document.getElementById("total-pagar-usd").innerText =
+        "US$ " + (total / tasaCambio).toFixed(2);
+}
     /* ==============================
        GUARDAR VENTA
     ============================== */
@@ -1880,12 +1898,18 @@ $('#pedido-select').on('select2:select', function (e) {
     }
 
     function abrirModalCobro(id, total) {
+        const tasa = parseFloat(document.getElementById('tipoCambio').value);
 
         document.getElementById('modalCobro').style.display = 'flex';
 
         document.getElementById('venta_id_cobro').value = id;
 
-        document.getElementById('totalCobro').value = total;
+        document.getElementById('totalCobro').value =
+        `C$ ${parseFloat(total).toFixed(2)} | US$ ${(parseFloat(total) / tasa).toFixed(2)}`;
+
+    document.getElementById('totalCobroValor').value =
+        parseFloat(total);
+
     }
 
     function calcularVuelto() {
@@ -2111,6 +2135,8 @@ function enviarVentaWhatsApp() {
         document.getElementById('tipoCambio').value
     );
 
+    
+
     /* =========================================================
 ERRORES MODAL
 ========================================================= */
@@ -2237,7 +2263,7 @@ USD SOLO NUMEROS
         const totalFactura =
             parseFloat(
                 document.getElementById(
-                    'totalCobro'
+                    'totalCobroValor'
                 ).value
             ) || 0;
 
@@ -2386,7 +2412,7 @@ USD SOLO NUMEROS
             const totalFactura =
                 parseFloat(
                     document.getElementById(
-                        'totalCobro'
+                        'totalCobroValor'
                     ).value
                 ) || 0;
 
