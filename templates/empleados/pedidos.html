@@ -3,8 +3,10 @@
 
 {% block content %}
 
+<!-- Carga de Dependencias y Hoja de Estilos Externa -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/style-pedidos.css' %}">
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -27,8 +29,7 @@
     </div>
 
     <div class="filter-controls">
-        <input type="text" id="searchInput" placeholder="Buscar por código, cliente o vendedor..."
-            onkeyup="filtrarPedidos()">
+        <input type="text" id="searchInput" placeholder="Buscar por código, cliente o vendedor..." onkeyup="filtrarPedidos()">
         <select id="filterEstado" onchange="filtrarPedidos()">
             <option value="">Todos los estados</option>
             <option value="Pendiente">Pendiente</option>
@@ -43,8 +44,6 @@
 
 <div class="orders-grid" id="contenedorPedidos">
     {% for p in pedidos %}
-    
-        {# Forzamos una doble verificación visual exclusiva para vendedores en el HTML #}
         {% if request.user.empleado.rol.nombre|lower == 'vendedor' and p.estado.nombre != 'Pendiente' and p.vendedor != request.user.empleado %}
             {# Se salta el pedido si no es pendiente y pertenece a otro vendedor #}
         {% else %}
@@ -83,20 +82,20 @@
                     <p><span class="order-label">Entrega:</span> {{ p.tipo_entrega.nombre }}</p>
 
                     {% if p.tipo_entrega.nombre|lower == 'delivery' %}
-                    <p style="margin-top: 4px; line-height: 1.3;">
+                    <p>
                         <span class="order-label">Dirección:</span>
                         {% if p.direccion_envio and p.direccion_envio.direccion %}
-                            <span style="color: #666; font-size: 0.9rem;" title="{{ p.direccion_envio.direccion.ciudad }}, {{ p.direccion_envio.direccion.departamento }} - {{ p.direccion_envio.direccion.detalle }}">
-                                <i class="bi bi-geo-alt" style="color: #d81b60;"></i> 
+                            <span title="{{ p.direccion_envio.direccion.ciudad }}, {{ p.direccion_envio.direccion.departamento }} - {{ p.direccion_envio.direccion.detalle }}">
+                                <i class="bi bi-geo-alt" style="color: var(--rosa-oscuro);"></i> 
                                 {{ p.direccion_envio.direccion.ciudad }}, {{ p.direccion_envio.direccion.detalle|slice:":30" }}{% if p.direccion_envio.direccion.detalle|length > 30 %}...{% endif %}
                             </span>
                         {% else %}
-                            <span class="text-muted" style="font-size: 0.85rem; font-style:italic;">No se especificó dirección</span>
+                            <span class="text-muted">No se especificó dirección</span>
                         {% endif %}
                     </p>
                     {% endif %}
                     
-                    <div class="order-products-preview" style="margin-top: 12px;">
+                    <div class="order-products-preview">
                         {% if p.detallepedido_set.all %}
                         {% for item in p.detallepedido_set.all|slice:":4" %}
                         {% if item.producto.imagen %}
@@ -138,7 +137,7 @@
                     <button type="button" class="btn-action-edit" onclick="editarPedido('{{ p.id }}')">
                         <i class="bi bi-pencil-square"></i> Editar
                     </button>
-                    <button type="button" class="btn-pink-action" style="padding:8px;" onclick="cambiarEstado('{{ p.id }}', 'En Bodega')">
+                    <button type="button" class="btn-pink-action" onclick="cambiarEstado('{{ p.id }}', 'En Bodega')">
                         <i class="bi bi-box-seam"></i> Enviar
                     </button>
                     <button type="button" class="btn-action-danger" onclick="cambiarEstado('{{ p.id }}', 'Cancelado')">
@@ -161,221 +160,193 @@
         {% endif %}
     {% empty %}
     <div class="empty-state">
-        <i class="bi bi-inbox" style="font-size: 40px; color: var(--pink-accent);"></i>
+        <i class="bi bi-inbox" style="font-size: 40px; color: var(--rosa-principal);"></i>
         <p>No existen pedidos registrados</p>
     </div>
     {% endfor %}
 </div>
 
-<div class="modal-custom" id="modalCrearPedido" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    <div class="modal-content-custom"
-        style="border: 1px solid #f3d1e1; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(216, 27, 96, 0.15);">
-        <div class="modal-header-custom"
-            style="background: #fff5f8; border-bottom: 1px solid #fcd8e4; padding: 15px 20px;">
-            <h2 style="color: #333; font-weight: 600;">Nuevo Pedido</h2>
+<!-- MODAL CREAR PEDIDO -->
+<div class="modal-custom" id="modalCrearPedido">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h2>Nuevo Pedido</h2>
             <button type="button" class="btn-secondary-custom" onclick="closeCreateModal()">✖</button>
         </div>
-        <div class="table-scroll">
-            <div class="modal-body-custom" style="padding: 20px;">
-                <div class="form-grid-custom">
-                    {% if request.user.empleado %}
-                    <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Cliente</label>
-                        <select id="clienteSelect" style="width:100%"></select>
-                    </div>
+        <div class="modal-body-custom">
+            <div class="form-grid-custom">
+                {% if request.user.empleado %}
+                <div class="form-group-custom">
+                    <label>Cliente</label>
+                    <select id="clienteSelect" style="width:100%"></select>
+                </div>
+                {% endif %}
+
+                <div class="form-group-custom">
+                    <label>Sucursal</label>
+                    {% if not request.user.empleado %}
+                    <select id="sucursal" onchange="limpiarProductosBuscados()">
+                        {% for s in sucursales %}
+                        <option value="{{ s.sucursal_id }}">{{ s.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <input type="hidden" id="sucursal" value="{{ request.user.empleado.sucursal.sucursal_id }}">
+                    <input type="text" readonly value="{{ request.user.empleado.sucursal.nombre }}">
                     {% endif %}
+                </div>
 
+                <div class="form-group-custom">
+                    <label>Tipo de Entrega</label>
+                    <select id="tipoEntrega" onchange="evaluarTipoEntrega()">
+                        <option value="">Seleccione tipo...</option>
+                        {% for t in tipos_entrega %}
+                        <option value="{{ t.id }}" data-nombre="{{ t.nombre|lower }}">{{ t.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="seccionDelivery" class="delivery-container-animated">
+                <div class="form-grid-custom">
                     <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Sucursal</label>
-                        {% if not request.user.empleado %}
-                        <select id="sucursal" onchange="limpiarProductosBuscados()">
-                            {% for s in sucursales %}
-                            <option value="{{ s.sucursal_id }}">{{ s.nombre }}</option>
+                        <label>Método de Envío</label>
+                        <select id="metodoEnvio">
+                            <option value="">Seleccione método...</option>
+                            {% for m in metodos_envio %}
+                            <option value="{{ m.id }}">{{ m.nombre }} (C$ {{ m.precio }})</option>
                             {% endfor %}
                         </select>
-                        {% else %}
-                        <input type="hidden" id="sucursal" value="{{ request.user.empleado.sucursal.sucursal_id }}">
-                        <input type="text" class="form-control" value="{{ request.user.empleado.sucursal.nombre }}"
-                            readonly
-                            style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 6px 12px; border-radius: 4px; width:100%; color: #666;">
-                        {% endif %}
                     </div>
-
                     <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Tipo de Entrega</label>
-                        <select id="tipoEntrega" onchange="evaluarTipoEntrega()">
-                            <option value="">Seleccione tipo...</option>
-                            {% for t in tipos_entrega %}
-                            <option value="{{ t.id }}" data-nombre="{{ t.nombre|lower }}">{{ t.nombre }}</option>
-                            {% endfor %}
+                        <label>Dirección de Envío del Cliente</label>
+                        <select id="direccionEnvio" style="width:100%">
+                            <option value="">Selecciona un cliente primero...</option>
                         </select>
                     </div>
                 </div>
+            </div>
 
-                <div id="seccionDelivery" class="delivery-container-animated">
-                    <div class="form-grid-custom">
-                        <div class="form-group-custom">
-                            <label style="font-weight: 600; color: #555;">Método de Envío</label>
-                            <select id="metodoEnvio">
-                                <option value="">Seleccione método...</option>
-                                {% for m in metodos_envio %}
-                                <option value="{{ m.id }}">{{ m.nombre }} (C$ {{ m.precio }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group-custom">
-                            <label style="font-weight: 600; color: #555;">Dirección de Envío del Cliente</label>
-                            <select id="direccionEnvio" style="width:100%">
-                                <option value="">Selecciona un cliente primero...</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group-custom" style="margin: 15px 0;">
+                <label>Buscar Productos</label>
+                <select id="productoSearch" style="width:100%"></select>
+            </div>
 
-                <div class="form-group-custom" style="margin-bottom: 15px; margin-top: 15px;">
-                    <label style="font-weight: 600; color: #333;">Buscar Productos</label>
-                    <select id="productoSearch" style="width:100%"></select>
-                </div>
+            <div id="productsContainer" class="modal-table-container">
+                <table class="modal-table" id="tablaCarrito">
+                    <thead>
+                        <tr>
+                            <th>Detalle del Producto</th>
+                            <th style="text-align: right; width: 120px;">Precio</th>
+                            <th style="text-align: center; width: 160px;">Cantidad (Mód. 3)</th>
+                            <th style="text-align: right; width: 120px;">Subtotal</th>
+                            <th style="text-align: center; width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="carritoCuerpo">
+                        <tr id="carritoVacio">
+                            <td colspan="5" style="text-align: center; color: var(--texto-secundario); padding: 30px;">
+                                El carrito está vacío. Busca un producto arriba para añadirlo.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                <div id="productsContainer"
-                    style="min-height: 50px; background: #fffcfd; border-radius:8px; padding:0px; border: 1px solid #fcd8e4; overflow: hidden;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;"
-                        id="tablaCarrito">
-                        <thead>
-                            <tr
-                                style="background: #fff5f8; border-bottom: 1px solid #fcd8e4; color: #d81b60; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">
-                                <th style="padding: 10px 15px;">Detalle del Producto</th>
-                                <th style="padding: 10px 15px; text-align: right; width: 120px;">Precio</th>
-                                <th style="padding: 10px 15px; text-align: center; width: 160px;">Cantidad (Mód. 3)</th>
-                                <th style="padding: 10px 15px; text-align: right; width: 120px;">Subtotal</th>
-                                <th style="padding: 10px 15px; text-align: center; width: 50px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="carritoCuerpo">
-                            <tr id="carritoVacio">
-                                <td colspan="5"
-                                    style="text-align: center; color: #b3b3b3; padding: 30px; font-size: 0.9rem;">
-                                    El carrito está vacío. Busca un producto arriba para añadirlo.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div
-                    style="text-align: right; margin-top:15px; background: #fff5f8; padding: 15px; border-radius: 8px; border: 1px solid #fcd8e4;">
-                    <h3 id="totalPedido"
-                        style="color: #d81b60; font-size: 1.5rem; font-weight: bold; margin: 0 0 10px 0;">Total: C$ 0.00
-                    </h3>
-                    <button type="button" class="btn-pink-action"
-                        style="width:100%; background: #d81b60; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s;"
-                        onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#d81b60'"
-                        onclick="guardarPedido()">Guardar Pedido</button>
-                </div>
+            <div class="modal-summary-box">
+                <h3 id="totalPedido">Total: C$ 0.00</h3>
+                <button type="button" class="btn-pink-action" style="width:100%; padding: 12px;" onclick="guardarPedido()">
+                    Guardar Pedido
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-
-<div class="modal-custom" id="modalEditarPedido"
-    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: none;">
-    <div class="modal-content-custom"
-        style="border: 1px solid #f3d1e1; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(216, 27, 96, 0.15);">
-        <div class="modal-header-custom"
-            style="background: #fff5f8; border-bottom: 1px solid #fcd8e4; padding: 15px 20px;">
-            <h2 style="color: #333; font-weight: 600;">Editar Pedido <span id="editLabelCodigo"
-                    style="color: #d81b60;"></span></h2>
+<!-- MODAL EDITAR PEDIDO -->
+<div class="modal-custom" id="modalEditarPedido">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h2>Editar Pedido <span id="editLabelCodigo" style="color: var(--rosa-oscuro);"></span></h2>
             <button type="button" class="btn-secondary-custom" onclick="closeEditModal()">✖</button>
         </div>
-        <div class="table-scroll">
-            <div class="modal-body-custom" style="padding: 20px;">
+        <div class="modal-body-custom">
+            <div class="form-grid-custom">
+                {% if request.user.empleado %}
+                <div class="form-group-custom">
+                    <label>Cliente</label>
+                    <select id="editClienteSelect" style="width:100%" disabled></select>
+                </div>
+                {% endif %}
+
+                <div class="form-group-custom">
+                    <label>Sucursal</label>
+                    <input type="hidden" id="editSucursal" value="">
+                    <input type="text" id="editSucursalNombre" readonly>
+                </div>
+
+                <div class="form-group-custom">
+                    <label>Tipo de Entrega</label>
+                    <select id="editTipoEntrega" onchange="evaluarTipoEntregaEdit()">
+                        <option value="">Seleccione tipo...</option>
+                        {% for t in tipos_entrega %}
+                        <option value="{{ t.id }}" data-nombre="{{ t.nombre|lower }}">{{ t.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="editSeccionDelivery" class="delivery-container-animated">
                 <div class="form-grid-custom">
-                    {% if request.user.empleado %}
                     <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Cliente</label>
-                        <select id="editClienteSelect" style="width:100%" disabled></select>
-                    </div>
-                    {% endif %}
-
-                    <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Sucursal</label>
-                        <input type="hidden" id="editSucursal" value="">
-                        <input type="text" id="editSucursalNombre" class="form-control" readonly
-                            style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 6px 12px; border-radius: 4px; width:100%; color: #666;">
-                    </div>
-
-                    <div class="form-group-custom">
-                        <label style="font-weight: 600; color: #555;">Tipo de Entrega</label>
-                        <select id="editTipoEntrega" onchange="evaluarTipoEntregaEdit()">
-                            <option value="">Seleccione tipo...</option>
-                            {% for t in tipos_entrega %}
-                            <option value="{{ t.id }}" data-nombre="{{ t.nombre|lower }}">{{ t.nombre }}</option>
+                        <label>Método de Envío</label>
+                        <select id="editMetodoEnvio" onchange="calcularTotalEdit()">
+                            <option value="">Seleccione método...</option>
+                            {% for m in metodos_envio %}
+                            <option value="{{ m.id }}" data-precio="{{ m.precio }}">{{ m.nombre }} (C$ {{ m.precio }})</option>
                             {% endfor %}
                         </select>
                     </div>
-                </div>
-
-                <div id="editSeccionDelivery" class="seccion-delivery-clase" style="display: none;">
-                    <div class="form-grid-custom">
-                        <div class="form-group-custom">
-                            <label style="font-weight: 600; color: #555;">Método de Envío</label>
-                            <select id="editMetodoEnvio" onchange="calcularTotalEdit()">
-                                <option value="">Seleccione método...</option>
-                                {% for m in metodos_envio %}
-                                <option value="{{ m.id }}" data-precio="{{ m.precio }}">{{ m.nombre }} (C$ {{ m.precio
-                                    }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group-custom">
-                            <label style="font-weight: 600; color: #555;">Dirección de Envío del Cliente</label>
-                            <select id="editDireccionEnvio" class="form-control" style="width:100%">
-                                <option value="">Seleccione dirección...</option>
-                            </select>
-                        </div>
+                    <div class="form-group-custom">
+                        <label>Dirección de Envío del Cliente</label>
+                        <select id="editDireccionEnvio" style="width:100%">
+                            <option value="">Seleccione dirección...</option>
+                        </select>
                     </div>
                 </div>
+            </div>
 
-                <div class="form-group-custom" style="margin-bottom: 15px; margin-top: 15px;">
-                    <label style="font-weight: 600; color: #333;">Buscar y Agregar Más Productos</label>
-                    <select id="editProductoSearch" style="width:100%"></select>
-                </div>
+            <div class="form-group-custom" style="margin: 15px 0;">
+                <label>Buscar y Agregar Más Productos</label>
+                <select id="editProductoSearch" style="width:100%"></select>
+            </div>
 
-                <div id="editProductsContainer"
-                    style="min-height: 50px; background: #fffcfd; border-radius:8px; padding:0px; border: 1px solid #fcd8e4; overflow: hidden;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;"
-                        id="tablaCarritoEdit">
-                        <thead>
-                            <tr
-                                style="background: #fff5f8; border-bottom: 1px solid #fcd8e4; color: #d81b60; font-weight: 600; font-size: 0.85rem; text-transform: uppercase;">
-                                <th style="padding: 10px 15px;">Detalle del Producto</th>
-                                <th style="padding: 10px 15px; text-align: right; width: 120px;">Precio</th>
-                                <th style="padding: 10px 15px; text-align: center; width: 160px;">Cantidad</th>
-                                <th style="padding: 10px 15px; text-align: right; width: 120px;">Subtotal</th>
-                                <th style="padding: 10px 15px; text-align: center; width: 50px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="editCarritoCuerpo">
-                        </tbody>
-                    </table>
-                </div>
+            <div id="editProductsContainer" class="modal-table-container">
+                <table class="modal-table" id="tablaCarritoEdit">
+                    <thead>
+                        <tr>
+                            <th>Detalle del Producto</th>
+                            <th style="text-align: right; width: 120px;">Precio</th>
+                            <th style="text-align: center; width: 160px;">Cantidad</th>
+                            <th style="text-align: right; width: 120px;">Subtotal</th>
+                            <th style="text-align: center; width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="editCarritoCuerpo"></tbody>
+                </table>
+            </div>
 
-                <div
-                    style="text-align: right; margin-top:15px; background: #fff5f8; padding: 15px; border-radius: 8px; border: 1px solid #fcd8e4;">
-                    <h3 id="editTotalPedido"
-                        style="color: #d81b60; font-size: 1.5rem; font-weight: bold; margin: 0 0 10px 0;">Total: C$ 0.00
-                    </h3>
-                    <button type="button" class="btn-pink-action"
-                        style="width:100%; background: #d81b60; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s;"
-                        onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#d81b60'"
-                        onclick="guardarEdicionPedido()">Guardar Cambios Actualizados</button>
-                </div>
+            <div class="modal-summary-box">
+                <h3 id="editTotalPedido">Total: C$ 0.00</h3>
+                <button type="button" class="btn-pink-action" style="width:100%; padding: 12px;" onclick="guardarEdicionPedido()">
+                    Guardar Cambios Actualizados
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- MODAL DETALLE PEDIDO -->
 <div class="modal-custom" id="modalDetallePedido">
     <div class="modal-content-custom">
         <div class="modal-header-custom">
@@ -405,16 +376,15 @@
             </div>
 
             <div style="margin-top:15px;">
-                <label style="font-weight:600; font-size:14px; color:#666;">Productos Incluidos:</label>
-                <div
-                    style="max-height:180px; overflow-y:auto; border:1px solid var(--pink-light); border-radius:8px; margin-top:5px;">
-                    <table style="width:100%; font-size:13px; text-align:left; border-collapse: collapse;">
-                        <thead style="background-color: var(--pink-light);">
+                <label style="font-weight: var(--peso-negrita); font-size: var(--texto-xs); color: var(--texto-secundario); text-transform: uppercase;">Productos Incluidos:</label>
+                <div class="modal-table-container" style="max-height: 180px; overflow-y: auto; margin-top: 6px;">
+                    <table class="modal-table">
+                        <thead>
                             <tr>
-                                <th style="padding:8px;">Producto</th>
-                                <th style="padding:8px;">Cant.</th>
-                                <th style="padding:8px;">Precio</th>
-                                <th style="padding:8px;">Subtotal</th>
+                                <th>Producto</th>
+                                <th style="text-align: center;">Cant.</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
                             </tr>
                         </thead>
                         <tbody id="detalleProductos"></tbody>
@@ -422,18 +392,15 @@
                 </div>
             </div>
 
-            <div style="text-align: right; margin-top:20px;">
-                <h3 id="detalleTotal" style="color: var(--pink-dark); margin-bottom:10px;">Total: C$ 0.00</h3>
-
+            <div class="modal-summary-box" style="margin-top: 20px;">
+                <h3 id="detalleTotal">Total: C$ 0.00</h3>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ======================================================
-    // CONTROL DE APERTURA Y CIERRE DE MODALES
-    // ======================================================
+    // CONTROL DE MODALES
     function openCreateModal() { document.getElementById('modalCrearPedido').style.display = 'flex'; }
     function closeCreateModal() { document.getElementById('modalCrearPedido').style.display = 'none'; }
 
@@ -443,9 +410,7 @@
     function openDetalleModal() { document.getElementById('modalDetallePedido').style.display = 'flex'; }
     function closeDetalleModal() { document.getElementById('modalDetallePedido').style.display = 'none'; }
 
-    // ======================================================
-    // MOTOR DE BÚSQUEDA Y FILTRO DINÁMICO PARA LAS CARDS
-    // ======================================================
+    // FILTRADO DINÁMICO
     function filtrarPedidos() {
         let searchInput = document.getElementById('searchInput').value.toLowerCase();
         let filterEstado = document.getElementById('filterEstado').value;
@@ -458,20 +423,12 @@
             let matchesSearch = searchText.includes(searchInput);
             let matchesEstado = filterEstado === "" || cardEstado === filterEstado;
 
-            if (matchesSearch && matchesEstado) {
-                card.style.display = "flex";
-            } else {
-                card.style.display = "none";
-            }
+            card.style.display = (matchesSearch && matchesEstado) ? "flex" : "none";
         });
     }
 
-    // ======================================================
-    // INICIALIZACIÓN DE BUSCADORES AJAX (SELECT2)
-    // ======================================================
+    // INICIALIZACIÓN SELECT2
     document.addEventListener("DOMContentLoaded", function () {
-
-        // 1. BUSCADOR DE CLIENTES
         if ($('#clienteSelect').length) {
             $('#clienteSelect').select2({
                 dropdownParent: $('#modalCrearPedido'),
@@ -481,23 +438,15 @@
                     url: "{% url 'buscar_clientes' %}",
                     dataType: 'json',
                     delay: 250,
-                    data: function (params) {
-                        return { term: params.term };
-                    },
-                    processResults: function (data) {
-                        return { results: data };
-                    },
+                    data: params => ({ term: params.term }),
+                    processResults: data => ({ results: data }),
                     cache: true
                 }
-            });
-
-            $('#clienteSelect').on('select2:select', function (e) {
-                let clienteId = e.params.data.id;
-                cargarDireccionesCliente(clienteId);
+            }).on('select2:select', function (e) {
+                cargarDireccionesCliente(e.params.data.id);
             });
         }
 
-        // 2. BUSCADOR DE PRODUCTOS
         if ($('#productoSearch').length) {
             $('#productoSearch').select2({
                 dropdownParent: $('#modalCrearPedido'),
@@ -509,45 +458,28 @@
                     delay: 250,
                     data: function (params) {
                         let sucursalElement = document.getElementById('sucursal');
-                        let sucursalId = sucursalElement ? sucursalElement.value : '';
-
-                        return {
-                            term: params.term,
-                            sucursal: sucursalId
-                        };
+                        return { term: params.term, sucursal: sucursalElement ? sucursalElement.value : '' };
                     },
                     processResults: function (data) {
-                        if (data.success === false) {
-                            console.error("Error desde el servidor al buscar productos:", data.message);
-                            return { results: [] };
-                        }
-                        return { results: data };
+                        return data.success === false ? { results: [] } : { results: data };
                     },
                     cache: true
                 }
-            });
-
-            $('#productoSearch').on('select2:select', function (e) {
-                let producto = e.params.data;
-                if (producto.id) {
-                    agregarAlCarrito(producto.id, producto.nombre || producto.text, producto.precio, producto.stock);
-                }
+            }).on('select2:select', function (e) {
+                let p = e.params.data;
+                if (p.id) agregarAlCarrito(p.id, p.nombre || p.text, p.precio, p.stock);
                 $('#productoSearch').val(null).trigger('change');
             });
         }
     });
 
-    // ======================================================
-    // FUNCIONES DEL CARRITO MAYORISTA
-    // ======================================================
+    // CARRITO MAYORISTA (NUEVO PEDIDO)
     function agregarAlCarrito(id, nombre, precio, stockMax) {
         let vacio = document.getElementById('carritoVacio');
         if (vacio) vacio.remove();
 
-        let filaExistente = document.getElementById(`item-cart-${id}`);
-        if (filaExistente) {
+        if (document.getElementById(`item-cart-${id}`)) {
             alert("Este producto ya está en la lista.");
-            filaExistente.querySelector('.cantidad-cart').focus();
             return;
         }
 
@@ -556,24 +488,23 @@
         tr.id = `item-cart-${id}`;
         tr.className = 'fila-producto-carrito';
         tr.setAttribute('data-id', id);
-        tr.style.borderBottom = '1px solid #fce8f1';
 
         tr.innerHTML = `
-            <td style="padding: 12px 15px;">
-                <span style="font-weight: 600; color: #333;">${nombre}</span><br>
-                <small style="color: #c2185b; font-weight: 500;">Stock: ${stockMax} unds.</small>
+            <td>
+                <strong>${nombre}</strong><br>
+                <small style="color: var(--rosa-oscuro);">Stock: ${stockMax} unds.</small>
             </td>
-            <td style="padding: 12px 15px; text-align: right; color: #555;">C$ ${parseFloat(precio).toFixed(2)}</td>
-            <td style="padding: 12px 15px; text-align: center;">
+            <td style="text-align: right;">C$ ${parseFloat(precio).toFixed(2)}</td>
+            <td style="text-align: center;">
                 <input type="number" class="cantidad-cart" placeholder="Ej: 3, 6..." min="3" max="${stockMax}" step="3"
-                       style="width: 80px; text-align: center; border: 1px solid #fcd8e4; padding: 5px; border-radius: 4px; font-weight: bold;"
+                       style="width: 80px; text-align: center; border: 1px solid var(--borde); padding: 5px; border-radius: var(--radio-sm); font-weight: bold;"
                        oninput="filtrarSoloEnteros(this)"
                        onchange="validarYCalcularMayorista(${id}, ${precio}, ${stockMax})">
-                <br><small class="msg-error-modulo" style="color: #dc2626; font-size: 0.75rem; display: none; font-weight: 500;">Múltiplo de 3</small>
+                <br><small class="msg-error-modulo" style="color: var(--rojo); font-size: 0.75rem; display: none;">Múltiplo de 3</small>
             </td>
-            <td class="subtotal-item-txt" style="padding: 12px 15px; text-align: right; font-weight: bold; color: #333;">C$ 0.00</td>
-            <td style="padding: 12px 15px; text-align: center;">
-                <button type="button" onclick="quitarDelCarrito(${id})" style="background: none; border: none; color: #cc1d5c; cursor: pointer; font-size: 1rem;">🗑️</button>
+            <td class="subtotal-item-txt" style="text-align: right; font-weight: bold;">C$ 0.00</td>
+            <td style="text-align: center;">
+                <button type="button" onclick="quitarDelCarrito(${id})" style="background: none; border: none; color: var(--rojo); cursor: pointer;">🗑️</button>
             </td>
         `;
 
@@ -581,20 +512,17 @@
         recalcularTotalesCarrito();
     }
 
-    function filtrarSoloEnteros(input) {
-        input.value = input.value.replace(/[^0-9]/g, '');
-    }
+    function filtrarSoloEnteros(input) { input.value = input.value.replace(/[^0-9]/g, ''); }
 
     function validarYCalcularMayorista(id, precio, stockMax) {
         let fila = document.getElementById(`item-cart-${id}`);
         let input = fila.querySelector('.cantidad-cart');
         let errorMsg = fila.querySelector('.msg-error-modulo');
-
         let cantidad = parseInt(input.value) || 0;
 
         if (cantidad === 0) {
             errorMsg.style.display = 'none';
-            input.style.borderColor = '#fcd8e4';
+            input.style.borderColor = 'var(--borde)';
             fila.querySelector('.subtotal-item-txt').textContent = "C$ 0.00";
             recalcularTotalesCarrito();
             return;
@@ -604,24 +532,18 @@
             alert(`Stock insuficiente. Inventario disponible: ${stockMax} unidades.`);
             cantidad = stockMax - (stockMax % 3);
             input.value = cantidad === 0 ? "" : cantidad;
-            if (cantidad === 0) {
-                fila.querySelector('.subtotal-item-txt').textContent = "C$ 0.00";
-                recalcularTotalesCarrito();
-                return;
-            }
         }
 
         if (cantidad % 3 !== 0) {
             errorMsg.style.display = 'block';
-            input.style.borderColor = '#dc2626';
+            input.style.borderColor = 'var(--rojo)';
             fila.querySelector('.subtotal-item-txt').textContent = "C$ 0.00";
         } else {
             errorMsg.style.display = 'none';
-            input.style.borderColor = '#fcd8e4';
+            input.style.borderColor = 'var(--borde)';
             let subtotal = cantidad * precio;
             fila.querySelector('.subtotal-item-txt').textContent = `C$ ${subtotal.toFixed(2)}`;
         }
-
         recalcularTotalesCarrito();
     }
 
@@ -635,23 +557,20 @@
             let cantidad = parseInt(input.value) || 0;
             let errorVisible = fila.querySelector('.msg-error-modulo').style.display === 'block';
 
-            if (errorVisible || cantidad === 0) {
-                carritoTieneErrores = true;
-            }
+            if (errorVisible || cantidad === 0) carritoTieneErrores = true;
 
             let textoPrecio = fila.children[1].textContent.replace('C$', '').trim();
             let precio = parseFloat(textoPrecio) || 0;
-
             granTotal += (cantidad * precio);
         });
 
         let totalTxt = document.getElementById('totalPedido');
         if (carritoTieneErrores) {
             totalTxt.textContent = "Total: Incompleto";
-            totalTxt.style.color = "#dc2626";
+            totalTxt.style.color = "var(--rojo)";
         } else {
             totalTxt.textContent = `Total: C$ ${granTotal.toFixed(2)}`;
-            totalTxt.style.color = "#d81b60";
+            totalTxt.style.color = "var(--rosa-oscuro)";
         }
     }
 
@@ -663,18 +582,14 @@
         if (cuerpo.querySelectorAll('.fila-producto-carrito').length === 0) {
             cuerpo.innerHTML = `
                 <tr id="carritoVacio">
-                    <td colspan="5" style="text-align: center; color: #b3b3b3; padding: 30px; font-size: 0.9rem;">
+                    <td colspan="5" style="text-align: center; color: var(--texto-secundario); padding: 30px;">
                         El carrito está vacío. Busca un producto arriba para añadirlo.
                     </td>
-                </tr>
-            `;
+                </tr>`;
         }
         recalcularTotalesCarrito();
     }
 
-    // ======================================================
-    // 3. CARGAR DIRECCIONES DEL CLIENTE DINÁMICAMENTE
-    // ======================================================
     function cargarDireccionesCliente(clienteId) {
         let selectDireccion = document.getElementById('direccionEnvio');
         if (!selectDireccion) return;
@@ -682,77 +597,51 @@
         selectDireccion.innerHTML = '<option value="">Cargando direcciones...</option>';
 
         fetch("{% url 'Buscar_direcciones_cliente' %}?cliente_id=" + clienteId)
-            .then(response => {
-                if (!response.ok) throw new Error("Error de comunicación.");
-                return response.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 selectDireccion.innerHTML = '';
-
                 if (!data || data.length === 0) {
                     selectDireccion.innerHTML = '<option value="">El cliente no tiene direcciones registradas</option>';
-                    if ($(selectDireccion).hasClass("select2-hidden-accessible")) { $(selectDireccion).trigger('change'); }
                     return;
                 }
-
                 selectDireccion.innerHTML = '<option value="">Seleccione una dirección de entrega...</option>';
                 data.forEach(dir => {
                     let opt = document.createElement('option');
-                    // IMPORTANTE: Asegurar que el valor asignado sea la PK exacta de la dirección
                     opt.value = dir.id;
                     opt.textContent = dir.text;
                     selectDireccion.appendChild(opt);
                 });
-
-                if ($(selectDireccion).hasClass("select2-hidden-accessible")) { $(selectDireccion).trigger('change'); }
             })
-            .catch(error => {
-                console.error("Error:", error);
-                selectDireccion.innerHTML = '<option value="">Error al obtener las direcciones</option>';
-            });
+            .catch(() => selectDireccion.innerHTML = '<option value="">Error al obtener direcciones</option>');
     }
 
-
-    // ======================================================
-    // 4. ANIMACIÓN Y VISUALIZACIÓN DE DELIVERY
-    // ======================================================
     function evaluarTipoEntrega() {
         let tipoEntregaSelect = document.getElementById('tipoEntrega');
         let seccionDelivery = document.getElementById('seccionDelivery');
         if (!tipoEntregaSelect || !seccionDelivery) return;
 
-        // Obtenemos la opción seleccionada actualmente
-        let opcionSeleccionada = tipoEntregaSelect.options[tipoEntregaSelect.selectedIndex];
+        let opcion = tipoEntregaSelect.options[tipoEntregaSelect.selectedIndex];
+        let nombre = opcion ? (opcion.getAttribute('data-nombre') || "") : "";
 
-        // Leemos el atributo data-nombre (ej: "delivery", "presencial")
-        let nombreEntrega = opcionSeleccionada ? (opcionSeleccionada.getAttribute('data-nombre') || "") : "";
-
-        // Si el nombre contiene 'delivery' o 'envi', activamos la animación hacia abajo
-        if (nombreEntrega.includes('delivery') || nombreEntrega.includes('envi')) {
+        if (nombre.includes('delivery') || nombre.includes('envi')) {
             seccionDelivery.classList.add('show');
         } else {
             seccionDelivery.classList.remove('show');
             document.getElementById('metodoEnvio').value = "";
             document.getElementById('direccionEnvio').value = "";
-            if ($('#direccionEnvio').hasClass("select2-hidden-accessible")) { $('#direccionEnvio').val("").trigger('change'); }
         }
     }
 
-    // ======================================================
-    // 5. GUARDAR PEDIDO (SINCRO TOTAL CON TU BACKEND)
-    // ======================================================
     function guardarPedido() {
         let filasProductos = document.querySelectorAll('.fila-producto-carrito');
         let arrayProductos = [];
         let errorMayorista = false;
 
-        // 1. VALIDAR SI EL CARRITO TIENE ITEMS
         if (filasProductos.length === 0) {
             alert("Debe agregar al menos un producto al carrito antes de guardar.");
             return;
         }
 
-        // 2. RECOPILAR Y ESTRUCTURAR PRODUCTOS
         filasProductos.forEach(fila => {
             let idProducto = fila.getAttribute('data-id');
             let inputCant = fila.querySelector('.cantidad-cart');
@@ -760,14 +649,11 @@
 
             if (cantidad <= 0 || cantidad % 3 !== 0) {
                 errorMayorista = true;
-                inputCant.style.borderColor = '#dc2626';
+                inputCant.style.borderColor = 'var(--rojo)';
                 fila.querySelector('.msg-error-modulo').style.display = 'block';
             }
 
-            arrayProductos.push({
-                'producto': parseInt(idProducto),
-                'cantidad': cantidad
-            });
+            arrayProductos.push({ 'producto': parseInt(idProducto), 'cantidad': cantidad });
         });
 
         if (errorMayorista) {
@@ -775,30 +661,12 @@
             return;
         }
 
-        // 3. CAPTURA SEGURA DEL CLIENTE (MÉTODO SELECT2 COMPATIBLE)
-        let clienteId = null;
-        let clienteSelect = $('#clienteSelect');
-
-        if (clienteSelect.length && clienteSelect.data('select2')) {
-            let dataSelect = clienteSelect.select2('data');
-            if (dataSelect && dataSelect.length > 0) {
-                clienteId = dataSelect[0].id;
-            }
-        } else if (document.getElementById('clienteSelect')) {
-            clienteId = document.getElementById('clienteSelect').value;
-        }
-
-        // 4. CAPTURA DE LOS DEMÁS CAMPOS DE CONTROL
-        let tipoEntregaSelect = document.getElementById('tipoEntrega');
-        let tipoEntregaId = tipoEntregaSelect ? tipoEntregaSelect.value : '';
-
-        let sucursalElement = document.getElementById('sucursal');
-        let sucursalId = sucursalElement ? sucursalElement.value : '';
-
+        let clienteId = $('#clienteSelect').val();
+        let tipoEntregaId = document.getElementById('tipoEntrega').value;
+        let sucursalId = document.getElementById('sucursal').value;
         let metodoEnvioId = document.getElementById('metodoEnvio').value;
         let direccionEnvioId = document.getElementById('direccionEnvio').value;
 
-        // 5. CONSTRUCCIÓN DEL PAYLOAD ASIGNANDO ENTEROS ABSOLUTOS
         let payload = {
             'tipo_venta': 'mayorista',
             'productos': arrayProductos,
@@ -809,55 +677,28 @@
             'direccion_envio': direccionEnvioId ? parseInt(direccionEnvioId) : null
         };
 
-        console.log("DATOS ENVIADOS A DJANGO:", payload);
-
-        // 6. OBTENCIÓN DEL CSRF TOKEN DE DJANGO
-        let csrfToken = "";
-        const cookieJson = document.cookie.split(';');
-        for (let i = 0; i < cookieJson.length; i++) {
-            let cookie = cookieJson[i].trim();
-            if (cookie.startsWith("csrftoken=")) {
-                csrfToken = cookie.substring("csrftoken=".length, cookie.length);
-                break;
-            }
-        }
-
-        if (!csrfToken && document.querySelector('[name=csrfmiddlewaretoken]')) {
-            csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        }
-
-        // 7. ENVÍO MEDIANTE FETCH POST
         fetch("{% url 'crear_pedido' %}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
+                "X-CSRFToken": getCookie('csrftoken')
             },
             body: JSON.stringify(payload)
         })
-            .then(response => {
-                if (!response.ok) throw new Error("Error en la respuesta del servidor.");
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert("🎉 " + data.message);
-                    closeCreateModal();
-                    window.location.reload();
-                } else {
-                    alert("Error al crear pedido: " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error("Error en la petición POST de guardado:", error);
-                alert("Hubo un fallo crítico al procesar el pedido.");
-            });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("✨ " + data.message);
+                closeCreateModal();
+                window.location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(() => alert("Hubo un fallo crítico al procesar el pedido."));
     }
 
-
-    // ==================================================================
-    // 🔄 SECCIÓN EDITAR PEDIDO (MÉTODO GET Y LOGICA DINÁMICA DE CARRITO)
-    // ==================================================================
+    // EDICIÓN DE PEDIDO
     let pedidoIdActual = null;
     let carritoEdit = [];
 
@@ -866,27 +707,17 @@
         carritoEdit = [];
 
         fetch("{% url 'editar_actualizar_pedido' 0 %}".replace('0', pedidoId))
-            .then(response => {
-                if (!response.ok) throw new Error("No se pudo obtener la respuesta del servidor.");
-                return response.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                if (data.success === false) {
-                    alert(data.message);
-                    return;
-                }
+                if (data.success === false) { alert(data.message); return; }
 
-                // Encabezados y datos fijos del pedido
                 document.getElementById('editLabelCodigo').innerText = `(#${data.codigo || data.id})`;
                 document.getElementById('editSucursal').value = data.id_sucursal || '';
                 document.getElementById('editSucursalNombre').value = data.sucursal;
 
                 const elCliente = document.getElementById('editClienteSelect');
-                if (elCliente) {
-                    elCliente.innerHTML = `<option value="${data.cliente_id || ''}" selected>${data.cliente}</option>`;
-                }
+                if (elCliente) elCliente.innerHTML = `<option value="${data.cliente_id || ''}" selected>${data.cliente}</option>`;
 
-                // Asignar Tipo de Entrega en el Selector
                 const selectEntrega = document.getElementById('editTipoEntrega');
                 if (selectEntrega) {
                     for (let i = 0; i < selectEntrega.options.length; i++) {
@@ -897,71 +728,36 @@
                     }
                 }
 
-                // =====================================================================
-                // CAMBIO CRUCIAL: EVALUAR VISIBILIDAD AQUÍ ANTES DE CARGAR LOS SELECTS
-                // Esto fuerza a que los contenedores "Delivery" se muestren en el DOM,
-                // evitando que los selectores se limpien solos por estar ocultos.
-                // =====================================================================
                 evaluarTipoEntregaEdit(true);
 
-                // ======================================================
-                // 1. CARGA Y SELECCIÓN AUTOMÁTICA DE LA DIRECCIÓN
-                // ======================================================
                 const selectDireccion = document.getElementById('editDireccionEnvio');
                 if (selectDireccion) {
                     selectDireccion.innerHTML = '<option value="">Seleccione dirección...</option>';
-
-                    if (data.direcciones_cliente && data.direcciones_cliente.length > 0) {
+                    if (data.direcciones_cliente) {
                         data.direcciones_cliente.forEach(dir => {
                             const option = document.createElement('option');
-                            option.value = dir.id; // Conserva el valor que espera tu POST
+                            option.value = dir.id;
                             option.text = dir.direccion;
-
-                            // DOBLE VALIDACIÓN CRUZADA:
-                            const matchIntermedio = data.direccion_envio_id && String(dir.id).trim() === String(data.direccion_envio_id).trim();
-                            const matchDireccionBase = data.direccion_base_id && String(dir.direccion_id).trim() === String(data.direccion_base_id).trim();
-
-                            if (matchIntermedio || matchDireccionBase) {
-                                option.selected = true;
-                            }
-                            
+                            if (String(dir.id) === String(data.direccion_envio_id)) option.selected = true;
                             selectDireccion.appendChild(option);
                         });
                     }
-
-                    // Forzar refresco visual si usas librerías estéticas como Select2 o nativo
-                    if ($(selectDireccion).hasClass("select2-hidden-accessible")) {
-                        $(selectDireccion).val(data.direccion_envio_id).trigger('change');
-                    }
                 }
 
-                // ======================================================
-                // 2. CARGA DINÁMICA DE MÉTODOS DE ENVÍO
-                // ======================================================
                 const selectEnvio = document.getElementById('editMetodoEnvio');
                 if (selectEnvio) {
                     selectEnvio.innerHTML = '<option value="">Seleccione un método...</option>';
-                    
-                    if (data.metodos_envio && data.metodos_envio.length > 0) {
+                    if (data.metodos_envio) {
                         data.metodos_envio.forEach(m => {
                             const option = document.createElement('option');
                             option.value = m.id;
-                            option.text = `${m.nombre}`;
-                            
-                            // Comparamos convirtiendo a String limpio sin espacios
-                            if (data.metodo_envio_id && String(m.id).trim() === String(data.metodo_envio_id).trim()) {
-                                option.selected = true;
-                            }
+                            option.text = m.nombre;
+                            if (String(m.id) === String(data.metodo_envio_id)) option.selected = true;
                             selectEnvio.appendChild(option);
                         });
                     }
-
-                    if ($(selectEnvio).hasClass("select2-hidden-accessible")) {
-                        $(selectEnvio).val(data.metodo_envio_id).trigger('change');
-                    }
                 }
 
-                // Cargar productos al carrito editable
                 if (data.productos) {
                     data.productos.forEach(p => {
                         carritoEdit.push({
@@ -969,82 +765,50 @@
                             nombre: p.producto,
                             precio: parseFloat(p.precio),
                             cantidad: parseInt(p.cantidad),
-                            stockMax: p.stock 
+                            stockMax: p.stock
                         });
                     });
                 }
 
                 renderizarCarritoEdit();
                 inicializarBuscadorProductosEdit(data.id_sucursal);
-
-                // Desplegamos el modal completo con los datos cargados y seleccionados
-                document.getElementById('modalEditarPedido').style.display = 'flex';
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("No se pudo cargar el pedido para edición.");
+                openEditModal();
             });
     }
 
-// ======================================================
-    // MOTOR DE BÚSQUEDA DE PRODUCTOS EXACTO PARA EDITAR (SELECT2)
-    // ======================================================
     function inicializarBuscadorProductosEdit(sucursalId) {
         const $searchSelect = $('#editProductoSearch');
-
-        if ($searchSelect.length && typeof $searchSelect.select2 === 'function') {
-            if ($searchSelect.hasClass("select2-hidden-accessible")) {
-                $searchSelect.select2('destroy').html('');
-            }
+        if ($searchSelect.length) {
+            if ($searchSelect.hasClass("select2-hidden-accessible")) { $searchSelect.select2('destroy').html(''); }
 
             $searchSelect.select2({
                 dropdownParent: $('#modalEditarPedido'),
                 placeholder: "Escribe el nombre del producto...",
                 allowClear: true,
                 ajax: {
-                    url: "{% url 'buscar_productos_pedidos' %}", // LA URL EXACTA QUE SÍ TE SIRVE EN CREAR
+                    url: "{% url 'buscar_productos_pedidos' %}",
                     dataType: 'json',
                     delay: 250,
-                    data: function (params) {
-                        return {
-                            term: params.term,
-                            sucursal: sucursalId // Sincronizado dinámicamente con la sucursal del pedido
-                        };
-                    },
-                    processResults: function (data) {
-                        if (data.success === false) {
-                            console.error("Error en buscador de edición:", data.message);
-                            return { results: [] };
-                        }
-                        return { results: data }; // Retorna la data directa mapeada por tu vista
-                    },
+                    data: params => ({ term: params.term, sucursal: sucursalId }),
+                    processResults: data => (data.success === false ? { results: [] } : { results: data }),
                     cache: true
                 }
-            });
-
-            // Acción al seleccionar un item de la lista de búsqueda
-            $searchSelect.on('select2:select', function (e) {
-                let producto = e.params.data;
-                if (producto.id) {
-                    // Agrega el item respetando stock y nombre nativo
-                    agregarProductoAlCarritoEdit(producto.id, producto.nombre || producto.text, producto.precio, producto.stock || 999);
-                }
+            }).on('select2:select', function (e) {
+                let p = e.params.data;
+                if (p.id) agregarProductoAlCarritoEdit(p.id, p.nombre || p.text, p.precio, p.stock || 999);
                 $searchSelect.val(null).trigger('change');
             });
         }
     }
 
-    // ==========================================================
-    // RENDERIZAR TABLA INTERACTIVA DE EDICIÓN EN TIEMPO REAL
-    // ==========================================================
     function renderizarCarritoEdit() {
         const cuerpo = document.getElementById('editCarritoCuerpo');
         if (!cuerpo) return;
 
         if (carritoEdit.length === 0) {
             cuerpo.innerHTML = `
-                <tr id="editCarritoVacio">
-                    <td colspan="5" style="text-align: center; color: #b3b3b3; padding: 30px; font-size: 0.9rem;">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--texto-secundario); padding: 30px;">
                         El carrito está vacío. Añade un producto desde el buscador superior.
                     </td>
                 </tr>`;
@@ -1054,26 +818,25 @@
 
         cuerpo.innerHTML = carritoEdit.map((item, index) => {
             const subtotal = item.precio * item.cantidad;
-            const esInvalido = item.cantidad % 3 !== 0; // Regla Mayorista
+            const esInvalido = item.cantidad % 3 !== 0;
 
             return `
-                <tr class="fila-producto-edit" data-id="${item.id}" style="border-bottom: 1px solid #fcd8e4;">
-                    <td style="padding: 12px 15px;">
-                        <span style="font-weight: 600; color: #333;">${item.nombre}</span><br>
-                        <small style="color: #c2185b; font-weight: 500;">Stock: ${item.stockMax} unds.</small>
+                <tr>
+                    <td>
+                        <strong>${item.nombre}</strong><br>
+                        <small style="color: var(--rosa-oscuro);">Stock: ${item.stockMax} unds.</small>
                     </td>
-                    <td style="padding: 12px 15px; text-align: right; color: #666;">C$ ${item.precio.toFixed(2)}</td>
-                    <td style="padding: 12px 15px; text-align: center;">
-                        <input type="number" class="input-cantidad-edit" value="${item.cantidad}" min="3" max="${item.stockMax}" step="3"
+                    <td style="text-align: right;">C$ ${item.precio.toFixed(2)}</td>
+                    <td style="text-align: center;">
+                        <input type="number" value="${item.cantidad}" min="3" max="${item.stockMax}" step="3"
                             oninput="filtrarSoloEnteros(this)"
                             onchange="cambiarCantidadEdit(${index}, this.value)"
-                            style="width: 80px; text-align: center; padding: 5px; border: 1px solid ${esInvalido ? '#dc2626' : '#fcd8e4'}; border-radius: 4px; font-weight: bold;">
-                        <br><small class="msg-error-edit-modulo" style="color: #dc2626; font-size: 0.75rem; display: ${esInvalido ? 'block' : 'none'}; font-weight: 500;">Múltiplo de 3</small>
+                            style="width: 80px; text-align: center; padding: 5px; border: 1px solid ${esInvalido ? 'var(--rojo)' : 'var(--borde)'}; border-radius: var(--radio-sm); font-weight: bold;">
+                        <br><small style="color: var(--rojo); font-size: 0.75rem; display: ${esInvalido ? 'block' : 'none'};">Múltiplo de 3</small>
                     </td>
-                    <td style="padding: 12px 15px; text-align: right; color: #d81b60; font-weight: 600;">C$ ${subtotal.toFixed(2)}</td>
-                    <td style="padding: 12px 15px; text-align: center;">
-                        <button type="button" onclick="eliminarProductoEdit(${index})" 
-                            style="background: none; border: none; color: #e11d48; cursor: pointer; font-size: 1.1rem;">🗑️</button>
+                    <td style="text-align: right; color: var(--rosa-oscuro); font-weight: bold;">C$ ${subtotal.toFixed(2)}</td>
+                    <td style="text-align: center;">
+                        <button type="button" onclick="eliminarProductoEdit(${index})" style="background: none; border: none; color: var(--rojo); cursor: pointer;">🗑️</button>
                     </td>
                 </tr>
             `;
@@ -1085,12 +848,10 @@
     function cambiarCantidadEdit(index, nuevaCantidad) {
         let cant = parseInt(nuevaCantidad) || 0;
         let item = carritoEdit[index];
-
         if (cant > item.stockMax) {
             alert(`Stock insuficiente en bodega. Máximo disponible: ${item.stockMax} unidades.`);
             cant = item.stockMax - (item.stockMax % 3);
         }
-
         item.cantidad = cant;
         renderizarCarritoEdit();
     }
@@ -1101,34 +862,20 @@
     }
 
     function agregarProductoAlCarritoEdit(id, nombre, precio, stockMax) {
-        const existente = carritoEdit.find(item => item.id === parseInt(id));
-        if (existente) {
+        if (carritoEdit.find(item => item.id === parseInt(id))) {
             alert("Este producto ya está en la lista de edición.");
             return;
         }
-
-        carritoEdit.push({
-            id: parseInt(id),
-            nombre: nombre,
-            precio: parseFloat(precio),
-            cantidad: 3, // Cantidad inicial sugerida por el módulo de 3
-            stockMax: parseInt(stockMax)
-        });
-
+        carritoEdit.push({ id: parseInt(id), nombre: nombre, precio: parseFloat(precio), cantidad: 3, stockMax: parseInt(stockMax) });
         renderizarCarritoEdit();
     }
 
-    // ==========================================================
-    // 📈 CÁLCULO DE TOTALES (EDITAR)
-    // ==========================================================
     function calcularTotalEdit() {
         let subtotalProductos = 0;
         let tieneErrores = false;
 
         carritoEdit.forEach(item => {
-            if (item.cantidad <= 0 || item.cantidad % 3 !== 0) {
-                tieneErrores = true;
-            }
+            if (item.cantidad <= 0 || item.cantidad % 3 !== 0) tieneErrores = true;
             subtotalProductos += (item.precio * item.cantidad);
         });
 
@@ -1140,9 +887,7 @@
         if (nombreEntrega.includes('delivery') || nombreEntrega.includes('envi')) {
             const selectEnvio = document.getElementById('editMetodoEnvio');
             const optionEnvio = selectEnvio ? selectEnvio.options[selectEnvio.selectedIndex] : null;
-            if (optionEnvio && optionEnvio.getAttribute('data-precio')) {
-                costoEnvio = parseFloat(optionEnvio.getAttribute('data-precio'));
-            }
+            if (optionEnvio && optionEnvio.getAttribute('data-precio')) costoEnvio = parseFloat(optionEnvio.getAttribute('data-precio'));
         }
 
         const totalFinal = subtotalProductos + costoEnvio;
@@ -1150,116 +895,110 @@
 
         if (tieneErrores) {
             totalTxt.innerText = "Total: Incompleto";
-            totalTxt.style.color = "#dc2626";
+            totalTxt.style.color = "var(--rojo)";
         } else {
             totalTxt.innerText = `Total: C$ ${totalFinal.toFixed(2)}`;
-            totalTxt.style.color = "#d81b60";
+            totalTxt.style.color = "var(--rosa-oscuro)";
         }
     }
 
-    // ======================================================
-    // 📦 EVALUAR TIPO ENTREGA EDIT (USANDO TU CLASE CSS .SHOW)
-    // ======================================================
     function evaluarTipoEntregaEdit(esInicializacion = false) {
         const select = document.getElementById('editTipoEntrega');
         const contenedor = document.getElementById('editSeccionDelivery');
         if (!select || !contenedor) return;
 
-        const opcionSeleccionada = select.options[select.selectedIndex];
+        const opcion = select.options[select.selectedIndex];
+        const nombre = opcion ? (opcion.getAttribute('data-nombre') || "").toLowerCase() : "";
 
-        // Leemos el atributo data-nombre Y TAMBIÉN el texto visible de la opción por seguridad
-        const nombreEntrega = opcionSeleccionada ? (opcionSeleccionada.getAttribute('data-nombre') || "").toLowerCase() : "";
-        const textoEntrega = opcionSeleccionada ? opcionSeleccionada.text.toLowerCase() : "";
-
-        // Si cualquiera de los dos contiene 'delivery' o 'envi', mostramos la sección
-        if (nombreEntrega.includes('delivery') || nombreEntrega.includes('envi') ||
-            textoEntrega.includes('delivery') || textoEntrega.includes('envi')) {
-
-            // Si usas clases CSS de animación de crear:
+        if (nombre.includes('delivery') || nombre.includes('envi')) {
             contenedor.classList.add('show');
-            // Por si acaso tu CSS de editar usa display plano en lugar de clases:
-            contenedor.style.display = 'block';
-
         } else {
             contenedor.classList.remove('show');
-            contenedor.style.display = 'none';
-
-            // 🔥 SOLO vaciamos los campos si el cambio lo hizo el usuario manualmente en tiempo real
             if (!esInicializacion) {
-                const sEnvio = document.getElementById('editMetodoEnvio');
-                const sDireccion = document.getElementById('editDireccionEnvio');
-                if (sEnvio) sEnvio.value = '';
-                if (sDireccion) sDireccion.value = '';
+                document.getElementById('editMetodoEnvio').value = '';
+                document.getElementById('editDireccionEnvio').value = '';
             }
         }
-
-        // 🔥 SOLO calculamos el total si no es la carga inicial del pedido
-        if (!esInicializacion) {
-            calcularTotalEdit();
-        }
+        if (!esInicializacion) calcularTotalEdit();
     }
-    // ==========================================================
-    // 💾 GUARDAR CAMBIOS (EDITAR - POST)
-    // ==========================================================
-    function guardarEdicionPedido() {
-        if (!pedidoIdActual) return;
 
-        if (carritoEdit.length === 0) {
-            alert("No puedes guardar un pedido sin productos.");
-            return;
-        }
+    function guardarEdicionPedido() {
+        if (!pedidoIdActual || carritoEdit.length === 0) return;
 
         let errorMayorista = false;
         const productosData = carritoEdit.map(item => {
-            if (item.cantidad <= 0 || item.cantidad % 3 !== 0) {
-                errorMayorista = true;
-            }
-            return {
-                producto: item.id,
-                cantidad: item.cantidad
-            };
+            if (item.cantidad <= 0 || item.cantidad % 3 !== 0) errorMayorista = true;
+            return { producto: item.id, cantidad: item.cantidad };
         });
 
         if (errorMayorista) {
-            alert("Por favor, corrija las cantidades en la lista de edición (deben ser múltiplos de 3).");
+            alert("Por favor, corrija las cantidades en la lista (deben ser múltiplos de 3).");
             return;
         }
 
-        const tipoEntregaVal = document.getElementById('editTipoEntrega').value;
-        const metodoEnvioVal = document.getElementById('editMetodoEnvio').value;
-        const direccionEnvioVal = document.getElementById('editDireccionEnvio').value;
-
-        const datosEnvio = {
-            tipo_entrega: parseInt(tipoEntregaVal),
-            metodo_envio: metodoEnvioVal ? parseInt(metodoEnvioVal) : null,
-            direccion_envio: direccionEnvioVal ? parseInt(direccionEnvioVal) : null,
+        const payload = {
+            tipo_entrega: parseInt(document.getElementById('editTipoEntrega').value),
+            metodo_envio: document.getElementById('editMetodoEnvio').value ? parseInt(document.getElementById('editMetodoEnvio').value) : null,
+            direccion_envio: document.getElementById('editDireccionEnvio').value ? parseInt(document.getElementById('editDireccionEnvio').value) : null,
             productos: productosData
         };
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
-
         fetch("{% url 'editar_actualizar_pedido' 0 %}".replace('0', pedidoIdActual), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify(datosEnvio)
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify(payload)
         })
-            .then(response => response.json())
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("✨ " + data.message);
+                closeEditModal();
+                location.reload();
+            } else {
+                alert("⚠️ " + data.message);
+            }
+        });
+    }
+
+    function verPedido(pedidoId) {
+        fetch("{% url 'detalle_pedido' 0 %}".replace('0', pedidoId))
+            .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    alert("✨ " + data.message);
-                    closeEditModal();
-                    location.reload();
-                } else {
-                    alert("⚠️ " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("Ocurrió un error al guardar los cambios.");
+                document.getElementById('detalleCodigo').value = data.codigo || data.id;
+                document.getElementById('detalleEstado').value = data.estado;
+                document.getElementById('detalleCliente').value = data.cliente;
+                document.getElementById('detalleFecha').value = data.fecha;
+                document.getElementById('detalleTotal').innerText = `Total: C$ ${data.total.toFixed(2)}`;
+
+                const tbody = document.getElementById('detalleProductos');
+                tbody.innerHTML = data.productos.map(item => `
+                    <tr>
+                        <td>${item.producto}</td>
+                        <td style="text-align: center;">${item.cantidad}</td>
+                        <td>C$ ${item.precio.toFixed(2)}</td>
+                        <td>C$ ${item.subtotal.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+
+                openDetalleModal();
             });
+    }
+
+    function cambiarEstado(pedidoId, nombreEstado) {
+        let msg = `¿Está seguro de cambiar el estado de este pedido a "${nombreEstado}"?`;
+        if (nombreEstado.toLowerCase() === 'cancelado') msg = "¿Está seguro de CANCELAR este pedido?";
+        if (!confirm(msg)) return;
+
+        fetch("{% url 'cambiar_estado_pedido' 0 %}".replace('0', pedidoId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ 'estado': nombreEstado })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { alert(data.message); location.reload(); }
+            else { alert("Error: " + data.message); }
+        });
     }
 
     function getCookie(name) {
@@ -1276,114 +1015,5 @@
         }
         return cookieValue;
     }
-
-    // ======================================================
-    // AJUSTE EXACTO PARA VER PEDIDO EN TU MODAL
-    // ======================================================
-    function verPedido(pedidoId) {
-        // Hace la llamada dinámica usando la estructura de la URL declarada
-        fetch("{% url 'detalle_pedido' 0 %}".replace('0', pedidoId))
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Error en la respuesta del servidor");
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Rellenamos los inputs de tu modal usando sus IDs exactos
-                document.getElementById('detalleCodigo').value = data.codigo || data.id;
-                document.getElementById('detalleEstado').value = data.estado;
-                document.getElementById('detalleCliente').value = data.cliente;
-                document.getElementById('detalleFecha').value = data.fecha;
-
-                // Renderizamos el total con formato de moneda estándar
-                document.getElementById('detalleTotal').innerText = `Total: C$ ${data.total.toFixed(2)}`;
-
-                // Limpiamos y construimos la tabla de productos incluidos
-                const tbody = document.getElementById('detalleProductos');
-                tbody.innerHTML = ''; // Borra lo que hubiera de un pedido anterior
-
-                data.productos.forEach(item => {
-                    const fila = `
-                    <tr style="border-bottom: 1px solid rgba(255, 133, 162, 0.1);">
-                        <td style="padding: 10px 8px;">${item.producto}</td>
-                        <td style="padding: 10px 8px; text-align: center;">${item.cantidad}</td>
-                        <td style="padding: 10px 8px;">C$ ${item.precio.toFixed(2)}</td>
-                        <td style="padding: 10px 8px; font-weight: 500;">C$ ${item.subtotal.toFixed(2)}</td>
-                    </tr>
-                `;
-                    tbody.innerHTML += fila;
-                });
-
-                // Una vez cargados todos los datos, abrimos visualmente el modal
-                openDetalleModal();
-            })
-            .catch(error => {
-                console.error("Error al cargar el pedido:", error);
-                alert("No se pudo obtener el detalle de este pedido. Por favor, intente de nuevo.");
-            });
-    }
-
-    function cambiarEstado(pedidoId, nombreEstado) {
-    // Mensaje dinámico de confirmación según la acción
-    let mensajeConfirmacion = `¿Está seguro de cambiar el estado de este pedido a "${nombreEstado}"?`;
-    if (nombreEstado.toLowerCase() === 'cancelado') {
-        mensajeConfirmacion = "¿Está seguro de CANCELAR este pedido? Esta acción no se puede deshacer.";
-    } else if (nombreEstado.toLowerCase() === 'borrador') {
-        mensajeConfirmacion = "¿Desea tomar este pedido para empezar a editarlo?";
-    }
-
-    if (!confirm(mensajeConfirmacion)) return;
-
-    // Construimos la URL apuntando a tu vista (cambia 'cambiar_estado_pedido' si tu path se llama distinto)
-    const url = "{% url 'cambiar_estado_pedido' 0 %}".replace('0', pedidoId);
-
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            // Extraemos el token CSRF estándar de las cookies o el formulario de Django
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({
-            'estado': nombreEstado
-        })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Error en la comunicación con el servidor.");
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Usamos una alerta limpia y recargamos la interfaz para ver los cambios reflejados
-            alert(data.message);
-            location.reload(); 
-        } else {
-            alert("Error: " + data.message);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("No se pudo procesar el cambio de estado.");
-    });
-}
-
-// Función auxiliar indispensable para leer el token CSRF en peticiones AJAX
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
 </script>
-<!--1685-->
 {% endblock %}

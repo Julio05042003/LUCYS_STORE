@@ -4,13 +4,10 @@
 <!-- CDN de Tailwind CSS v3 (El más estable y compatible para inyección directa mediante script) -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Google Fonts para un look elegante -->
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
-    /* Estilos nativos de respaldo por si el CDN de Tailwind tarda en responder */
+    /* Estilos nativos de respaldo alineados a la tipografía estándar de Lucy's Store */
     .dashboard-wrapper {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: "Segoe UI", Arial, sans-serif !important;
         background-color: #FFF0F2 !important;
         min-height: 100vh;
     }
@@ -24,6 +21,7 @@
     /* Customización Profesional de DataTables Claro/Rosa */
     .dataTables_wrapper {
         padding-top: 1rem;
+        font-family: "Segoe UI", Arial, sans-serif !important;
     }
     .dataTables_wrapper .dataTables_length select, 
     .dataTables_wrapper .dataTables_filter input {
@@ -71,7 +69,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
     color: #fff;
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
@@ -405,6 +403,9 @@
     const empleadosData = JSON.parse(document.getElementById('data-empleados-data').textContent);
     const categoriasLabels = JSON.parse(document.getElementById('data-categorias-labels').textContent);
     const categoriasValores = JSON.parse(document.getElementById('data-categorias-valores').textContent);
+
+    /* Configuración de fuentes estándar para Chart.js */
+    Chart.defaults.font.family = '"Segoe UI", Arial, sans-serif';
 
     const ctxEmp = document.getElementById('chartEmpleados').getContext('2d');
     new Chart(ctxEmp, {

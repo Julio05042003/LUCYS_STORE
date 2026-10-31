@@ -85,17 +85,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'LUCYS_STORE',
-        'USER': 'sa',
-        'PASSWORD': 'Lnfm220806*',
-        'HOST': 'localhost',
-        'PORT': '1433',
+        'HOST': 'DESKTOP-FS5V3MM',
+        'PORT': '',
         'OPTIONS': {
-            'driver': 'ODBC Driver 18 for SQL Server',
-            'extra_params': 'TrustServerCertificate=yes',
+            'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': 'yes',
         },
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

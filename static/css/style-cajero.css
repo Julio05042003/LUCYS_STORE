@@ -1,0 +1,636 @@
+/* =========================================================
+   LUCY'S STORE — CONTROL DE CAJA Y ARQUEO
+   Simetría global: paleta de colores, dashboard, modales y tablas
+========================================================= */
+
+/* =========================================================
+   1. VARIABLES GLOBALES (Basadas en style-ventas.css)
+========================================================= */
+:root {
+    /* Colores de marca */
+    --rosa-principal: #e97293;
+    --rosa-oscuro: #c94f73;
+    --rosa-hover: #b93f64;
+    --rosa-claro: #fff5f8;
+    --rosa-suave: #fde8ef;
+    --rosa-borde: #f0a4b7;
+
+    /* Fondos */
+    --fondo-general: #f8fafc;
+    --fondo-tarjeta: #ffffff;
+    --fondo-tabla: #fff7fa;
+    --fondo-input: #ffffff;
+    --fondo-hover: #fff1f5;
+
+    /* Textos */
+    --texto-principal: #334155;
+    --texto-secundario: #64748b;
+    --texto-suave: #94a3b8;
+    --texto-blanco: #ffffff;
+
+    /* Bordes y sombras */
+    --borde: #e2e8f0;
+    --borde-suave: #edf0f4;
+    --sombra-suave: 0 4px 14px rgba(51, 65, 85, 0.07);
+    --sombra-modal: 0 20px 50px rgba(15, 23, 42, 0.20);
+
+    /* Indicadores y estados */
+    --verde: #198754;
+    --verde-claro: #e9fff1;
+    --verde-borde: #a7e6c2;
+
+    --azul: #2878c7;
+    --azul-claro: #eef7ff;
+    --azul-borde: #b8d9fb;
+
+    --rojo: #dc3545;
+    --rojo-claro: #fff0f0;
+    --rojo-borde: #fecaca;
+
+    /* Tipografía y radios */
+    --fuente-principal: "Segoe UI", Arial, sans-serif;
+    --radio-sm: 6px;
+    --radio-md: 10px;
+    --radio-lg: 14px;
+    --radio-xl: 18px;
+    --transicion: 0.25s ease;
+}
+
+/* =========================================================
+   2. ESTRUCTURA Y ENCABEZADO DASHBOARD
+========================================================= */
+.caja-dashboard {
+    padding: 20px;
+    font-family: var(--fuente-principal);
+    color: var(--texto-principal);
+}
+
+.caja-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--fondo-tarjeta);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-suave);
+    border: 1px solid var(--borde-suave);
+}
+
+.caja-title {
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--texto-principal);
+}
+
+.caja-title i {
+    color: var(--rosa-principal);
+    margin-right: 8px;
+}
+
+.tipo-cambio-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--azul-claro);
+    color: var(--azul);
+    border-radius: var(--radio-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Estado de Caja */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.status-open {
+    background: var(--verde-claro);
+    color: var(--verde);
+    border: 1px solid var(--verde-borde);
+}
+
+.status-closed {
+    background: var(--rojo-claro);
+    color: var(--rojo);
+    border: 1px solid var(--rojo-borde);
+}
+
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: currentColor;
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* =========================================================
+   3. SECCIONES DE RESUMEN Y TARJETAS (STATS)
+========================================================= */
+.resumen-section {
+    margin-bottom: 25px;
+}
+
+.section-header-caja {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--texto-secundario);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.caja-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.stat-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px;
+    background: var(--fondo-tarjeta);
+    border-radius: var(--radio-lg);
+    border: 1px solid var(--borde-suave);
+    box-shadow: var(--sombra-suave);
+    overflow: hidden;
+}
+
+.stat-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radio-md);
+    font-size: 1.25rem;
+}
+
+.stat-icon.income { background: var(--azul-claro); color: var(--azul); }
+.stat-icon.total-income { background: var(--verde-claro); color: var(--verde); }
+.stat-icon.expense { background: var(--rojo-claro); color: var(--rojo); }
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--texto-secundario);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--texto-principal);
+}
+
+.stat-card.highlighted {
+    background: linear-gradient(135deg, var(--rosa-suave), #ffffff);
+    border-color: var(--rosa-borde);
+}
+
+.stat-card.highlighted .stat-value {
+    color: var(--rosa-oscuro);
+    font-size: 1.35rem;
+}
+
+.bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 4rem;
+    opacity: 0.08;
+    color: var(--rosa-oscuro);
+}
+
+/* TOTAL GENERAL DESTACADO */
+.total-general-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro));
+    color: var(--texto-blanco);
+    border-radius: var(--radio-xl);
+    box-shadow: var(--sombra-modal);
+}
+
+.total-general-box span {
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.total-general-box h2 {
+    margin: 4px 0 0 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.total-general-box i {
+    font-size: 3rem;
+    opacity: 0.25;
+}
+
+/* BOTONES DE ACCIÓN */
+.caja-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: var(--radio-md);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-action.open {
+    background: var(--verde);
+    color: var(--texto-blanco);
+}
+
+.btn-action.open:hover:not(:disabled) {
+    background: #146c43;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+}
+
+.btn-action.move {
+    background: var(--azul);
+    color: var(--texto-blanco);
+}
+
+.btn-action.move:hover {
+    background: #1d5fa0;
+    box-shadow: 0 4px 12px rgba(40, 120, 199, 0.25);
+}
+
+.btn-action.close {
+    background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro));
+    color: var(--texto-blanco);
+}
+
+.btn-action.close:hover {
+    box-shadow: 0 4px 12px rgba(233, 114, 147, 0.3);
+}
+
+/* =========================================================
+   4. TABLA DE MOVIMIENTOS Y BÚSQUEDA
+========================================================= */
+.table-container {
+    background: var(--fondo-tarjeta);
+    border-radius: var(--radio-lg);
+    border: 1px solid var(--borde-suave);
+    box-shadow: var(--sombra-suave);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--borde-suave);
+}
+
+.table-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--texto-principal);
+}
+
+.search-box {
+    position: relative;
+    width: 260px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--texto-suave);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-sm);
+    box-sizing: border-box;
+    outline: none;
+    transition: var(--transicion);
+}
+
+.search-box input:focus {
+    border-color: var(--rosa-principal);
+    box-shadow: 0 0 0 3px rgba(233, 114, 147, 0.15);
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.table-modern {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table-modern th {
+    padding: 12px 18px;
+    background: var(--fondo-tabla);
+    border-bottom: 2px solid var(--rosa-borde);
+    color: var(--texto-secundario);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.table-modern td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--borde-suave);
+    font-size: 0.9rem;
+    color: var(--texto-principal);
+}
+
+.table-modern tbody tr:hover {
+    background: var(--fondo-hover);
+}
+
+.text-green { color: var(--verde) !important; font-weight: 600; }
+.text-red { color: var(--rojo) !important; font-weight: 600; }
+
+/* =========================================================
+   5. MODALES (ESTÁNDAR SIMÉTRICO)
+========================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 90%;
+    background: var(--fondo-tarjeta);
+    border-radius: var(--radio-xl);
+    box-shadow: var(--sombra-modal);
+    overflow: hidden;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 25px;
+    background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro));
+    color: var(--texto-blanco);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    border: none;
+    background: transparent;
+    color: var(--texto-blanco);
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform var(--transicion);
+}
+
+.close-btn:hover {
+    transform: rotate(90deg);
+}
+
+.modal-form {
+    padding: 22px 25px;
+    overflow-y: auto;
+
+    /* Estilo del Scroll */
+    scrollbar-width: thin;
+    scrollbar-color: var(--rosa-borde) var(--fondo-general);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--texto-principal);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: var(--transicion);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--rosa-principal);
+    box-shadow: 0 0 0 3px rgba(233, 114, 147, 0.15);
+}
+
+/* =========================================================
+   6. SECCIÓN DE DENOMINACIONES Y ARQUEO
+========================================================= */
+.denominaciones-container {
+    background: var(--fondo-general);
+    border: 1px solid var(--borde-suave);
+    border-radius: var(--radio-lg);
+    padding: 18px;
+    margin: 15px 0;
+}
+
+.denominaciones-container .section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--rosa-oscuro);
+    margin-bottom: 12px;
+    display: block;
+}
+
+.denominaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.denom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--fondo-tarjeta);
+    padding: 8px 12px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+}
+
+.denom-row span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--texto-secundario);
+}
+
+.denom-row input {
+    width: 70px;
+    padding: 6px;
+    text-align: center;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-sm);
+    font-weight: 700;
+}
+
+/* =========================================================
+   7. ALERTAS Y PIE DEL MODAL
+========================================================= */
+.alert-custom {
+    padding: 12px 16px;
+    border-radius: var(--radio-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.alert-danger {
+    background: var(--rojo-claro);
+    color: var(--rojo);
+    border: 1px solid var(--rojo-borde);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 18px 25px;
+    background: var(--fondo-general);
+    border-top: 1px solid var(--borde-suave);
+}
+
+.btn-primary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radio-md);
+    background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro));
+    color: var(--texto-blanco);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(217, 93, 125, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-md);
+    background: var(--fondo-tarjeta);
+    color: var(--texto-principal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-secondary:hover {
+    background: var(--borde-suave);
+}
+
+/* =========================================================
+   8. RESPONSIVO
+========================================================= */
+@media screen and (max-width: 768px) {
+    .caja-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .denominaciones-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .total-general-box h2 {
+        font-size: 1.6rem;
+    }
+
+    .caja-actions {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+}

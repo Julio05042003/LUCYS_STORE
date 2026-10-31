@@ -1,4 +1,3 @@
-@import url('style-inventario.css');
 
 :root {
     --rosa-principal: #ff8fa3;
@@ -22,7 +21,7 @@ html,
 body{
     width: 100%;
     height: 100%;
-    overflow: hidden; /* 🔥 EVITA DOBLE SCROLL */
+    overflow: hidden; 
     font-family: 'Inter', sans-serif;
     background: var(--rosa-claro);
 }
