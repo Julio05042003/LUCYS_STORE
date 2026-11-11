@@ -1,16 +1,16 @@
 {% extends 'empleados/base_empleados.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style-caja.css' %}?v=5">
+{% endblock %}
+
 {% block content %}
-
-<link rel="stylesheet" href="{% static 'css/style-caja.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <div class="inventory-wrapper">
 
-    <!-- HEADER -->
+    <!-- ENCABEZADO -->
     <div class="caja-header">
-        <div>
+        <div class="caja-title-group">
             <h2 class="caja-title">
                 <i class="fas fa-wallet"></i>
                 Administración de Caja
@@ -21,23 +21,20 @@
             </div>
         </div>
 
-        <button class="btn-action open" onclick="abrirModal('modalCaja')">
-            <i class="fas fa-plus"></i>
-            Nueva Caja
+        <button class="btn-action open" type="button" onclick="abrirModal('modalCaja')">
+            <i class="fas fa-plus"></i> Nueva Caja
         </button>
     </div>
 
     {% if messages %}
     <div class="alert-container">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <!-- CÓRDOBAS -->
+    <!-- MOVIMIENTO EN CÓRDOBAS -->
     <div class="section-title">
         <i class="fas fa-money-bill-wave"></i>
         Movimiento en Córdoba
@@ -45,53 +42,39 @@
 
     <div class="caja-stats-grid">
         <div class="stat-card">
-            <div class="stat-icon money">
-                <i class="fas fa-cash-register"></i>
-            </div>
+            <div class="stat-icon money"><i class="fas fa-cash-register"></i></div>
             <div>
                 <span class="stat-label">Saldo Inicial</span>
-                <div class="stat-value">
-                    C${{ saldo_inicial_cordoba|floatformat:2 }}
-                </div>
+                <div class="stat-value">C${{ saldo_inicial_cordoba|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon total-income">
-                <i class="fas fa-arrow-down"></i>
-            </div>
+            <div class="stat-icon total-income"><i class="fas fa-arrow-down"></i></div>
             <div>
                 <span class="stat-label">Ingresos C$</span>
-                <div class="stat-value text-green">
-                    C${{ ingresos_cordoba|floatformat:2 }}
-                </div>
+                <div class="stat-value text-green">C${{ ingresos_cordoba|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon expense">
-                <i class="fas fa-arrow-up"></i>
-            </div>
+            <div class="stat-icon expense"><i class="fas fa-arrow-up"></i></div>
             <div>
                 <span class="stat-label">Egresos C$</span>
-                <div class="stat-value text-red">
-                    C${{ egresos_cordoba|floatformat:2 }}
-                </div>
+                <div class="stat-value text-red">C${{ egresos_cordoba|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card highlighted">
             <div>
                 <span class="stat-label">Total Córdoba</span>
-                <div class="stat-value">
-                    C${{ total_cordoba|floatformat:2 }}
-                </div>
+                <div class="stat-value">C${{ total_cordoba|floatformat:2 }}</div>
             </div>
             <i class="fas fa-wallet bg-icon"></i>
         </div>
     </div>
 
-    <!-- DÓLARES -->
+    <!-- MOVIMIENTO EN DÓLARES -->
     <div class="section-title">
         <i class="fas fa-dollar-sign"></i>
         Movimiento en Dólares
@@ -99,80 +82,55 @@
 
     <div class="caja-stats-grid">
         <div class="stat-card">
-            <div class="stat-icon total-income">
-                <i class="fas fa-arrow-down"></i>
-            </div>
+            <div class="stat-icon total-income"><i class="fas fa-arrow-down"></i></div>
             <div>
                 <span class="stat-label">Ingresos USD</span>
-                <div class="stat-value text-green">
-                    ${{ ingresos_dolar|floatformat:2 }}
-                </div>
+                <div class="stat-value text-green">${{ ingresos_dolar|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon expense">
-                <i class="fas fa-arrow-up"></i>
-            </div>
+            <div class="stat-icon expense"><i class="fas fa-arrow-up"></i></div>
             <div>
                 <span class="stat-label">Egresos USD</span>
-                <div class="stat-value text-red">
-                    ${{ egresos_dolar|floatformat:2 }}
-                </div>
+                <div class="stat-value text-red">${{ egresos_dolar|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon money">
-                <i class="fas fa-dollar-sign"></i>
-            </div>
+            <div class="stat-icon money"><i class="fas fa-dollar-sign"></i></div>
             <div>
                 <span class="stat-label">Total USD</span>
-                <div class="stat-value">
-                    ${{ total_dolar|floatformat:2 }}
-                </div>
+                <div class="stat-value">${{ total_dolar|floatformat:2 }}</div>
             </div>
         </div>
 
         <div class="stat-card highlighted">
             <div>
                 <span class="stat-label">Balance General</span>
-                <div class="stat-value">
-                    C${{ total_general|floatformat:2 }}
-                </div>
+                <div class="stat-value">C${{ total_general|floatformat:2 }}</div>
             </div>
             <i class="fas fa-wallet bg-icon"></i>
         </div>
     </div>
 
-    <!-- BUSCADOR & ENCABEZADO DE TABLA -->
-    <div class="table-header" style="padding: 0 0 20px 0;">
-        <h3>
-            <i class="fas fa-list"></i>
-            Estado Actual de las Cajas
-        </h3>
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="filtroCaja" placeholder="Buscar caja, cajero o estado...">
-        </div>
-    </div>
-
     <!-- TABLA PRINCIPAL -->
     <div class="table-container">
+        <div class="table-header">
+            <h3><i class="fas fa-list"></i> Estado Actual de las Cajas</h3>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="filtroCaja" placeholder="Buscar caja, cajero o estado...">
+            </div>
+        </div>
+
         <div class="table-scroll">
             <table class="table-modern">
                 <thead>
                     <tr>
-                        <th>Caja</th>
-                        <th>Cajero</th>
-                        <th>Estado</th>
-                        <th>Tipo Cambio</th>
-                        <th>Saldo Inicial</th>
-                        <th>Total C$</th>
-                        <th>Total USD</th>
-                        <th>Total General</th>
-                        <th>Fecha</th>
-                        <th>Acciones</th>
+                        <th>Caja</th><th>Cajero</th><th>Estado</th><th>Tipo Cambio</th>
+                        <th>Saldo Inicial</th><th>Total C$</th><th>Total USD</th>
+                        <th>Total General</th><th>Fecha</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tablaCajas">
@@ -183,9 +141,7 @@
                             {% if caja.apertura_actual %}
                                 {{ caja.apertura_actual.empleado.user.first_name }}
                                 {{ caja.apertura_actual.empleado.user.last_name }}
-                            {% else %}
-                                —
-                            {% endif %}
+                            {% else %}—{% endif %}
                         </td>
                         <td>
                             {% if caja.apertura_actual %}
@@ -201,9 +157,7 @@
                         <td>
                             {% if caja.apertura_actual %}
                                 C${{ caja.apertura_actual.tipocambio.valor|floatformat:2 }}
-                            {% else %}
-                                —
-                            {% endif %}
+                            {% else %}—{% endif %}
                         </td>
                         <td>C${{ caja.saldo_inicial|floatformat:2 }}</td>
                         <td class="text-green">C${{ caja.total_cordoba|floatformat:2 }}</td>
@@ -212,235 +166,188 @@
                         <td>
                             {% if caja.apertura_actual %}
                                 {{ caja.apertura_actual.fecha_apertura|date:"d/m/Y H:i" }}
-                            {% else %}
-                                —
-                            {% endif %}
+                            {% else %}—{% endif %}
                         </td>
                         <td>
-                            <button class="btn-history" onclick="abrirModal('aperturasCaja{{ caja.id }}')">
+                            <button class="btn-history" type="button"
+                                    aria-label="Ver historial"
+                                    onclick="abrirModal('aperturasCaja{{ caja.id }}')">
                                 <i class="fas fa-clock-rotate-left"></i>
                             </button>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="10">No hay cajas registradas</td>
-                    </tr>
+                    <tr><td colspan="10" class="empty-row">No hay cajas registradas</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
 </div>
 
 <!-- MODAL CREAR CAJA -->
 <div id="modalCaja" class="modal-overlay">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content modal-caja">
         <div class="modal-header">
             <h3><i class="fas fa-cash-register"></i> Nueva Caja</h3>
-            <button class="close-btn" onclick="cerrarModal('modalCaja')">&times;</button>
+            <button class="close-btn" type="button" onclick="cerrarModal('modalCaja')">&times;</button>
         </div>
         <form method="POST" action="{% url 'crear_caja' %}">
             {% csrf_token %}
             <div class="modal-form">
                 <div class="form-group">
                     <label for="nombreCaja">Nombre de la Caja</label>
-                    <input type="text" id="nombreCaja" name="nombre" class="input-cobro" placeholder="Ej: Caja Principal" required>
+                    <input type="text" id="nombreCaja" name="nombre" class="input-cobro"
+                           placeholder="Ej: Caja Principal" required>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="cerrarModal('modalCaja')">Cancelar</button>
-                    <button type="submit" class="btn-action open">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
+                    <button type="submit" class="btn-action open"><i class="fas fa-save"></i> Guardar</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- MODAL APERTURAS DE LA CAJA -->
+<!-- MODALES DE APERTURAS -->
 {% for caja in cajas %}
 <div id="aperturasCaja{{ caja.id }}" class="modal-overlay">
-    <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-content modal-ancho">
         <div class="modal-header">
             <h3><i class="fas fa-cash-register"></i> Aperturas de {{ caja.nombre }}</h3>
-            <button class="close-btn" onclick="cerrarModal('aperturasCaja{{ caja.id }}')">&times;</button>
+            <button class="close-btn" type="button"
+                    onclick="cerrarModal('aperturasCaja{{ caja.id }}')">&times;</button>
         </div>
-        <div class="table-scroll">
-            <table class="table-modern">
-                <thead>
-                    <tr>
-                        <th># Apertura</th>
-                        <th>Cajero</th>
-                        <th>Estado</th>
-                        <th>Fecha Apertura</th>
-                        <th>Fecha Cierre</th>
-                        <th>Saldo Inicial</th>
-                        <th>Saldo Final</th>
-                        <th>Tipo Cambio</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for apertura in caja.aperturacaja_set.all %}
-                    <tr>
-                        <td>#{{ apertura.apertura_id }}</td>
-                        <td>{{ apertura.empleado.user.first_name }} {{ apertura.empleado.user.last_name }}</td>
-                        <td>
-                            {% if apertura.estado.nombre == 'Abierta' %}
-                                <span class="badge badge-success">Abierta</span>
-                            {% elif apertura.estado.nombre == 'En arqueo' %}
-                                <span class="badge badge-warning">En arqueo</span>
-                            {% else %}
-                                <span class="badge badge-secondary">Cerrada</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ apertura.fecha_apertura|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            {% if apertura.fecha_cierre %}
-                                {{ apertura.fecha_cierre|date:"d/m/Y H:i" }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>C${{ apertura.saldo_inicial|floatformat:2 }}</td>
-                        <td>
-                            {% if apertura.saldo_final %}
-                                C${{ apertura.saldo_final|floatformat:2 }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if apertura.tipocambio %}
-                                C${{ apertura.tipocambio.valor|floatformat:2 }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="btn-history" onclick="abrirModal('arqueosApertura{{ apertura.apertura_id }}')">
-                                <i class="fas fa-file-invoice-dollar"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9">No hay aperturas registradas</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-{% endfor %}
-
-<!-- MODAL HISTORIAL ARQUEOS -->
-{% for caja in cajas %}
-    {% for apertura in caja.aperturacaja_set.all %}
-    <div id="arqueosApertura{{ apertura.apertura_id }}" class="modal-overlay">
-        <div class="modal-content" style="max-width: 1100px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-file-invoice-dollar"></i> Historial de Arqueos</h3>
-                <button class="close-btn" onclick="cerrarModal('arqueosApertura{{ apertura.apertura_id }}')">&times;</button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                <div class="stat-card">
-                    <div>
-                        <span class="stat-label">Caja</span>
-                        <strong>{{ caja.nombre }}</strong>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div>
-                        <span class="stat-label">Cajero</span>
-                        <strong>{{ apertura.empleado.user.first_name }} {{ apertura.empleado.user.last_name }}</strong>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div>
-                        <span class="stat-label">Apertura</span>
-                        <strong>{{ apertura.fecha_apertura|date:"d/m/Y H:i" }}</strong>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div>
-                        <span class="stat-label">Saldo Inicial</span>
-                        <strong>C${{ apertura.saldo_inicial|floatformat:2 }}</strong>
-                    </div>
-                </div>
-            </div>
-
+        <div class="modal-form">
             <div class="table-scroll">
                 <table class="table-modern">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Observación</th>
-                            <th>Diferencia</th>
-                            <th>Acciones</th>
+                            <th># Apertura</th><th>Cajero</th><th>Estado</th>
+                            <th>Fecha Apertura</th><th>Fecha Cierre</th>
+                            <th>Saldo Inicial</th><th>Saldo Final</th><th>Tipo Cambio</th><th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for arqueo in apertura.arqueocaja_set.all %}
+                        {% for apertura in caja.aperturacaja_set.all %}
                         <tr>
-                            <td>{{ arqueo.fecha|date:"d/m/Y H:i" }}</td>
-                            <td>{{ arqueo.observacion }}</td>
-                            <td>C${{ arqueo.diferencia|floatformat:2 }}</td>
+                            <td>#{{ apertura.apertura_id }}</td>
+                            <td>{{ apertura.empleado.user.first_name }} {{ apertura.empleado.user.last_name }}</td>
                             <td>
-                                <a href="{% url 'reporte_arqueo_pdf' arqueo.arqueo_id %}" class="btn-history" target="_blank">
-                                    <i class="fas fa-file-pdf"></i>
-                                </a>
+                                {% if apertura.estado.nombre == 'Abierta' %}
+                                    <span class="badge badge-success">Abierta</span>
+                                {% elif apertura.estado.nombre == 'En arqueo' %}
+                                    <span class="badge badge-warning">En arqueo</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Cerrada</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ apertura.fecha_apertura|date:"d/m/Y H:i" }}</td>
+                            <td>{% if apertura.fecha_cierre %}{{ apertura.fecha_cierre|date:"d/m/Y H:i" }}{% else %}—{% endif %}</td>
+                            <td>C${{ apertura.saldo_inicial|floatformat:2 }}</td>
+                            <td>{% if apertura.saldo_final %}C${{ apertura.saldo_final|floatformat:2 }}{% else %}—{% endif %}</td>
+                            <td>{% if apertura.tipocambio %}C${{ apertura.tipocambio.valor|floatformat:2 }}{% else %}—{% endif %}</td>
+                            <td>
+                                <button class="btn-history" type="button"
+                                        onclick="abrirModal('arqueosApertura{{ apertura.apertura_id }}')">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </button>
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
-                            <td colspan="4">No hay arqueos registrados</td>
-                        </tr>
+                        <tr><td colspan="9" class="empty-row">No hay aperturas registradas</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    {% endfor %}
+</div>
 {% endfor %}
 
+<!-- MODALES DE HISTORIAL DE ARQUEOS -->
+{% for caja in cajas %}
+    {% for apertura in caja.aperturacaja_set.all %}
+    <div id="arqueosApertura{{ apertura.apertura_id }}" class="modal-overlay">
+        <div class="modal-content modal-ancho">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Historial de Arqueos</h3>
+                <button class="close-btn" type="button"
+                        onclick="cerrarModal('arqueosApertura{{ apertura.apertura_id }}')">&times;</button>
+            </div>
+
+            <div class="modal-form">
+                <div class="arqueo-resumen">
+                    <div class="stat-card"><div><span class="stat-label">Caja</span><strong>{{ caja.nombre }}</strong></div></div>
+                    <div class="stat-card"><div><span class="stat-label">Cajero</span><strong>{{ apertura.empleado.user.first_name }} {{ apertura.empleado.user.last_name }}</strong></div></div>
+                    <div class="stat-card"><div><span class="stat-label">Apertura</span><strong>{{ apertura.fecha_apertura|date:"d/m/Y H:i" }}</strong></div></div>
+                    <div class="stat-card"><div><span class="stat-label">Saldo Inicial</span><strong>C${{ apertura.saldo_inicial|floatformat:2 }}</strong></div></div>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="table-modern">
+                        <thead>
+                            <tr><th>Fecha</th><th>Observación</th><th>Diferencia</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for arqueo in apertura.arqueocaja_set.all %}
+                            <tr>
+                                <td>{{ arqueo.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>{{ arqueo.observacion }}</td>
+                                <td>C${{ arqueo.diferencia|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'reporte_arqueo_pdf' arqueo.arqueo_id %}"
+                                       class="btn-history" target="_blank" rel="noopener">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="empty-row">No hay arqueos registrados</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>
-
 <script>
-document.getElementById("filtroCaja").addEventListener("keyup", function () {
-    let filtro = this.value.toLowerCase();
-    let filas = document.querySelectorAll("#tablaCajas tr");
+document.addEventListener('DOMContentLoaded', function () {
+    const filtro = document.getElementById('filtroCaja');
 
-    filas.forEach(fila => {
-        let texto = fila.textContent.toLowerCase();
-        fila.style.display = texto.includes(filtro) ? "" : "none";
+    if (filtro) {
+        filtro.addEventListener('input', function () {
+            const textoFiltro = this.value.toLowerCase();
+            document.querySelectorAll('#tablaCajas tr').forEach(function (fila) {
+                fila.style.display = fila.textContent.toLowerCase().includes(textoFiltro) ? '' : 'none';
+            });
+        });
+    }
+
+    const abrirModalCaja = "{{ abrir_modal_caja|yesno:'true,false' }}";
+    if (abrirModalCaja === 'true' && typeof abrirModal === 'function') {
+        abrirModal('modalCaja');
+    }
+
+    document.querySelectorAll('.alert').forEach(function (alerta) {
+        window.setTimeout(function () {
+            alerta.style.transition = 'opacity .5s ease';
+            alerta.style.opacity = '0';
+            window.setTimeout(function () { alerta.remove(); }, 500);
+        }, 3000);
     });
-});
 
-const abrirModalCaja = "{{ abrir_modal_caja|yesno:'true,false' }}";
-if (abrirModalCaja === "true") {
-    abrirModal('modalCaja');
-}
-
-setTimeout(() => {
-    const alertas = document.querySelectorAll('.alert, .alert-success, .alert-danger, .alert-error, .alert-info');
-    alertas.forEach(alerta => {
-        alerta.style.transition = "opacity .5s ease";
-        alerta.style.opacity = "0";
-        setTimeout(() => { alerta.remove(); }, 500);
-    });
-}, 3000);
-
-document.querySelectorAll('.modal-content').forEach(modalContent => {
-    modalContent.addEventListener('click', function(e){
-        e.stopPropagation();
+    document.querySelectorAll('.modal-content').forEach(function (contenido) {
+        contenido.addEventListener('click', function (evento) {
+            evento.stopPropagation();
+        });
     });
 });
 </script>
-
 {% endblock %}

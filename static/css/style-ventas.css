@@ -1,926 +1,377 @@
 
 /* =========================================================
-   LUCY'S STORE — ESTILOS DE VENTAS Y COBROS
-   Paleta global, tipografía, tablas, modal y ticket
-========================================================= */
-
-
-/* =========================================================
-   1. VARIABLES GLOBALES
-   Modifica aquí los colores y las fuentes de todo este CSS
+   LUCY'S STORE - CORRECCIONES VISUALES DE VENTAS
+   Diseño rosado sólido, sin celestes ni degradados
 ========================================================= */
 
 :root {
-    /* Colores de marca */
-    --rosa-principal: #e97293;
-    --rosa-oscuro: #c94f73;
-    --rosa-hover: #b93f64;
-    --rosa-claro: #fff5f8;
-    --rosa-suave: #fde8ef;
-    --rosa-borde: #f0a4b7;
-
-    /* Fondos */
-    --fondo-general: #f8fafc;
-    --fondo-tarjeta: #ffffff;
-    --fondo-tabla: #fff7fa;
-    --fondo-input: #ffffff;
-    --fondo-hover: #fff1f5;
-
-    /* Textos */
-    --texto-principal: #334155;
-    --texto-secundario: #64748b;
-    --texto-suave: #94a3b8;
-    --texto-blanco: #ffffff;
-
-    /* Bordes y sombras */
-    --borde: #e2e8f0;
-    --borde-suave: #edf0f4;
-    --sombra-suave: 0 4px 14px rgba(51, 65, 85, 0.07);
-    --sombra-modal: 0 20px 50px rgba(15, 23, 42, 0.20);
-
-    /* Estados y medios de pago */
-    --verde: #198754;
-    --verde-claro: #e9fff1;
-    --verde-borde: #a7e6c2;
-
-    --azul: #2878c7;
-    --azul-claro: #eef7ff;
-    --azul-borde: #b8d9fb;
-
-    --violeta: #7c3aed;
-    --violeta-claro: #f5ecff;
-    --violeta-borde: #d5b3ff;
-
-    --rojo: #dc3545;
-    --rojo-claro: #fff0f0;
-    --rojo-borde: #fecaca;
-
-    /* Tipografía global */
-    --fuente-principal: "Segoe UI", Arial, sans-serif;
-    --fuente-ticket: Arial, sans-serif;
-
-    --texto-xs: 0.75rem;
-    --texto-sm: 0.875rem;
-    --texto-base: 0.9375rem;
-    --texto-lg: 1.125rem;
-    --texto-xl: 1.5rem;
-
-    /* Pesos de fuente */
-    --peso-normal: 400;
-    --peso-medio: 500;
-    --peso-semi: 600;
-    --peso-negrita: 700;
-    --peso-extra: 800;
-
-    /* Formas y animaciones */
-    --radio-sm: 6px;
-    --radio-md: 10px;
-    --radio-lg: 14px;
-    --radio-xl: 18px;
-    --transicion: 0.25s ease;
+    --rosa-principal: #ff8fa3;
+    --rosa-hover: #f87590;
+    --rosa-claro: #fff0f3;
+    --rosa-fondo: #fff7f9;
+    --rosa-borde: #f8c5d0;
+    --texto-principal: #3c493b;
+    --texto-secundario: #88747b;
+    --blanco: #ffffff;
 }
-
 
 /* =========================================================
-   2. ESTILO GENERAL
+   FONDO GENERAL
 ========================================================= */
 
-body {
-    font-family: var(--fuente-principal);
-    color: var(--texto-principal);
-    font-size: var(--texto-base);
+.inventory-wrapper {
+    background: #fff7f9 !important;
+    border-radius: 18px;
 }
 
-button,
-input,
-select,
-textarea {
-    font-family: inherit;
+.header-section h2 {
+    color: var(--texto-principal) !important;
 }
 
-button {
-    transition:
-        background-color var(--transicion),
-        color var(--transicion),
-        border-color var(--transicion),
-        box-shadow var(--transicion),
-        transform var(--transicion);
+.header-section h2 i {
+    color: var(--rosa-principal) !important;
 }
-
 
 /* =========================================================
-   3. CAMPOS DE FECHA
+   FILTROS
 ========================================================= */
 
-.field input[type="date"] {
-    padding: 8px 10px;
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-sm);
-    background: var(--fondo-input);
-    color: var(--texto-principal);
-    font-family: inherit;
-    transition: border-color var(--transicion),
-                box-shadow var(--transicion);
-}
-
-.field input[type="date"]:focus {
-    outline: none;
-    border-color: var(--rosa-principal);
-    box-shadow: 0 0 0 3px rgba(233, 114, 147, 0.15);
-}
-
-
-/* =========================================================
-   4. INDICADORES Y ETIQUETAS
-========================================================= */
-
-.desc-total {
-    display: inline-block;
-    min-width: 80px;
-    padding: 6px 10px;
-    border-radius: var(--radio-sm);
-    background: var(--fondo-general);
-    color: var(--texto-secundario);
-    font-weight: var(--peso-semi);
-    text-align: center;
-}
-
-.badge-pago {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 20px;
-    background: var(--azul-claro);
-    color: var(--azul);
-    font-size: 0.8rem;
-    font-weight: var(--peso-semi);
-}
-
-.badge-stock {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: var(--radio-sm);
-    background: var(--verde-claro);
-    color: #166534;
-    font-size: 0.8rem;
-    font-weight: var(--peso-negrita);
-}
-
-
-/* =========================================================
-   5. TOTALES DE VENTAS
-========================================================= */
-
-.total-display {
-    font-size: var(--texto-xl);
-    color: var(--rosa-oscuro);
-    font-weight: var(--peso-negrita);
-}
-
-.total-section {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-right: auto;
-}
-
-.total-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 220px;
-    gap: 12px;
-    color: var(--texto-secundario);
-    font-size: var(--texto-sm);
-}
-
-.grand-total {
-    margin-top: 5px;
-    padding-top: 8px;
-    border-top: 1px solid var(--borde);
-    color: var(--rosa-oscuro);
-    font-size: 1.3rem;
-    font-weight: var(--peso-extra);
-}
-
-/* Conserva el centrado del total general */
-.total-item.grand-total {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-
-/* =========================================================
-   6. TABLA PEQUEÑA DE PRODUCTOS
-========================================================= */
-
-.mini-tabla {
-    margin-top: 15px;
-    max-height: 200px;
-    overflow: auto;
-    border: 1px solid var(--borde-suave);
-    border-radius: var(--radio-md);
-    background: var(--fondo-tarjeta);
-}
-
-
-/* =========================================================
-   7. TÍTULOS DE SECCIÓN
-========================================================= */
-
-.section-title {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--texto-secundario);
-    font-size: var(--texto-sm);
-    font-weight: var(--peso-negrita);
-}
-
-
-/* =========================================================
-   8. INPUTS DE TABLAS
-========================================================= */
-
-.input-table {
-    width: 100%;
-    padding: 6px;
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-sm);
-    background: var(--fondo-input);
-    color: var(--texto-principal);
-    text-align: center;
-    transition: border-color var(--transicion),
-                box-shadow var(--transicion);
-}
-
-.input-table:focus {
-    outline: none;
-    border-color: var(--rosa-principal);
-    box-shadow: 0 0 0 3px rgba(233, 114, 147, 0.12);
-}
-
-
-/* =========================================================
-   9. BOTÓN ELIMINAR FILA
-========================================================= */
-
-.btn-delete-row {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--rojo-borde);
-    border-radius: var(--radio-sm);
-    background: var(--rojo-claro);
-    color: var(--rojo);
-    cursor: pointer;
-}
-
-.btn-delete-row:hover {
-    background: var(--rojo);
-    color: var(--texto-blanco);
-}
-
-
-/* =========================================================
-   10. TABLA DE DETALLE DE VENTA
-========================================================= */
-
-.table-detalle {
-    width: 100%;
-    margin-top: 15px;
-    border-collapse: collapse;
-    background: var(--fondo-tarjeta);
-}
-
-.table-detalle th {
-    padding: 11px 10px;
-    border-bottom: 2px solid var(--rosa-borde);
-    background: var(--fondo-tabla);
-    color: var(--texto-secundario);
-    font-size: 0.85rem;
-    font-weight: var(--peso-negrita);
-    text-align: left;
-}
-
-.table-detalle td {
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--borde-suave);
-    color: var(--texto-principal);
-    font-size: 0.9rem;
-}
-
-.table-detalle tbody tr:hover {
-    background: var(--fondo-hover);
-}
-
-.total-area-detalle {
-    margin-top: 20px;
-    padding-top: 12px;
-    border-top: 2px solid var(--borde);
-    text-align: right;
-}
-
-.total-area-detalle h4 {
-    color: var(--rosa-oscuro);
-    font-size: 1.2rem;
-    font-weight: var(--peso-extra);
-}
-
-
-/* =========================================================
-   11. MODAL DE COBRO — CONTENEDOR
-========================================================= */
-
-#modalCobro .modal-content {
-    overflow: hidden;
-    border: none;
-    border-radius: var(--radio-xl);
-    background: var(--fondo-tarjeta);
-    box-shadow: var(--sombra-modal);
-    color: var(--texto-principal);
-    font-family: var(--fuente-principal);
-}
-
-/* Encabezado */
-
-#modalCobro .modal-header {
-    padding: 18px 25px;
-    border-bottom: none;
-    background: linear-gradient(
-        135deg,
-        var(--rosa-principal),
-        var(--rosa-oscuro)
-    );
-    color: var(--texto-blanco);
-}
-
-#modalCobro .modal-header h3 {
-    margin: 0;
-    color: var(--texto-blanco);
-    font-family: var(--fuente-principal);
-    font-size: 28px;
-    font-weight: var(--peso-negrita);
-}
-
-/* Botón de cerrar */
-
-#modalCobro .close-btn {
-    border: none;
-    background: transparent;
-    color: var(--texto-blanco);
-    font-size: 28px;
-    cursor: pointer;
-    transition: transform var(--transicion);
-}
-
-#modalCobro .close-btn:hover {
-    transform: rotate(90deg);
-}
-
-
-/* =========================================================
-   12. CONTENIDO Y DESPLAZAMIENTO DEL MODAL
-========================================================= */
-
-#modalCobro .table-scroll {
-    max-height: 75vh;
-    overflow-y: auto;
-    padding: 20px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--rosa-borde) var(--fondo-general);
-}
-
-#modalCobro .table-scroll::-webkit-scrollbar {
-    width: 8px;
-}
-
-#modalCobro .table-scroll::-webkit-scrollbar-track {
-    background: var(--fondo-general);
-}
-
-#modalCobro .table-scroll::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: var(--rosa-borde);
-}
-
-
-/* =========================================================
-   13. TOTAL DE FACTURA EN EL MODAL
-========================================================= */
-
-#modalCobro #totalCobro {
-    padding: 12px;
-    border: 2px solid var(--rosa-borde);
-    border-radius: var(--radio-md);
-    background: var(--rosa-claro);
-    color: var(--rosa-oscuro);
-    font-size: 24px;
-    font-weight: var(--peso-extra);
-    text-align: center;
-}
-
-
-/* =========================================================
-   14. TÍTULOS DE SECCIÓN DEL COBRO
-========================================================= */
-
-#modalCobro .section-title {
-    margin-top: 20px;
-    margin-bottom: 12px;
-    padding: 10px 15px;
-    border-radius: var(--radio-md);
-    font-size: 15px;
-    font-weight: var(--peso-negrita);
-}
-
-/* Se mantienen los tres estados visuales existentes */
-
-#modalCobro .section-title:nth-of-type(1) {
-    background: var(--verde-claro);
-    color: var(--verde);
-}
-
-#modalCobro .section-title:nth-of-type(2) {
-    background: var(--azul-claro);
-    color: var(--azul);
-}
-
-#modalCobro .section-title:nth-of-type(3) {
-    background: var(--violeta-claro);
-    color: var(--violeta);
-}
-
-
-/* =========================================================
-   15. DISTRIBUCIÓN DE CAMPOS
-========================================================= */
-
-#modalCobro .grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
-}
-
-
-/* =========================================================
-   16. ETIQUETAS Y CAMPOS DEL MODAL
-========================================================= */
-
-#modalCobro label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--texto-principal);
-    font-size: var(--texto-sm);
-    font-weight: var(--peso-semi);
-}
-
-#modalCobro .input-cobro {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-md);
-    background: var(--fondo-input);
-    color: var(--texto-principal);
-    font-family: var(--fuente-principal);
-    font-size: 15px;
-    transition: border-color var(--transicion),
-                box-shadow var(--transicion);
-}
-
-#modalCobro .input-cobro:focus {
-    outline: none;
-    border-color: var(--rosa-principal);
-    box-shadow: 0 0 0 4px rgba(233, 114, 147, 0.15);
-}
-
-#modalCobro .input-cobro::placeholder {
-    color: var(--texto-suave);
-}
-
-
-/* =========================================================
-   17. COLORES DE MEDIOS DE PAGO
-========================================================= */
-
-/* Efectivo */
-
-#efectivoCordoba,
-#efectivoDolar {
-    border-color: var(--verde-borde);
-    background: #f3fff8;
-}
-
-/* Transferencia */
-
-#transferenciaCordoba,
-#transferenciaDolar {
-    border-color: var(--azul-borde);
-    background: #f4faff;
-}
-
-/* Tarjeta */
-
-#tarjetaCordoba,
-#tarjetaDolar {
-    border-color: var(--violeta-borde);
-    background: #faf5ff;
-}
-
-
-/* =========================================================
-   18. RESUMEN DE CIERRE Y PAGOS
-========================================================= */
-
-#modalCobro .resumen-cierre {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-top: 25px;
-}
-
-#modalCobro .resumen-cierre > div {
-    min-width: 0;
-    padding: 14px;
-    border: 1px solid var(--borde-suave);
-    border-radius: var(--radio-lg);
-    background: var(--fondo-tarjeta);
-    box-shadow: var(--sombra-suave);
-}
-
-#modalCobro .resumen-cierre strong {
-    display: block;
-    margin-top: 8px;
-    color: var(--texto-secundario);
-    font-weight: var(--peso-semi);
-}
-
-#modalCobro .resumen-cierre input {
-    box-sizing: border-box;
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: var(--texto-principal);
-    font-family: var(--fuente-principal);
-    font-size: 18px;
-    font-weight: var(--peso-negrita);
-}
-
-#modalCobro .resumen-cierre input:focus {
-    outline: none;
-}
-
-
-/* =========================================================
-   19. COLORES DE LOS TOTALES DEL RESUMEN
-========================================================= */
-
-#totalEfectivo {
-    color: var(--verde) !important;
-}
-
-#totalTransferencia {
-    color: var(--azul) !important;
-}
-
-#totalTarjeta {
-    color: var(--violeta) !important;
-}
-
-#totalPagado {
-    color: var(--rosa-oscuro) !important;
-}
-
-#vuelto {
-    color: var(--verde) !important;
-}
-
-#faltante {
-    color: var(--rojo) !important;
-}
-
-
-/* =========================================================
-   20. PIE DEL MODAL Y BOTONES
-========================================================= */
-
-#modalCobro .modal-footer {
-    display: flex;
+.filters-card {
+    display: flex !important;
+    align-items: flex-end;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 25px;
-    padding: 20px 25px;
-    border-top: 1px solid var(--borde-suave);
-    background: var(--fondo-tarjeta);
+    gap: 15px;
+
+    background: var(--blanco) !important;
+    background-image: none !important;
+
+    border: 1px solid #f3e4e8 !important;
+    border-radius: 16px !important;
+
+    padding: 22px !important;
+    margin: 20px 0 !important;
+
+    box-shadow: 0 4px 12px rgba(80, 45, 55, 0.06) !important;
 }
 
-/* Botón principal */
-
-#modalCobro .btn-primary {
-    padding: 12px 20px;
-    border: none;
-    border-radius: var(--radio-md);
-    background: linear-gradient(
-        135deg,
-        var(--rosa-principal),
-        var(--rosa-oscuro)
-    );
-    color: var(--texto-blanco);
-    font-family: var(--fuente-principal);
-    font-weight: var(--peso-semi);
-    cursor: pointer;
+.filters-card .field {
+    flex: 1;
+    min-width: 150px;
 }
 
-#modalCobro .btn-primary:hover {
-    background: linear-gradient(
-        135deg,
-        var(--rosa-oscuro),
-        var(--rosa-hover)
-    );
-    box-shadow: 0 8px 20px rgba(217, 93, 125, 0.25);
-    transform: translateY(-2px);
+.filters-card label {
+    display: block;
+    color: var(--texto-principal) !important;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
 }
 
-#modalCobro .btn-primary:focus-visible,
-#modalCobro .btn-secondary:focus-visible,
-#modalCobro .close-btn:focus-visible {
-    outline: 3px solid var(--rosa-borde);
-    outline-offset: 3px;
+.filters-card input {
+    width: 100%;
+    height: 40px;
+    padding: 8px 12px;
+
+    background: #fffafb !important;
+    background-image: none !important;
+
+    border: 1px solid var(--rosa-borde) !important;
+    border-radius: 8px !important;
+
+    color: var(--texto-principal) !important;
+    outline: none;
+}
+
+.filters-card input:focus {
+    border-color: var(--rosa-principal) !important;
+    box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.12) !important;
+}
+
+/* =========================================================
+   TODOS LOS BOTONES - COLORES SÓLIDOS
+========================================================= */
+
+.btn-primary,
+.filters-card .btn-primary,
+.action-footer .btn-primary {
+
+    background: #ff8fa3 !important;
+    background-image: none !important;
+
+    color: #ffffff !important;
+
+    border: 1px solid #ff8fa3 !important;
+    border-radius: 9px !important;
+
+    box-shadow: none !important;
+
+    transition: background 0.2s ease;
+}
+
+.btn-primary:hover,
+.filters-card .btn-primary:hover,
+.action-footer .btn-primary:hover {
+
+    background: #f87590 !important;
+    background-image: none !important;
+
+    border-color: #f87590 !important;
+    color: #ffffff !important;
+
+    box-shadow: none !important;
 }
 
 /* Botón secundario */
 
-#modalCobro .btn-secondary {
+.btn-secondary {
+    background: #fff0f3 !important;
+    background-image: none !important;
+
+    color: #c95d76 !important;
+    border: 1px solid #f8c5d0 !important;
+
+    box-shadow: none !important;
+}
+
+.btn-secondary:hover {
+    background: #ffe2e9 !important;
+    background-image: none !important;
+}
+
+/* Botón limpiar / filtrar */
+
+.btn-clear {
+    background: #fff0f3 !important;
+    background-image: none !important;
+
+    color: #c95d76 !important;
+    border: 1px solid #f8c5d0 !important;
+
+    box-shadow: none !important;
+}
+
+.btn-clear:hover {
+    background: #ffe2e9 !important;
+    background-image: none !important;
+}
+
+/* =========================================================
+   TABLA DE HISTORIAL
+========================================================= */
+
+.table-container {
+    background: #ffffff !important;
+    background-image: none !important;
+
+    border: 1px solid #f3e4e8 !important;
+    border-radius: 15px !important;
+
+    box-shadow: 0 4px 12px rgba(80, 45, 55, 0.06) !important;
+
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.table-modern {
+    width: 100%;
+    border-collapse: collapse !important;
+
+    background: #ffffff !important;
+    color: var(--texto-principal) !important;
+}
+
+/* Encabezados */
+
+.table-modern thead {
+    background: #fff0f3 !important;
+    background-image: none !important;
+}
+
+.table-modern thead th {
+    background: #ff8fa3 !important;
+    background-image: none !important;
+
+    color: #fff0f3 !important;
+
+    font-weight: 700;
+    font-size: 13px;
+
+    padding: 17px 15px;
+
+    border-bottom: 1px solid #f5c5d0 !important;
+    white-space: nowrap;
+}
+
+/* Filas */
+
+.table-modern tbody tr {
+    background: #ffffff !important;
+    transition: background 0.2s ease;
+}
+
+.table-modern tbody tr:nth-child(even) {
+    background: #fffbfc !important;
+}
+
+.table-modern tbody tr:hover {
+    background: #fff0f3 !important;
+}
+
+.table-modern tbody td {
+    color: var(--texto-principal) !important;
+
+    padding: 15px;
+
+    border-bottom: 1px solid #f3e9ec !important;
+    font-size: 14px;
+}
+
+.table-modern tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* =========================================================
+   INSIGNIAS DE MÉTODO DE PAGO Y ESTADO
+========================================================= */
+
+.badge-pago {
+    display: inline-block;
+
+    background: #fff0f3 !important;
+    background-image: none !important;
+
+    color: #c45c75 !important;
+
+    border: 1px solid #f5c2ce !important;
+    border-radius: 20px !important;
+
+    padding: 6px 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    box-shadow: none !important;
+}
+
+/* =========================================================
+   BOTONES DE ACCIONES DE TABLA
+========================================================= */
+
+.row-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+}
+
+.btn-row {
+    background: #fff0f3 !important;
+    background-image: none !important;
+
+    color: #c45c75 !important;
+
+    border: 1px solid #f5c2ce !important;
+    border-radius: 8px !important;
+
+    width: 38px;
+    height: 38px;
+
+    cursor: pointer;
+    box-shadow: none !important;
+}
+
+.btn-row:hover {
+    background: #ff8fa3 !important;
+    background-image: none !important;
+
+    color: #ffffff !important;
+    border-color: #ff8fa3 !important;
+}
+
+/* =========================================================
+   BOTONES DE REGISTRO
+========================================================= */
+
+.action-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin: 25px 0 15px;
+}
+
+.action-footer .btn-primary {
     padding: 12px 20px;
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-md);
-    background: var(--fondo-general);
-    color: var(--texto-principal);
-    font-family: var(--fuente-principal);
+    font-weight: 600;
 }
-
-#modalCobro .btn-secondary:hover {
-    background: #e9edf3;
-}
-
 
 /* =========================================================
-   21. TICKET — ESTRUCTURA Y COLUMNAS
+   MENSAJE CUANDO NO HAY VENTAS
 ========================================================= */
 
-#ticket-imprimible {
-    font-family: var(--fuente-ticket);
-    color: #000000;
-}
-
-.ticket-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 3px;
-    font-size: 12px;
-}
-
-.ticket-header {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 5px;
-    padding-bottom: 3px;
-    border-bottom: 1px dashed #000000;
-    font-family: var(--fuente-ticket);
-    font-size: 12px;
-    font-weight: var(--peso-negrita);
-}
-
-.col-producto {
-    flex: 3;
-    min-width: 0;
-    text-align: left;
-}
-
-.col-cant {
-    flex: 1;
-    min-width: 30px;
+.empty-ventas {
+    padding: 40px;
     text-align: center;
+    background: #ffffff;
+    border-radius: 12px;
+    color: var(--texto-secundario);
 }
 
-.col-precio,
-.col-total {
-    flex: 1.5;
-    min-width: 70px;
-    text-align: right;
+.empty-ventas i {
+    font-size: 35px;
+    color: var(--rosa-principal);
 }
-
 
 /* =========================================================
-   22. IMPRESIÓN DEL TICKET
+   SCROLLBAR
 ========================================================= */
 
-@media print {
-    @page {
-        margin: 0;
-    }
-
-    html,
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #ffffff !important;
-    }
-
-    body * {
-        visibility: hidden !important;
-    }
-
-    #ticket-imprimible,
-    #ticket-imprimible * {
-        visibility: visible !important;
-    }
-
-    #ticket-imprimible {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        box-sizing: border-box !important;
-        width: 80mm !important;
-        max-width: 80mm !important;
-        margin: 0 !important;
-        padding: 3mm !important;
-        overflow: visible !important;
-        background: #ffffff !important;
-        color: #000000 !important;
-        font-family: var(--fuente-ticket) !important;
-        font-size: 12px !important;
-        box-shadow: none !important;
-    }
-
-    #ticket-imprimible .ticket-header,
-    #ticket-imprimible .ticket-row {
-        display: flex !important;
-        visibility: visible !important;
-    }
-
-    #ticket-imprimible img {
-        max-width: 100% !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .modal-footer,
-    .modal-overlay,
-    .topbar,
-    .sidebar,
-    button {
-        display: none !important;
-    }
+.table-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-
-/* =========================================================
-   23. RESPONSIVE — TABLETAS
-========================================================= */
-
-@media screen and (max-width: 992px) {
-    #modalCobro .modal-header h3 {
-        font-size: 22px;
-    }
-
-    #modalCobro .grid-2 {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    #modalCobro .table-scroll {
-        max-height: 60vh;
-        padding: 12px;
-    }
-
-    #modalCobro .resumen-cierre {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
+.table-scroll::-webkit-scrollbar-thumb {
+    background: #f3b6c4;
+    border-radius: 10px;
 }
 
+.table-scroll::-webkit-scrollbar-track {
+    background: #fff5f7;
+}
 
 /* =========================================================
-   24. RESPONSIVE — TELÉFONOS
+   RESPONSIVE
 ========================================================= */
 
-@media screen and (max-width: 768px) {
-    #modalCobro .modal-content {
-        width: 95%;
-        max-height: 95vh;
-        margin: 0 auto;
-        border-radius: var(--radio-lg);
-    }
+@media (max-width: 768px) {
 
-    #modalCobro .modal-header {
-        padding: 14px 16px;
-    }
-
-    #modalCobro .modal-header h3 {
-        font-size: 18px;
-    }
-
-    #modalCobro .close-btn {
-        font-size: 22px;
-    }
-
-    #modalCobro .input-cobro {
-        padding: 10px;
-        font-size: 14px;
-    }
-
-    #modalCobro .section-title {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
-    #modalCobro #totalCobro {
-        padding: 10px;
-        font-size: 18px;
-    }
-
-    #modalCobro .resumen-cierre {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 10px;
-    }
-
-    #modalCobro .modal-footer {
+    .filters-card {
         flex-direction: column;
-        padding: 15px;
+        align-items: stretch;
     }
 
-    #modalCobro .btn-primary,
-    #modalCobro .btn-secondary {
+    .filters-card .field {
         width: 100%;
     }
 
-    .total-item {
-        max-width: 100%;
+    .action-footer {
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .table-detalle th,
-    .table-detalle td {
-        padding: 9px 7px;
-    }
-}
-
-
-/* =========================================================
-   25. RESPONSIVE — TELÉFONOS PEQUEÑOS
-========================================================= */
-
-@media screen and (max-width: 480px) {
-    #modalCobro .modal-content {
-        width: 98%;
+    .action-footer button {
+        width: 100%;
     }
 
-    #modalCobro .table-scroll {
-        max-height: 55vh;
-        padding: 10px;
+    .table-scroll {
+        overflow-x: auto;
     }
 
-    #modalCobro label {
-        font-size: 13px;
-    }
-
-    #modalCobro .input-cobro {
-        font-size: 13px;
-    }
-
-    #modalCobro .section-title {
-        font-size: 13px;
-    }
-
-    #modalCobro .resumen-cierre input {
-        font-size: 16px;
-    }
-
-    .total-display {
-        font-size: 1.25rem;
-    }
-
-    .grand-total {
-        font-size: 1.15rem;
-    }
-}
-
-
-/* =========================================================
-   26. RESPETO A LA PREFERENCIA DE MOVIMIENTO
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
 }

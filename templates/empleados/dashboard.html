@@ -1,150 +1,43 @@
 {% extends 'empleados/base_empleados.html' %}
+{% load static %}
 
 {% block content %}
-<!-- CDN de Tailwind CSS v3 (El más estable y compatible para inyección directa mediante script) -->
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- Hoja de estilos del Dashboard (Diseño Estándar Lucy's Store) -->
+ <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'css/style-dashboard.css' %}">
 
-<style>
-    /* Estilos nativos de respaldo alineados a la tipografía estándar de Lucy's Store */
-    .dashboard-wrapper {
-        font-family: "Segoe UI", Arial, sans-serif !important;
-        background-color: #FFF0F2 !important;
-        min-height: 100vh;
-    }
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="dashboard-wrapper">
     
-    /* Forzar que los SVGs oculten excesos si falla Tailwind */
-    svg {
-        max-width: 100%;
-        height: auto;
-    }
-
-    /* Customización Profesional de DataTables Claro/Rosa */
-    .dataTables_wrapper {
-        padding-top: 1rem;
-        font-family: "Segoe UI", Arial, sans-serif !important;
-    }
-    .dataTables_wrapper .dataTables_length select, 
-    .dataTables_wrapper .dataTables_filter input {
-        border: 1px solid #f2d6da !important;
-        border-radius: 8px !important;
-        padding: 6px 12px !important;
-        background-color: #fff !important;
-        color: #4b5563 !important;
-        outline: none !important;
-    }
-    table.dataTable thead th {
-        border-bottom: 2px solid #fbcfe8 !important;
-        padding: 12px 16px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        font-size: 0.75rem !important;
-    }
-    table.dataTable tbody td {
-        padding: 14px 16px !important;
-        border-bottom: 1px solid #fff5f6 !important;
-    }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #db2777 !important;
-        color: white !important;
-        border: 1px solid #db2777 !important;
-        border-radius: 6px !important;
-    }
-</style>
-<style>
-    .message-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.custom-alert {
-    min-width: 280px;
-    max-width: 350px;
-    padding: 12px 16px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 14px;
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease-out;
-}
-
-/* ERROR */
-.custom-alert.error {
-    background: #e74c3c;
-}
-
-/* SUCCESS */
-.custom-alert.success {
-    background: #2ecc71;
-}
-
-/* WARNING */
-.custom-alert.warning {
-    background: #f39c12;
-}
-
-/* INFO */
-.custom-alert.info {
-    background: #3498db;
-}
-
-.icon {
-    font-size: 18px;
-}
-
-/* Animación */
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-</style>
-
-<!-- Contenedor Principal Adaptado de Lucy's System -->
-<div class="dashboard-wrapper p-6 space-y-6 bg-[#FFF0F2] text-gray-700 w-full min-h-screen">
-    
-    <!-- CONTENEDOR ENCABEZADO -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-pink-100/50">
-        <div>
-            <div class="flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-pink-600"></span>
-                <span class="text-xs font-bold text-pink-600 uppercase tracking-widest">Métricas en Tiempo Real</span>
+    <!-- ENCABEZADO Y FILTROS -->
+    <header class="dashboard-header">
+        <div class="header-info">
+            <div class="badge-live">
+                <span class="live-dot"></span>
+                <span class="badge-live-text">Métricas en Tiempo Real</span>
             </div>
-            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight mt-1">Panel Analítico Corporativo</h1>
-            <p class="text-xs text-gray-400 font-medium mt-1">
-                Sesión: <span class="bg-pink-50 text-pink-700 px-2 py-0.5 rounded font-bold uppercase text-[10px]">{{ rol_usuario }}</span>
-                {% if sucursal_usuario %} | <span class="text-gray-500 font-semibold">{{ sucursal_usuario.nombre }}</span>{% endif %}
+            <h1 class="header-title">Panel Analítico Corporativo</h1>
+            <p class="header-subtitle">
+                Sesión: <span class="badge-rol">{{ rol_usuario }}</span>
+                {% if sucursal_usuario %} | <span class="sucursal-nombre">{{ sucursal_usuario.nombre }}</span>{% endif %}
             </p>
         </div>
         
-        <!-- COMPONENTE FILTRADO PREMIUM -->
-        <form method="GET" class="w-full lg:w-auto flex flex-wrap items-end gap-3 bg-[#FFF8F9] p-4 rounded-xl border border-pink-100">
-            <div class="flex-1 sm:flex-none">
-                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Fecha Inicio</label>
-                <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner">
+        <!-- FORMULARIO DE FILTRADO -->
+        <form method="GET" class="filter-form">
+            <div class="field-group">
+                <label class="field-label">Fecha Inicio</label>
+                <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}" class="input-date">
             </div>
-            <div class="flex-1 sm:flex-none">
-                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Fecha Fin</label>
-                <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner">
+            <div class="field-group">
+                <label class="field-label">Fecha Fin</label>
+                <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}" class="input-date">
             </div>
 
             {% if rol_usuario == 'administrador' %}
-            <div class="w-full sm:w-auto">
-                <label class="block text-[10px] font-bold text-pink-800 mb-1 uppercase tracking-wider">Filtrar Sucursal</label>
-                <select name="sucursal" class="w-full bg-white text-gray-700 text-xs rounded-lg p-2 border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:border-pink-500 transition shadow-inner pr-8">
+            <div class="field-group">
+                <label class="field-label">Filtrar Sucursal</label>
+                <select name="sucursal" class="select-sucursal">
                     <option value="">Todas las Sucursales</option>
                     {% for suc in sucursales %}
                         <option value="{{ suc.sucursal_id }}" {% if sucursal_seleccionada == suc.sucursal_id|stringformat:"i" %}selected{% endif %}>{{ suc.nombre }}</option>
@@ -153,184 +46,136 @@
             </div>
             {% endif %}
 
-            <div class="flex gap-2 w-full sm:w-auto">
-                <button type="submit" class="flex-1 sm:flex-none bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition transform hover:-translate-y-0.5 cursor-pointer">
-                    Aplicar
-                </button>
-                <a href="." class="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold text-xs px-4 py-2.5 rounded-lg transition text-center flex items-center justify-center">
-                    Limpiar
+            <div class="btn-group-filters">
+                <button type="submit" class="btn-filter-apply">Aplicar</button>
+                <a href="." class="btn-filter-clear">Limpiar</a>
+                <a href="{% url 'dashboard_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&sucursal={{ sucursal_seleccionada }}" class="btn-filter-export">
+                    Exportar Excel
                 </a>
-
-                <a href="{% url 'dashboard_excel' %}?fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}&sucursal={{ sucursal_seleccionada }}"
-   class="bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm">
-    Exportar Excel
-</a>
             </div>
         </form>
-    </div>
+    </header>
+
+    <!-- MENSAJES / ALERTAS -->
     {% if messages %}
-  <div class="message-container">
-    {% for message in messages %}
-      <div class="custom-alert {{ message.tags }}">
-        <span class="icon">⚠️</span>
-        <span class="text">{{ message }}</span>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-    <!-- SECCIÓN INDICADORES CLAVE (KPIs) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        <!-- KPI: Ingresos de Caja -->
-        <div class="bg-white rounded-2xl p-6 flex items-center justify-between shadow-sm border border-pink-100/60 relative overflow-hidden group hover:shadow-md transition duration-300">
-            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-pink-50 rounded-full group-hover:scale-110 transition transform duration-300"></div>
-            <div class="relative z-10 flex items-center">
-                <!-- Se forzó un ancho y alto fijo style="..." para evitar deformaciones si falla Tailwind -->
-                <div class="p-4 bg-pink-50 text-pink-600 rounded-xl mr-4 shadow-sm flex items-center justify-center" style="width: 60px; height: 60px; min-width: 60px;">
-                    <svg style="width: 28px; height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Ventas Totales Netas</p>
-                    <h3 class="text-2xl font-extrabold text-gray-900 mt-1">C$ {{ total_ventas|floatformat:2 }}</h3>
-                </div>
-            </div>
-            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-bold self-start relative z-10 border border-emerald-100">PAGADAS</span>
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="custom-alert {{ message.tags }}">
+            <span class="icon">⚠️</span>
+            <span class="text">{{ message }}</span>
         </div>
-
-        <!-- KPI: Transacciones Emitidas -->
-        <div class="bg-white rounded-2xl p-6 flex items-center justify-between shadow-sm border border-pink-100/60 relative overflow-hidden group hover:shadow-md transition duration-300">
-            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-50 rounded-full group-hover:scale-110 transition transform duration-300"></div>
-            <div class="relative z-10 flex items-center">
-                <div class="p-4 bg-purple-50 text-purple-600 rounded-xl mr-4 shadow-sm flex items-center justify-center" style="width: 60px; height: 60px; min-width: 60px;">
-                    <svg style="width: 28px; height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Volumen de Facturación</p>
-                    <h3 class="text-2xl font-extrabold text-gray-900 mt-1">{{ cantidad_ventas }} <span class="text-sm font-semibold text-gray-400">fcts.</span></h3>
-                </div>
-            </div>
-            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-md font-bold self-start relative z-10 border border-purple-100">EFECTIVAS</span>
-        </div>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- INDICADORES CLAVE (KPIs) -->
+    <section class="kpi-grid">
+        <!-- KPI: Ingresos Netos -->
+        <div class="kpi-card">
+            <div class="kpi-card-bg bg-pink"></div>
+            <div class="kpi-card-content">
+                <div class="kpi-icon-box box-pink">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="kpi-label">Ventas Totales Netas</p>
+                    <h3 class="kpi-value">C$ {{ total_ventas|floatformat:2 }}</h3>
+                </div>
+            </div>
+            <span class="badge-status badge-emerald">PAGADAS</span>
+        </div>
+
+        <!-- KPI: Volumen de Facturación -->
+        <div class="kpi-card">
+            <div class="kpi-card-bg bg-purple"></div>
+            <div class="kpi-card-content">
+                <div class="kpi-icon-box box-purple">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                    <p class="kpi-label">Volumen de Facturación</p>
+                    <h3 class="kpi-value">{{ cantidad_ventas }} <span class="kpi-unit">fcts.</span></h3>
+                </div>
+            </div>
+            <span class="badge-status badge-purple">EFECTIVAS</span>
+        </div>
+    </section>
 
     <!-- RESUMEN FINANCIERO -->
-<div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
-
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-base font-bold text-gray-900">
-            Resumen Financiero
-        </h2>
-
-        <span class="text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded-md font-bold border border-pink-100">
-            PERÍODO SELECCIONADO
-        </span>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-
-        <!-- COSTO DE VENTA -->
-        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <p class="text-xs font-bold text-blue-600 uppercase">
-                Costo de Venta
-            </p>
-
-            <h3 class="text-xl font-extrabold text-blue-900 mt-2">
-                C$ {{ costo_venta|floatformat:2 }}
-            </h3>
+    <section class="financial-card">
+        <div class="section-title-bar">
+            <h2 class="section-title">Resumen Financiero</h2>
+            <span class="badge-status badge-pink-light">PERÍODO SELECCIONADO</span>
         </div>
 
-        <!-- UTILIDAD BRUTA -->
-        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
-            <p class="text-xs font-bold text-green-600 uppercase">
-                Utilidad Bruta
-            </p>
-
-            <h3 class="text-xl font-extrabold text-green-900 mt-2">
-                C$ {{ utilidad_bruta|floatformat:2 }}
-            </h3>
+        <div class="financial-grid">
+            <div class="fin-box box-blue">
+                <p class="fin-label label-blue">Costo de Venta</p>
+                <h3 class="fin-value value-blue">C$ {{ costo_venta|floatformat:2 }}</h3>
+            </div>
+            <div class="fin-box box-green">
+                <p class="fin-label label-green">Utilidad Bruta</p>
+                <h3 class="fin-value value-green">C$ {{ utilidad_bruta|floatformat:2 }}</h3>
+            </div>
+            <div class="fin-box box-red">
+                <p class="fin-label label-red">Pérdidas</p>
+                <h3 class="fin-value value-red">C$ {{ perdidas|floatformat:2 }}</h3>
+            </div>
+            <div class="fin-box box-amber">
+                <p class="fin-label label-amber">Regalías</p>
+                <h3 class="fin-value value-amber">C$ {{ regalias|floatformat:2 }}</h3>
+            </div>
         </div>
-
-        <!-- PERDIDAS -->
-        <div class="bg-red-50 rounded-xl p-4 border border-red-100">
-            <p class="text-xs font-bold text-red-600 uppercase">
-                Pérdidas
-            </p>
-
-            <h3 class="text-xl font-extrabold text-red-900 mt-2">
-                C$ {{ perdidas|floatformat:2 }}
-            </h3>
-        </div>
-
-        <!-- REGALIAS -->
-        <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
-            <p class="text-xs font-bold text-amber-600 uppercase">
-                Regalías
-            </p>
-
-            <h3 class="text-xl font-extrabold text-amber-900 mt-2">
-                C$ {{ regalias|floatformat:2 }}
-            </h3>
-        </div>
-
-    </div>
-
-</div>
+    </section>
 
     <!-- SECCIÓN DE GRÁFICOS ANALÍTICOS -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        <!-- Panel Gráfico 1 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
-            <div class="border-b border-gray-50 pb-3 mb-4">
-                <h2 class="text-base font-bold text-gray-900">Rendimiento por Colaborador</h2>
-                <p class="text-xs text-gray-400">Total acumulado de ventas facturadas por cada empleado</p>
+    <section class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Rendimiento por Colaborador</h2>
+                <p class="chart-subtitle">Total acumulado de ventas facturadas por cada empleado</p>
             </div>
-            <div class="relative h-64 w-full">
+            <div class="chart-canvas-container">
                 <canvas id="chartEmpleados"></canvas>
             </div>
         </div>
 
-        <!-- Panel Gráfico 2 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
-            <div class="border-b border-gray-50 pb-3 mb-4">
-                <h2 class="text-base font-bold text-gray-900">Participación por Categoría</h2>
-                <p class="text-xs text-gray-400">Distribución de categorías preferidas de los clientes</p>
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Participación por Categoría</h2>
+                <p class="chart-subtitle">Distribución de categorías preferidas de los clientes</p>
             </div>
-            <div class="relative h-64 w-full flex justify-center">
+            <div class="chart-canvas-container flex-center">
                 <canvas id="chartCategorias"></canvas>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- SECCIÓN TABLAS OPERATIVAS -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
-        
+    <section class="tables-grid">
         <!-- Tabla: Productos Más Vendidos -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
-            <div class="flex items-center justify-between border-b border-gray-50 pb-3 mb-2">
-                <div>
-                    <h2 class="text-base font-bold text-pink-700 flex items-center gap-1.5">
-                        Top 10 Productos Más Vendidos
-                    </h2>
-                    <p class="text-xs text-gray-400">Artículos con mayor demanda en inventario</p>
-                </div>
+        <div class="table-card">
+            <div class="table-card-header">
+                <h2 class="table-title text-pink-title">Top 10 Productos Más Vendidos</h2>
+                <p class="table-subtitle">Artículos con mayor demanda en inventario</p>
             </div>
-            <div class="overflow-x-auto w-full">
-                <table id="tablaMasVendidos" class="w-full text-sm text-left">
+            <div class="table-responsive">
+                <table id="tablaMasVendidos" class="table-custom">
                     <thead>
-                        <tr class="text-pink-900 bg-pink-50/50">
+                        <tr class="thead-pink">
                             <th>Producto</th>
                             <th>Categoría</th>
                             <th>Marca</th>
                             <th class="text-center">Unidades</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-600">
+                    <tbody>
                         {% for item in productos_mas_vendidos %}
-                        <tr class="hover:bg-pink-50/30 transition duration-150">
-                            <td class="font-semibold text-gray-900">{{ item.producto__nombre }}</td>
-                            <td><span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{{ item.producto__categoria__nombre }}</span></td>
-                            <td class="text-gray-500 text-xs">{{ item.producto__marca__nombre }}</td>
-                            <td class="text-center font-extrabold text-pink-600 bg-pink-50/20 rounded-lg">{{ item.cantidad_total }}</td>
+                        <tr>
+                            <td class="font-bold-dark">{{ item.producto__nombre }}</td>
+                            <td><span class="badge-category-gray">{{ item.producto__categoria__nombre }}</span></td>
+                            <td class="text-muted-sm">{{ item.producto__marca__nombre }}</td>
+                            <td class="text-center font-bold-pink cell-pink-highlight">{{ item.cantidad_total }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -339,49 +184,44 @@
         </div>
 
         <!-- Tabla: Productos Menos Vendidos -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-pink-100/60">
-            <div class="flex items-center justify-between border-b border-gray-50 pb-3 mb-2">
-                <div>
-                    <h2 class="text-base font-bold text-amber-800 flex items-center gap-1.5">
-                        Artículos de Baja Rotación
-                    </h2>
-                    <p class="text-xs text-gray-400">Productos críticos con riesgo de estancamiento</p>
-                </div>
+        <div class="table-card">
+            <div class="table-card-header">
+                <h2 class="table-title text-amber-title">Artículos de Baja Rotación</h2>
+                <p class="table-subtitle">Productos críticos con riesgo de estancamiento</p>
             </div>
-            <div class="overflow-x-auto w-full">
-                <table id="tablaMenosVendidos" class="w-full text-sm text-left">
+            <div class="table-responsive">
+                <table id="tablaMenosVendidos" class="table-custom">
                     <thead>
-                        <tr class="text-amber-900 bg-amber-50/50">
+                        <tr class="thead-amber">
                             <th>Código</th>
                             <th>Producto</th>
                             <th>Categoría</th>
                             <th class="text-center">Unidades</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-600">
+                    <tbody>
                         {% for item in productos_menos_vendidos %}
-                        <tr class="hover:bg-amber-50/30 transition duration-150">
-                            <td class="font-mono text-xs text-gray-400 font-semibold">{{ item.producto__codigo }}</td>
-                            <td class="font-semibold text-gray-900">{{ item.producto__nombre }}</td>
-                            <td><span class="bg-amber-50 text-amber-800 px-2 py-0.5 rounded text-xs font-medium">{{ item.producto__categoria__nombre }}</span></td>
-                            <td class="text-center font-extrabold text-amber-700 bg-amber-50/30 rounded-lg">{{ item.cantidad_total|default:0 }}</td>
+                        <tr>
+                            <td class="font-code">{{ item.producto__codigo }}</td>
+                            <td class="font-bold-dark">{{ item.producto__nombre }}</td>
+                            <td><span class="badge-category-amber">{{ item.producto__categoria__nombre }}</span></td>
+                            <td class="text-center font-bold-amber cell-amber-highlight">{{ item.cantidad_total|default:0 }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-
-    </div>
+    </section>
 </div>
 
-<!-- INYECCIÓN ASÍNCRONA DE DATOS -->
+<!-- INYECCIÓN ASÍNCRONA DE DATOS JSON -->
 <script id="data-empleados-labels" type="application/json">{{ chart_empleados_labels|safe }}</script>
 <script id="data-empleados-data" type="application/json">{{ chart_empleados_data|safe }}</script>
 <script id="data-categorias-labels" type="application/json">{{ chart_categorias_labels|safe }}</script>
 <script id="data-categorias-valores" type="application/json">{{ chart_categorias_valores|safe }}</script>
 
-<!-- DEPENDENCIAS REQUERIDAS -->
+<!-- DEPENDENCIAS JS Y DATATABLES -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -404,7 +244,6 @@
     const categoriasLabels = JSON.parse(document.getElementById('data-categorias-labels').textContent);
     const categoriasValores = JSON.parse(document.getElementById('data-categorias-valores').textContent);
 
-    /* Configuración de fuentes estándar para Chart.js */
     Chart.defaults.font.family = '"Segoe UI", Arial, sans-serif';
 
     const ctxEmp = document.getElementById('chartEmpleados').getContext('2d');
@@ -415,8 +254,8 @@
             datasets: [{
                 label: 'Ingresos Mensuales',
                 data: empleadosData,
-                backgroundColor: 'rgba(219, 39, 119, 0.75)',
-                borderColor: '#db2777',
+                backgroundColor: 'rgba(233, 114, 147, 0.75)',
+                borderColor: '#e97293',
                 borderWidth: 1,
                 borderRadius: 8,
                 barThickness: 28
@@ -440,7 +279,7 @@
             labels: categoriasLabels,
             datasets: [{
                 data: categoriasValores,
-                backgroundColor: ['#db2777', '#f472b6', '#f9a8d4', '#fda4af', '#cbd5e1'],
+                backgroundColor: ['#e97293', '#c94f73', '#fde8ef', '#f0a4b7', '#94a3b8'],
                 borderWidth: 3,
                 borderColor: '#ffffff'
             }]
@@ -453,15 +292,14 @@
             }
         }
     });
-</script>
-<script>
-  setTimeout(() => {
-    const alerts = document.querySelectorAll('.custom-alert');
-    alerts.forEach(a => {
-      a.style.opacity = '0';
-      a.style.transform = 'translateX(100%)';
-      setTimeout(() => a.remove(), 300);
-    });
-  }, 4000);
+
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.custom-alert');
+        alerts.forEach(a => {
+            a.style.opacity = '0';
+            a.style.transform = 'translateX(100%)';
+            setTimeout(() => a.remove(), 300);
+        });
+    }, 4000);
 </script>
 {% endblock %}

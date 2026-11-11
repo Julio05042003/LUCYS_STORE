@@ -8,7 +8,7 @@
 ========================================================= */
 :root {
     /* Colores de marca */
-    --rosa-principal: #e97293;
+    --rosa-principal: #ff8fa3;
     --rosa-oscuro: #c94f73;
     --rosa-hover: #b93f64;
     --rosa-claro: #fff5f8;
@@ -623,6 +623,229 @@
 
     .total-general-box h2 {
         font-size: 1.6rem;
+    }
+
+    .caja-actions {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* =========================================================
+   9. CORRECCIÓN VISUAL — CONTROL DE CAJA DEL CAJERO
+   Unificación con Administración de Caja
+========================================================= */
+
+/* Fondo y distribución general */
+.caja-dashboard {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 24px 30px;
+    box-sizing: border-box;
+    background: #fff5f8;
+}
+
+/* Encabezado */
+.caja-header {
+    min-height: 90px;
+    padding: 18px 22px;
+    margin-bottom: 25px;
+    box-sizing: border-box;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #edf0f4;
+    box-shadow: 0 4px 14px rgba(51, 65, 85, 0.06);
+}
+
+.caja-title {
+    font-size: 1.55rem;
+    margin-bottom: 7px;
+    color: #334155;
+}
+
+/* Indicador del tipo de cambio */
+.tipo-cambio-box {
+    background: #fff0f3;
+    color: #c94f73;
+    border: 1px solid #f0a4b7;
+    border-radius: 20px;
+}
+
+/* Estado de caja */
+.status-indicator {
+    padding: 9px 17px;
+    font-weight: 700;
+    border-radius: 25px;
+}
+
+/* Títulos de las secciones */
+.section-header-caja {
+    color: #334155;
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+}
+
+/* Distribución uniforme de las tarjetas */
+.caja-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+/* Tarjetas */
+.stat-card {
+    min-width: 0;
+    min-height: 95px;
+    padding: 17px 20px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #f0dce3;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(51, 65, 85, 0.05);
+    transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(51, 65, 85, 0.09);
+}
+
+/* Iconos */
+.stat-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 11px;
+}
+
+.stat-info {
+    min-width: 0;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+/* Tarjetas destacadas */
+.stat-card.highlighted {
+    background: linear-gradient(135deg, #fff0f3, #ffffff);
+    border: 1px solid #f0a4b7;
+}
+
+.stat-card.highlighted .stat-value {
+    color: #ff8fa3;
+}
+
+/* Total general: reducir su tamaño */
+.total-general-box {
+    min-height: 105px;
+    padding: 18px 25px;
+    margin: 22px 0;
+    box-sizing: border-box;
+    border-radius: 14px;
+    background: linear-gradient(110deg, #ff8fa3, #ff8fa3);
+    box-shadow: 0 6px 18px rgba(201, 79, 115, 0.17);
+}
+
+.total-general-box span {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.total-general-box h2 {
+    font-size: 1.9rem;
+    margin-top: 5px;
+}
+
+.total-general-box i {
+    font-size: 2.6rem;
+}
+
+/* Botones de acciones */
+.caja-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0 25px;
+}
+
+.btn-action {
+    min-height: 46px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+/* Contenedores de tablas */
+.table-container {
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #f0dce3;
+    box-shadow: 0 4px 14px rgba(51, 65, 85, 0.06);
+}
+
+/* =========================================================
+   10. RESPONSIVIDAD
+========================================================= */
+
+@media screen and (max-width: 1100px) {
+    .caja-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .caja-dashboard {
+        padding: 15px;
+    }
+
+    .caja-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .caja-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-value {
+        font-size: 1.05rem;
+    }
+
+    .total-general-box {
+        padding: 18px;
+    }
+
+    .total-general-box h2 {
+        font-size: 1.6rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .caja-stats-grid {
+        grid-template-columns: 1fr;
     }
 
     .caja-actions {

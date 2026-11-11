@@ -1,17 +1,23 @@
+
 /* =========================================================
-   LUCY'S STORE — MÓDULO DE PEDIDOS (style-pedidos.css)
-   Alineación total al Estándar Global (:root)
+   LUCY'S STORE — MÓDULO DE PEDIDOS
+   Diseño rosado uniforme
+   Tarjetas originales conservadas
 ========================================================= */
 
-/* 1. DEFINICIÓN Y RESGUARDO DE VARIABLES GLOBALES */
+/* =========================================================
+   1. VARIABLES GLOBALES
+========================================================= */
+
 :root {
-    /* Colores de marca */
-    --rosa-principal: #e97293;
+    /* Colores principales */
+    --rosa-principal: #ff8fa3;
     --rosa-oscuro: #c94f73;
     --rosa-hover: #b93f64;
     --rosa-claro: #fff5f8;
     --rosa-suave: #fde8ef;
     --rosa-borde: #f0a4b7;
+    --rosa-medio: #f8c6d2;
 
     /* Fondos */
     --fondo-general: #f8fafc;
@@ -32,61 +38,76 @@
     --sombra-suave: 0 4px 14px rgba(51, 65, 85, 0.07);
     --sombra-modal: 0 20px 50px rgba(15, 23, 42, 0.20);
 
-    /* Estados y medios de pago */
+    /* Estados */
     --verde: #198754;
     --verde-claro: #e9fff1;
-    --verde-borde: #a7e6c2;
 
-    --azul: #2878c7;
-    --azul-claro: #eef7ff;
-    --azul-borde: #b8d9fb;
+    --azul: #c94f73;
+    --azul-claro: #fff0f4;
 
-    --violeta: #7c3aed;
-    --violeta-claro: #f5ecff;
-    --violeta-borde: #d5b3ff;
+    --violeta: #c94f73;
+    --violeta-claro: #fff0f4;
 
     --rojo: #dc3545;
     --rojo-claro: #fff0f0;
-    --rojo-borde: #fecaca;
 
-    /* Tipografía global */
+    /* Tipografía */
     --fuente-principal: "Segoe UI", Arial, sans-serif;
+
     --texto-xs: 0.75rem;
     --texto-sm: 0.875rem;
     --texto-base: 0.9375rem;
     --texto-lg: 1.125rem;
     --texto-xl: 1.5rem;
 
-    /* Pesos de fuente */
+    /* Pesos */
     --peso-normal: 400;
     --peso-medio: 500;
     --peso-semi: 600;
     --peso-negrita: 700;
     --peso-extra: 800;
 
-    /* Formas y animaciones */
+    /* Formas */
     --radio-sm: 6px;
     --radio-md: 10px;
     --radio-lg: 14px;
     --radio-xl: 18px;
+
     --transicion: 0.25s ease;
 }
 
-/* 2. BASE Y ENCABEZADOS DE PÁGINA */
+
+/* =========================================================
+   2. BASE GENERAL
+========================================================= */
+
 body {
     background-color: var(--fondo-general);
     color: var(--texto-principal);
     font-family: var(--fuente-principal);
 }
 
+
+/* =========================================================
+   3. ENCABEZADO DE PÁGINA
+========================================================= */
+
 .page-header-custom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, var(--rosa-principal), var(--rosa-oscuro));
+
+    background: linear-gradient(
+        135deg,
+        var(--rosa-principal),
+        var(--rosa-principal)
+    );
+
     padding: 22px 28px;
     border-radius: var(--radio-lg);
+
     color: var(--texto-blanco);
+
     margin-bottom: 25px;
     box-shadow: var(--sombra-suave);
 }
@@ -103,76 +124,118 @@ body {
     font-size: var(--texto-sm);
 }
 
-/* 3. BOTONERA ESTÁNDAR */
+
+/* =========================================================
+   4. BOTONES
+   Sin sombras ni elevaciones
+========================================================= */
+
 .btn-pink-primary {
-    background-color: var(--texto-blanco);
+    background-color: #ffffff;
     color: var(--rosa-oscuro);
+
     border: none;
     padding: 10px 22px;
+
     border-radius: var(--radio-xl);
+
     font-weight: var(--peso-semi);
     font-size: var(--texto-sm);
+
     cursor: pointer;
+
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: var(--transicion);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    transition: background-color var(--transicion),
+                color var(--transicion);
+    box-shadow: none;
 }
 
 .btn-pink-primary:hover {
-    transform: translateY(-2px);
     background-color: var(--rosa-claro);
     color: var(--rosa-hover);
-    box-shadow: var(--sombra-suave);
+
+    transform: none;
+    box-shadow: none;
 }
+
 
 .btn-pink-action {
     background-color: var(--rosa-principal);
-    color: var(--texto-blanco);
+    color: #ffffff;
+
     border: none;
     padding: 10px 18px;
+
     border-radius: var(--radio-md);
+
     font-weight: var(--peso-semi);
     font-size: var(--texto-sm);
+
     cursor: pointer;
-    transition: var(--transicion);
+
+    transition: background-color var(--transicion);
+    box-shadow: none;
 }
 
 .btn-pink-action:hover {
     background-color: var(--rosa-oscuro);
+    color: #ffffff;
+
+    transform: none;
+    box-shadow: none;
 }
 
+
 .btn-secondary-custom {
-    background-color: var(--borde-suave);
-    color: var(--texto-secundario);
-    border: none;
+    background-color: var(--rosa-suave);
+    color: var(--rosa-oscuro);
+
+    border: 1px solid var(--rosa-borde);
+
     padding: 8px 16px;
     border-radius: var(--radio-md);
+
     cursor: pointer;
     font-weight: var(--peso-semi);
-    transition: var(--transicion);
+
+    transition: background-color var(--transicion);
+    box-shadow: none;
 }
 
 .btn-secondary-custom:hover {
-    background-color: var(--borde);
-    color: var(--texto-principal);
+    background-color: var(--rosa-medio);
+    color: var(--rosa-oscuro);
+
+    box-shadow: none;
+    transform: none;
 }
 
-/* 4. BARRA DE FILTROS Y TARJETAS DE RESUMEN */
+
+/* =========================================================
+   5. BARRA SUPERIOR Y FILTROS
+========================================================= */
+
 .dashboard-top-bar {
     display: grid;
     grid-template-columns: 240px 1fr;
+
     gap: 20px;
     align-items: center;
+
     margin-bottom: 25px;
 }
 
 .resume-mini-card {
     background-color: var(--rosa-claro);
+
     padding: 14px 18px;
+
     border-radius: var(--radio-lg);
     border-left: 4px solid var(--rosa-oscuro);
+
     display: flex;
     flex-direction: column;
 }
@@ -180,6 +243,7 @@ body {
 .resume-mini-card span {
     font-size: var(--texto-xs);
     text-transform: uppercase;
+
     color: var(--texto-secundario);
     font-weight: var(--peso-negrita);
 }
@@ -190,6 +254,7 @@ body {
     font-weight: var(--peso-extra);
 }
 
+
 .filter-controls {
     display: flex;
     gap: 12px;
@@ -198,49 +263,77 @@ body {
 .filter-controls input,
 .filter-controls select {
     padding: 10px 14px;
+
     border: 1px solid var(--borde);
     border-radius: var(--radio-md);
+
     outline: none;
+
     font-size: var(--texto-sm);
+
     background-color: var(--fondo-input);
     color: var(--texto-principal);
-    transition: border-color var(--transicion), box-shadow var(--transicion);
+
+    transition: border-color var(--transicion);
 }
 
 .filter-controls input:focus,
 .filter-controls select:focus {
     border-color: var(--rosa-principal);
-    box-shadow: 0 0 0 3px rgba(233, 114, 147, 0.15);
+    box-shadow: none;
 }
 
-.filter-controls input { flex: 2; }
-.filter-controls select { flex: 1; }
+.filter-controls input {
+    flex: 2;
+}
 
-/* 5. PARRILLA DE PEDIDOS (CARDS) */
+.filter-controls select {
+    flex: 1;
+}
+
+
+/* =========================================================
+   6. TARJETAS DE PEDIDOS
+   CONSERVADAS CON SU DISEÑO ORIGINAL
+========================================================= */
+
 .orders-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(340px, 1fr)
+    );
+
     gap: 22px;
     margin-bottom: 40px;
 }
 
 .order-card {
     background-color: var(--fondo-tarjeta);
+
     border-radius: var(--radio-xl);
     border: 1px solid var(--borde-suave);
+
     box-shadow: var(--sombra-suave);
+
     padding: 20px;
+
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform var(--transicion), box-shadow var(--transicion);
+
+    transition: transform var(--transicion),
+                box-shadow var(--transicion);
+
     position: relative;
     overflow: hidden;
 }
 
 .order-card:hover {
     transform: translateY(-4px);
+
     box-shadow: 0 10px 25px rgba(233, 114, 147, 0.12);
+
     border-color: var(--rosa-borde);
 }
 
@@ -248,15 +341,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+
     border-bottom: 1px dashed var(--rosa-borde);
+
     padding-bottom: 12px;
     margin-bottom: 12px;
 }
 
 .order-code-section h3 {
     margin: 0;
+
     font-size: var(--texto-base);
     color: var(--rosa-oscuro);
+
     font-weight: var(--peso-negrita);
 }
 
@@ -268,6 +365,7 @@ body {
 
 .order-card-body p {
     margin: 6px 0;
+
     font-size: var(--texto-sm);
     color: var(--texto-principal);
 }
@@ -277,153 +375,297 @@ body {
     color: var(--texto-secundario);
 }
 
-/* Previsualización de Productos */
+
+/* Productos dentro de las tarjetas */
+
 .order-products-preview {
     margin: 12px 0;
+
     background-color: var(--fondo-tabla);
+
     padding: 8px 12px;
     border-radius: var(--radio-md);
+
     display: flex;
     gap: 8px;
+
     overflow-x: auto;
+
     border: 1px solid var(--borde-suave);
 }
 
 .product-thumbnail {
     width: 42px;
     height: 42px;
+
     border-radius: var(--radio-sm);
+
     object-fit: cover;
+
     background-color: var(--fondo-tarjeta);
+
     border: 1px solid var(--rosa-borde);
 }
 
 .product-thumbnail-more {
     width: 42px;
     height: 42px;
+
     border-radius: var(--radio-sm);
+
     background-color: var(--rosa-suave);
     color: var(--rosa-oscuro);
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: var(--texto-xs);
     font-weight: var(--peso-negrita);
 }
+
+
+/* Total de las tarjetas */
 
 .order-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     margin-top: 15px;
     padding-top: 12px;
+
     border-top: 1px solid var(--borde-suave);
 }
 
 .order-total-price {
     font-size: var(--texto-lg);
+
     font-weight: var(--peso-extra);
+
     color: var(--texto-principal);
 }
 
-/* Badges de Estado */
+
+/* =========================================================
+   7. ESTADOS DE PEDIDOS
+   Tonalidades suaves y armonizadas
+========================================================= */
+
 .badge-custom {
     padding: 4px 10px;
+
     border-radius: 14px;
+
     font-size: var(--texto-xs);
     font-weight: var(--peso-negrita);
+
     text-transform: uppercase;
 }
 
-.bg-pendiente { background-color: #fef3c7; color: #b45309; }
-.bg-borrador { background-color: var(--borde-suave); color: var(--texto-secundario); }
-.bg-bodega { background-color: var(--azul-claro); color: var(--azul); }
-.bg-preparado { background-color: var(--verde-claro); color: var(--verde); }
-.bg-facturado { background-color: var(--violeta-claro); color: var(--violeta); }
-.bg-cancelado { background-color: var(--rojo-claro); color: var(--rojo); }
+.bg-pendiente {
+    background-color: #fff0cf;
+    color: #b7791f;
+}
 
-/* Acciones en Cards */
+.bg-borrador {
+    background-color: var(--rosa-suave);
+    color: var(--rosa-oscuro);
+}
+
+.bg-bodega {
+    background-color: #ffe4ed;
+    color: #c94f73;
+}
+
+.bg-preparado {
+    background-color: var(--verde-claro);
+    color: var(--verde);
+}
+
+.bg-facturado {
+    background-color: #fce4ec;
+    color: #ad4267;
+}
+
+.bg-cancelado {
+    background-color: var(--rojo-claro);
+    color: var(--rojo);
+}
+
+
+/* =========================================================
+   8. BOTONES DE ACCIONES DE LAS TARJETAS
+   Todos planos y sin sombras
+========================================================= */
+
 .card-actions {
     display: flex;
     gap: 6px;
+
     margin-top: 10px;
     width: 100%;
 }
 
 .card-actions button {
     flex: 1;
+
     padding: 8px 10px;
+
     font-size: var(--texto-xs);
+
     border-radius: var(--radio-sm);
     border: none;
+
     cursor: pointer;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     gap: 5px;
+
     font-weight: var(--peso-semi);
-    transition: var(--transicion);
+
+    transition: background-color var(--transicion),
+                color var(--transicion);
+
+    box-shadow: none;
 }
 
-.btn-action-view { background-color: var(--rosa-claro); color: var(--rosa-oscuro); }
-.btn-action-view:hover { background-color: var(--rosa-suave); }
+.card-actions button:hover {
+    transform: none;
+    box-shadow: none;
+}
 
-.btn-action-edit { background-color: var(--azul-claro); color: var(--azul); }
-.btn-action-edit:hover { background-color: #dbeafe; }
 
-.btn-action-success { background-color: var(--verde-claro); color: var(--verde); }
-.btn-action-success:hover { background-color: #dcfce7; }
+/* Ver */
 
-.btn-action-danger { background-color: var(--rojo-claro); color: var(--rojo); }
-.btn-action-danger:hover { background-color: #fee2e2; }
+.btn-action-view {
+    background-color: var(--rosa-claro);
+    color: var(--rosa-oscuro);
+}
 
-/* 6. MODALES ESTANDARIZADOS */
+.btn-action-view:hover {
+    background-color: var(--rosa-suave);
+}
+
+
+/* Editar */
+
+.btn-action-edit {
+    background-color: #ffe8ef;
+    color: var(--rosa-oscuro);
+}
+
+.btn-action-edit:hover {
+    background-color: #fbd5e0;
+}
+
+
+/* Tomar / Preparado */
+
+.btn-action-success {
+    background-color: #ffe8ef;
+    color: var(--rosa-oscuro);
+}
+
+.btn-action-success:hover {
+    background-color: #fbd5e0;
+}
+
+
+/* Cancelar */
+
+.btn-action-danger {
+    background-color: var(--rojo-claro);
+    color: var(--rojo);
+}
+
+.btn-action-danger:hover {
+    background-color: #ffe0e3;
+}
+
+
+/* =========================================================
+   9. MODALES
+========================================================= */
+
 .modal-custom {
     display: none;
+
     position: fixed;
     top: 0;
     left: 0;
+
     width: 100%;
     height: 100%;
+
     background-color: rgba(15, 23, 42, 0.45);
+
     z-index: 2000;
+
     justify-content: center;
     align-items: center;
+
     backdrop-filter: blur(4px);
 }
 
 .modal-content-custom {
     background-color: var(--fondo-tarjeta);
+
     width: 92%;
     max-width: 680px;
+
     border-radius: var(--radio-xl);
+
     box-shadow: var(--sombra-modal);
+
     animation: slideDown 0.25s ease-out;
+
     max-height: 90vh;
     overflow-y: auto;
+
     border: 1px solid var(--borde-suave);
 }
 
 @keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
+
+/* Encabezado del modal */
+
 .modal-header-custom {
-    background-color: var(--fondo-tabla);
+    background-color: var(--rosa-claro);
+
     padding: 16px 22px;
+
     border-top-left-radius: var(--radio-xl);
     border-top-right-radius: var(--radio-xl);
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     border-bottom: 1px solid var(--rosa-borde);
 }
 
 .modal-header-custom h2 {
     margin: 0;
+
     font-size: var(--texto-lg);
-    color: var(--texto-principal);
+
+    color: var(--rosa-oscuro);
+
     font-weight: var(--peso-negrita);
 }
 
@@ -431,9 +673,16 @@ body {
     padding: 22px;
 }
 
+
+/* =========================================================
+   10. FORMULARIOS
+========================================================= */
+
 .form-grid-custom {
     display: grid;
+
     grid-template-columns: 1fr 1fr;
+
     gap: 15px;
     margin-bottom: 15px;
 }
@@ -446,54 +695,163 @@ body {
 
 .form-group-custom label {
     font-size: var(--texto-xs);
+
     font-weight: var(--peso-negrita);
+
     color: var(--texto-secundario);
+
     text-transform: uppercase;
 }
 
 .form-group-custom input,
 .form-group-custom select {
     padding: 9px 12px;
-    border: 1px solid var(--borde);
+
+    border: 1px solid var(--rosa-borde);
+
     border-radius: var(--radio-sm);
+
     outline: none;
+
     font-size: var(--texto-sm);
-    background: var(--fondo-input);
+
+    background: #ffffff;
+
     color: var(--texto-principal);
+
     transition: border-color var(--transicion);
 }
 
 .form-group-custom input:focus,
 .form-group-custom select:focus {
     border-color: var(--rosa-principal);
+    box-shadow: none;
 }
 
-/* Tablas dentro de Modales */
+.form-group-custom input[readonly],
+.form-group-custom input:disabled,
+.form-group-custom select:disabled {
+    background-color: var(--rosa-claro);
+    color: var(--texto-secundario);
+}
+
+
+/* =========================================================
+   11. SELECT2
+========================================================= */
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-container--default .select2-selection--single {
+    height: 39px !important;
+
+    border: 1px solid var(--rosa-borde) !important;
+
+    border-radius: var(--radio-sm) !important;
+
+    background-color: #ffffff !important;
+}
+
+.select2-container--default
+.select2-selection--single
+.select2-selection__rendered {
+    line-height: 37px !important;
+
+    color: var(--texto-principal) !important;
+
+    padding-left: 12px !important;
+}
+
+.select2-container--default
+.select2-selection--single
+.select2-selection__arrow {
+    height: 37px !important;
+}
+
+.select2-container--default.select2-container--focus
+.select2-selection--single {
+    border-color: var(--rosa-principal) !important;
+
+    box-shadow: none !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--rosa-borde) !important;
+
+    border-radius: var(--radio-md) !important;
+
+    overflow: hidden;
+}
+
+.select2-container--default
+.select2-results__option--highlighted[aria-selected] {
+    background-color: var(--rosa-principal) !important;
+    color: #ffffff !important;
+}
+
+.select2-container--default
+.select2-results__option[aria-selected="true"] {
+    background-color: var(--rosa-suave) !important;
+    color: var(--rosa-oscuro) !important;
+}
+
+.select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--rosa-borde) !important;
+
+    border-radius: var(--radio-sm) !important;
+
+    outline: none;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: var(--rosa-principal) !important;
+}
+
+
+/* =========================================================
+   12. TABLAS DE LOS MODALES
+========================================================= */
+
 .modal-table-container {
     min-height: 50px;
+
     background: var(--fondo-tarjeta);
+
     border-radius: var(--radio-md);
+
     border: 1px solid var(--borde-suave);
-    overflow: hidden;
+
+    overflow: auto;
 }
 
 .modal-table {
     width: 100%;
+
     border-collapse: collapse;
+
     text-align: left;
+
     font-size: var(--texto-sm);
 }
 
 .modal-table thead tr {
-    background: var(--fondo-tabla);
+    background: var(--rosa-claro);
+
     border-bottom: 2px solid var(--rosa-borde);
-    color: var(--texto-secundario);
+
+    color: var(--rosa-oscuro);
+
     font-weight: var(--peso-negrita);
+
     font-size: var(--texto-xs);
+
     text-transform: uppercase;
 }
 
-.modal-table th, .modal-table td {
+.modal-table th,
+.modal-table td {
     padding: 10px 14px;
 }
 
@@ -501,61 +859,258 @@ body {
     border-bottom: 1px solid var(--borde-suave);
 }
 
+.modal-table tbody tr:hover {
+    background-color: var(--rosa-claro);
+}
+
+.modal-table tbody td {
+    color: var(--texto-principal);
+}
+
+
+/* =========================================================
+   13. RESUMEN Y TOTAL DEL PEDIDO
+========================================================= */
+
 .modal-summary-box {
     text-align: right;
+
     margin-top: 15px;
-    background: var(--fondo-tabla);
+
+    background: var(--rosa-claro);
+
     padding: 16px;
+
     border-radius: var(--radio-lg);
+
     border: 1px solid var(--rosa-borde);
 }
 
 .modal-summary-box h3 {
     color: var(--rosa-oscuro);
+
     font-size: 1.4rem;
+
     font-weight: var(--peso-extra);
+
     margin: 0 0 10px 0;
 }
 
+
+/* =========================================================
+   14. ESTADO VACÍO
+========================================================= */
+
 .empty-state {
     text-align: center;
+
     padding: 40px;
+
     color: var(--texto-secundario);
+
     grid-column: 1 / -1;
 }
 
-/* Contenedor de Delivery Animado */
+
+/* =========================================================
+   15. DELIVERY ANIMADO
+========================================================= */
+
 .delivery-container-animated {
     max-height: 0;
+
     opacity: 0;
+
     overflow: hidden;
-    transition: max-height 0.35s ease-out, opacity 0.3s ease-out, padding 0.3s ease, margin 0.3s ease;
-    background-color: var(--fondo-tabla);
+
+    transition:
+        max-height 0.35s ease-out,
+        opacity 0.3s ease-out,
+        padding 0.3s ease,
+        margin 0.3s ease;
+
+    background-color: var(--rosa-claro);
+
     border: 1px dashed var(--rosa-borde);
+
     border-radius: var(--radio-md);
+
     padding: 0 15px;
+
     margin-top: 0;
 }
 
 .delivery-container-animated.show {
     max-height: 180px;
+
     opacity: 1;
+
     padding: 15px;
+
     margin-top: 15px;
 }
 
-/* 7. RESPONSIVE DESIGN */
-@media (max-width: 992px) {
-    .dashboard-top-bar { grid-template-columns: 1fr; }
-    .orders-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+/* =========================================================
+   16. INPUTS DE CANTIDAD DEL CARRITO
+========================================================= */
+
+.cantidad-cart {
+    background-color: #ffffff;
+
+    color: var(--texto-principal);
+
+    border: 1px solid var(--rosa-borde) !important;
+
+    border-radius: var(--radio-sm);
+
+    outline: none;
 }
 
+.cantidad-cart:focus {
+    border-color: var(--rosa-principal) !important;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   17. RESPONSIVE DESIGN
+========================================================= */
+
+@media (max-width: 992px) {
+
+    .dashboard-top-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .orders-grid {
+        grid-template-columns: repeat(
+            auto-fill,
+            minmax(280px, 1fr)
+        );
+    }
+}
+
+
 @media (max-width: 768px) {
-    .page-header-custom { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .btn-pink-primary { width: 100%; justify-content: center; }
-    .filter-controls { flex-direction: column; }
-    .form-grid-custom { grid-template-columns: 1fr; }
-    .card-actions { flex-wrap: wrap; }
-    .card-actions button { min-width: calc(50% - 4px); }
-    .delivery-container-animated.show { max-height: 280px; }
+
+    .page-header-custom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .btn-pink-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+    }
+
+    .form-grid-custom {
+        grid-template-columns: 1fr;
+    }
+
+    .card-actions {
+        flex-wrap: wrap;
+    }
+
+    .card-actions button {
+        min-width: calc(50% - 4px);
+    }
+
+    .delivery-container-animated.show {
+        max-height: 280px;
+    }
+
+    .modal-content-custom {
+        width: 95%;
+        max-height: 92vh;
+    }
+
+    .modal-body-custom {
+        padding: 16px;
+    }
+}
+
+
+
+/* =========================================================
+   SWEETALERT2 — MODALES DE LUCY'S SYSTEM
+========================================================= */
+
+.swal2-popup.lucy-swal-popup {
+    border-radius: 18px !important;
+    padding: 28px !important;
+    font-family: "Segoe UI", Arial, sans-serif !important;
+}
+
+.lucy-swal-popup .swal2-title {
+    color: #334155 !important;
+    font-size: 21px !important;
+    font-weight: 700 !important;
+}
+
+.lucy-swal-popup .swal2-html-container {
+    color: #64748b !important;
+    font-size: 14px !important;
+}
+
+.lucy-swal-confirm {
+    background-color: #ff8fa3 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 9px !important;
+    padding: 10px 25px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+.lucy-swal-confirm:hover {
+    background-color: #c94f73 !important;
+    box-shadow: none !important;
+}
+
+.lucy-swal-cancel {
+    background-color: #fff0f4 !important;
+    color: #c94f73 !important;
+    border: none !important;
+    border-radius: 9px !important;
+    padding: 10px 25px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+.lucy-swal-cancel:hover {
+    background-color: #fde0e9 !important;
+    box-shadow: none !important;
+}
+
+/* Iconos */
+
+.lucy-swal-popup .swal2-icon.swal2-success {
+    border-color: #ff8fa3 !important;
+    color: #c94f73 !important;
+}
+
+.lucy-swal-popup .swal2-icon.swal2-success [class^="swal2-success-line"] {
+    background-color: #c94f73 !important;
+}
+
+.lucy-swal-popup .swal2-icon.swal2-error {
+    border-color: #dc3545 !important;
+}
+
+.lucy-swal-popup .swal2-icon.swal2-warning {
+    border-color: #f0a4b7 !important;
+    color: #c94f73 !important;
+}
+
+/* Sin animaciones exageradas */
+
+.swal2-popup.lucy-swal-popup {
+    animation: none !important;
 }

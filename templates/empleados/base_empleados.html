@@ -1,147 +1,130 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucy’s System</title>
+    <title>Lucy's System</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style-empleado.css' %}">
+
+    {# Los estilos particulares de cada módulo se cargan después del CSS global. #}
+    {% block extra_css %}{% endblock %}
 </head>
-
-
 <body>
 
     <header class="topbar">
         <div class="logo-area">
-            <button class="menu-toggle" id="menu-toggle">
+            <button class="menu-toggle" id="menu-toggle" type="button"
+                    aria-label="Abrir menú">
                 <i class="fas fa-bars"></i>
             </button>
-            <span class="system-name">Lucy’s System</span>
+            <span class="system-name">Lucy's System</span>
         </div>
 
         <div class="status-labels">
-
             {% if empleado %}
-            <span>
-                <i class="fas fa-user"></i>
-                {{ empleado.user.first_name }} {{ empleado.user.last_name }}
-            </span>
-
-            <span>
-                <i class="fas fa-id-badge"></i>
-                {{ empleado.rol.nombre }}
-            </span>
-
-            <span>
-                <i class="fas fa-store"></i>
-                {{ empleado.sucursal.nombre }}
-            </span>
+                <span>
+                    <i class="fas fa-user"></i>
+                    {{ empleado.user.first_name }} {{ empleado.user.last_name }}
+                </span>
+                <span>
+                    <i class="fas fa-id-badge"></i>
+                    {{ empleado.rol.nombre }}
+                </span>
+                <span>
+                    <i class="fas fa-store"></i>
+                    {{ empleado.sucursal.nombre }}
+                </span>
             {% endif %}
-
         </div>
     </header>
 
-
     <div class="main-container">
-
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <!-- SIDEBAR -->
         <nav class="sidebar" id="sidebar">
             <ul>
-
                 <li>
                     <a href="{% url 'index_empleados' %}">
-                        <i class="fas fa-house"></i> <span>Inicio</span>
+                        <i class="fas fa-house"></i><span>Inicio</span>
                     </a>
                 </li>
 
-                <!-- ADMIN / GERENTE -->
                 {% if rol_usuario == "administrador" or rol_usuario == "gerente" %}
+                    <li><a href="{% url 'dashboard_view' %}"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+                    <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i><span>Productos</span></a></li>
+                    <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-file-invoice"></i><span>Inventario</span></a></li>
+                    <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i><span>Ventas</span></a></li>
+                    <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i><span>Pedidos</span></a></li>
+                    <li><a href="{% url 'clientes' %}"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+                    <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i><span>Compras</span></a></li>
+                    <li><a href="{% url 'proveedores' %}"><i class="fa-solid fa-handshake"></i><span>Proveedores</span></a></li>
+                    <li><a href="{% url 'usuarios' %}"><i class="fas fa-user-gear"></i><span>Usuarios</span></a></li>
+                    <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i><span>Traslados</span></a></li>
+                    <li><a href="{% url 'caja' %}"><i class="fas fa-cash-register"></i><span>Caja</span></a></li>
 
-                <li><a href="{% url 'dashboard_view' %}"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>
-                <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i> Productos</a></li>
-                <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-file-invoice"></i>Inventario</a></li>
-                <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
-                <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i> <span>Pedidos</span></a></li>
-                <li><a href=" {% url 'clientes' %} "><i class="fas fa-users"></i> <span>Clientes</span></a></li>
-                <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>
-                <li><a href="{% url 'proveedores' %}"><i class="fa-solid fa-handshake"></i> <span>Proveedores</span></a></li>
-                <li><a href="{% url 'usuarios' %}"><i class="fas fa-user-gear"></i> Usuarios</a></li>
-                <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i> Traslados</a></li>
-                <li><a href="{% url 'caja' %}"><i class="fas fa-cash-register"></i> Caja</a></li>
-
-                {% if rol_usuario == 'administrador' %}
-                    <li><a href="{% url 'ubicaciones' %}"><i class="fas fa-store"></i> <span>Ubicaciones</span></a></li>
+                    {% if rol_usuario == 'administrador' %}
+                        <li><a href="{% url 'ubicaciones' %}"><i class="fas fa-store"></i><span>Ubicaciones</span></a></li>
+                    {% endif %}
                 {% endif %}
 
-                {% endif %}
-
-                <!-- VENDEDOR -->
                 {% if rol_usuario == "vendedor" %}
-                <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
-                <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i> Productos</a></li>
-                <li><a href=" {% url 'clientes' %} "><i class="fas fa-users"></i> <span>Clientes</span></a></li>
-                <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i> <span>Pedidos</span></a></li>
+                    <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i><span>Ventas</span></a></li>
+                    <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i><span>Productos</span></a></li>
+                    <li><a href="{% url 'clientes' %}"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+                    <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i><span>Pedidos</span></a></li>
                 {% endif %}
 
-                <!-- BODEGA -->
                 {% if rol_usuario == "bodega" %}
-                <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i> Productos</a></li>
-                <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-file-invoice"></i>Inventario</a></li>
-                <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i> <span>Pedidos</span></a></li>
-                <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i> Traslados</a></li>
-                <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i> Compras</a></li>
-                <li><a href="{% url 'proveedores' %}"><i class="fa-solid fa-handshake"></i> <span>Proveedores</span></a></li>
+                    <li><a href="{% url 'inventario' %}"><i class="fas fa-box-open"></i><span>Productos</span></a></li>
+                    <li><a href="{% url 'kardex_global_view' %}"><i class="fas fa-file-invoice"></i><span>Inventario</span></a></li>
+                    <li><a href="{% url 'pedidos' %}"><i class="fas fa-clipboard-list"></i><span>Pedidos</span></a></li>
+                    <li><a href="{% url 'transferencias' %}"><i class="fas fa-truck-ramp-box"></i><span>Traslados</span></a></li>
+                    <li><a href="{% url 'compras' %}"><i class="fas fa-cart-shopping"></i><span>Compras</span></a></li>
+                    <li><a href="{% url 'proveedores' %}"><i class="fa-solid fa-handshake"></i><span>Proveedores</span></a></li>
                 {% endif %}
 
-                <!-- CAJA -->
-                <!-- CAJA -->
                 {% if rol_usuario == "cajero" %}
-                <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i> Ventas</a></li>
-                <li><a href="{% url 'caja' %}">
-                        <i class="fas fa-cash-register"></i> Caja
-                    </a></li>
+                    <li><a href="{% url 'ventas' %}"><i class="fas fa-shopping-bag"></i><span>Ventas</span></a></li>
+                    <li><a href="{% url 'caja' %}"><i class="fas fa-cash-register"></i><span>Caja</span></a></li>
                 {% endif %}
 
                 <li class="logout">
                     <a href="{% url 'logout' %}">
-                        <i class="fas fa-sign-out-alt"></i> Salir
+                        <i class="fas fa-sign-out-alt"></i><span>Salir</span>
                     </a>
                 </li>
-
             </ul>
         </nav>
 
-        <!-- CONTENIDO -->
         <main class="content">
-            {% block content %}
-            {% endblock %}
+            {% block content %}{% endblock %}
         </main>
-
     </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
 
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
+        if (menuToggle && sidebar && overlay) {
+            menuToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
 
-    menuToggle.addEventListener('click', function () {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
+            overlay.addEventListener('click', function () {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
     });
+    </script>
 
-    overlay.addEventListener('click', function () {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    });
-
-});
-</script>
+    {% block extra_js %}{% endblock %}
 </body>
-
 </html>

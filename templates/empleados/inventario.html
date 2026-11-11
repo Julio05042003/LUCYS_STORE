@@ -6,260 +6,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/style-inventario.css' %}">
 
-<style>
-    .messages-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 999999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .custom-message {
-        min-width: 300px;
-        padding: 14px 18px;
-        border-radius: 10px;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        animation: fadeIn .3s ease;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, .2);
-    }
-
-    .custom-message.success {
-        background: #16a34a;
-    }
-
-    .custom-message.error {
-        background: #dc2626;
-    }
-
-    .custom-message.warning {
-        background: #f59e0b;
-    }
-
-    .custom-message button {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .catalogos-row {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .catalogo-box {
-        flex: 1;
-        background: white;
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
-    }
-
-    .tabla-catalogo {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .tabla-catalogo thead th {
-
-        background: #f48ca0;
-        color: white;
-        padding: 16px 18px;
-        font-size: 16px;
-        font-weight: 700;
-        text-align: left;
-    }
-
-    .tabla-catalogo tbody td {
-
-        padding: 14px 18px;
-        border-bottom: 1px solid #f1f1f1;
-    }
-
-    .tabla-catalogo tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .tabla-catalogo th:last-child,
-    .tabla-catalogo td:last-child {
-
-        width: 70px;
-        text-align: center;
-    }
-
-    .tabla-catalogo button {
-
-        border: none;
-        background: #f3f4f6;
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        cursor: pointer;
-    }
-
-    .tabla-catalogo button:hover {
-
-        background: #f48ca0;
-        color: white;
-    }
-    /* =========================================
-   TABLETS
-========================================= */
-@media (max-width: 1024px) {
-
-    .catalogos-row {
-        gap: 15px;
-    }
-
-    .tabla-catalogo thead th,
-    .tabla-catalogo tbody td {
-        padding: 12px 14px;
-    }
-
-}
-
-/* =========================================
-   MÓVILES
-========================================= */
-@media (max-width: 768px) {
-
-    /* Mensajes */
-    .messages-container {
-        top: 10px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-    }
-
-    .custom-message {
-        min-width: 100%;
-        width: 100%;
-        padding: 12px 14px;
-        font-size: 14px;
-    }
-
-    .custom-message button {
-        font-size: 18px;
-    }
-
-    /* Catálogos uno debajo del otro */
-    .catalogos-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .catalogo-box {
-        width: 100%;
-    }
-
-    /* Scroll horizontal para tablas */
-    .catalogo-box {
-        overflow-x: auto;
-    }
-
-    .tabla-catalogo {
-        min-width: 600px;
-    }
-
-    .tabla-catalogo thead th {
-        padding: 12px;
-        font-size: 14px;
-    }
-
-    .tabla-catalogo tbody td {
-        padding: 12px;
-        font-size: 14px;
-    }
-
-    .tabla-catalogo button {
-        width: 34px;
-        height: 34px;
-    }
-}
-
-/* =========================================
-   CELULARES PEQUEÑOS
-========================================= */
-@media (max-width: 480px) {
-
-    .messages-container {
-        top: 8px;
-        right: 8px;
-        left: 8px;
-    }
-
-    .custom-message {
-        padding: 10px 12px;
-        font-size: 13px;
-        border-radius: 8px;
-    }
-
-    .custom-message button {
-        font-size: 16px;
-    }
-
-    .tabla-catalogo thead th {
-        padding: 10px;
-        font-size: 13px;
-    }
-
-    .tabla-catalogo tbody td {
-        padding: 10px;
-        font-size: 13px;
-    }
-
-    .tabla-catalogo th:last-child,
-    .tabla-catalogo td:last-child {
-        width: 60px;
-    }
-
-    .tabla-catalogo button {
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
-    }
-}
-
-/* =========================================
-   PANTALLAS GRANDES
-========================================= */
-@media (min-width: 1600px) {
-
-    .catalogos-row {
-        gap: 20px;
-    }
-
-    .tabla-catalogo thead th {
-        font-size: 18px;
-        padding: 18px 22px;
-    }
-
-    .tabla-catalogo tbody td {
-        font-size: 16px;
-        padding: 16px 22px;
-    }
-}
-</style>
 
 <div class="main-container">
     <main class="content">
@@ -293,7 +39,7 @@
             </div>
             {% endif %}
 
-            <!-- 🔍 FILTROS -->
+            <!--  FILTROS -->
             <div class="filters-card">
                 <input type="text" id="buscar" placeholder="Buscar producto...">
 
@@ -307,17 +53,17 @@
                 <button class="btn-clear" onclick="limpiarFiltros()">Limpiar</button>
             </div>
 
-            <!-- ⚡ ACCIONES -->
+            <!--  ACCIONES -->
             {% if rol != "Vendedor" %}
             <div class="action-footer">
-                <button class="btn-primary" id="formProducto" onclick="abrirModal('modalProducto')"">Agregar Producto</button>
+                <button class="btn-primary" id="formProducto" onclick="abrirModal('modalProducto')">Agregar Producto</button>
                 <button class=" btn-primary" onclick="abrirModal('modalCategoria')">Agregar Categoría</button>
                 <button class="btn-primary" onclick="abrirModal('modalMarca')">Agregar Marca</button>
             </div>
             <br>
             {% endif %}
 
-            <!-- 📊 TABLA PRODUCTOS -->
+            <!-- TABLA PRODUCTOS -->
             <div class="table-container">
                 <div class="table-scroll">
                     <table class="table-modern">
@@ -362,7 +108,6 @@
 
                                 <td class="text-center">
 
-                                    <!-- 👁 TODOS -->
                                     <button class="btn-row view" onclick="verProductoDetalle('{{ p.id }}')" title="Ver">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -378,12 +123,12 @@
                                         <i class="fas fa-edit"></i>
                                     </button>
 
-                                    <!-- 🔄 ESTADO -->
+                                    <!--  ESTADO -->
                                     <button onclick="toggleEstadoProducto('{{ p.id }}')">
                                         <i class="fas fa-sync"></i>
                                     </button>
 
-                                    <!-- 📊 KARDEX -->
+                                    <!--  KARDEX -->
                                     <a href="{% url 'kardex_view' p.id  %}">
                                         <i class="fas fa-chart-line"></i>
                                     </a>
@@ -399,14 +144,16 @@
             </div>
 
 
-            {% if rol != "Vendedor" %}
+            
+            <!-- TABLAS DE CATEGORÍAS Y MARCAS -->
+            {% if rol != "Vendedor" and rol != "Gerente" %}
+
             <div class="catalogos-row">
 
+                <!-- TABLA CATEGORÍAS -->
                 <div class="catalogo-box">
-
                     <div class="table-scroll">
                         <table class="tabla-catalogo">
-
                             <thead>
                                 <tr>
                                     <th>Categoría</th>
@@ -415,37 +162,30 @@
                             </thead>
 
                             <tbody>
-
                                 {% for c in categorias %}
                                 <tr>
-
                                     <td>{{ c.nombre }}</td>
-
                                     <td>
-
-                                        <button onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
-
+                                        <button type="button"
+                                            onclick="editarCategoria('{{ c.categoria_id }}','{{ c.nombre }}')">
                                             <i class="fas fa-edit"></i>
-
                                         </button>
-
                                     </td>
-
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2">No hay categorías registradas.</td>
                                 </tr>
                                 {% endfor %}
-
                             </tbody>
-
                         </table>
                     </div>
-
                 </div>
 
+                <!-- TABLA MARCAS -->
                 <div class="catalogo-box">
-
                     <div class="table-scroll">
                         <table class="tabla-catalogo">
-
                             <thead>
                                 <tr>
                                     <th>Marca</th>
@@ -454,35 +194,31 @@
                             </thead>
 
                             <tbody>
-
                                 {% for m in marcas %}
                                 <tr>
-
                                     <td>{{ m.nombre }}</td>
-
                                     <td>
-
-                                        <button onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
-
+                                        <button type="button"
+                                            onclick="editarMarca('{{ m.marca_id }}','{{ m.nombre }}')">
                                             <i class="fas fa-edit"></i>
-
                                         </button>
-
                                     </td>
-
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2">No hay marcas registradas.</td>
                                 </tr>
                                 {% endfor %}
-
                             </tbody>
-
                         </table>
                     </div>
-
                 </div>
 
             </div>
+
             <br>
 
+            {% endif %}
 
 
 
@@ -878,6 +614,7 @@
 
 </div>
 
+
 <div id="modalVerProducto" class="modal-overlay">
     <div class="modal-content" style="max-width: 700px;">
         <div class="modal-header">
@@ -915,7 +652,7 @@
                 <p id="v_desc"></p>
             </div>
 
-            <!-- 🔥 TABLA UBICACIONES -->
+            <!-- TABLA UBICACIONES -->
             <div class="detail-description">
                 <strong>Ubicaciones de Inventario:</strong>
 
@@ -946,8 +683,6 @@
         </div>
     </div>
 </div>
-
-{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static 'js/script_modal_sidebar.js' %}"></script>

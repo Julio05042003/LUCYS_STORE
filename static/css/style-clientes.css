@@ -1,635 +1,959 @@
-@import url('style-inventario.css');
 
-.form-section-full {
-    grid-column: span 2;
-    margin-top: 15px;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-}
-
-.form-section-full label {
-    font-weight: bold;
-    color: var(--rosa-principal);
-    margin-bottom: 10px;
-    display: block;
-}
-
-.dynamic-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    align-items: center;
-}
-
-.btn-add-small {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.dynamic-list {
-    max-height: 150px;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.badge-date {
-    background-color: #f0f0f0;
-    color: #666;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+/* =========================================================
+   LUCY'S STORE
+   GESTIÓN DE CLIENTES
+   DISEÑO UNIFICADO CON GESTIÓN DE INVENTARIO
+========================================================= */
 
 
-        /* =========================================
-   CONTENEDOR
-========================================= */
+/* =========================================================
+   1. CONTENEDOR PRINCIPAL
+========================================================= */
 
-    .providers-wrapper {
-        padding: 25px;
-    }
-
-    /* =========================================
-   HEADER
-========================================= */
-
-    .providers-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 25px;
-        flex-wrap: wrap;
-    }
-
-    .providers-header h2 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .btn-primary {
-        border: none;
-        background: linear-gradient(90deg, #ec4899, #f472b6);
-        color: white;
-        padding: 13px 22px;
-        border-radius: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-    }
-
-    /* =========================================
-   ALERTAS
-========================================= */
-
-    .alert-container {
-        margin-bottom: 20px;
-    }
-
-    .alert {
-        padding: 14px 18px;
-        border-radius: 14px;
-        margin-bottom: 10px;
-        font-weight: 600;
-        animation: fadeIn .3s ease;
-    }
-
-    .alert-success {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .alert-error {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-
-
-.inventory-wapper{
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+.inventory-wapper {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
     width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
-.header-section{
-    margin-bottom: 25px;
+
+/* =========================================================
+   2. ENCABEZADO
+========================================================= */
+
+.header-section {
+    margin-bottom: 8px;
 }
 
-.header-section h2{
+.header-section h2 {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 32px;
+    margin: 0;
+    font-size: 27px;
     font-weight: 700;
-    color: #222;
+    color: #111111;
 }
 
-.header-section i{
-    color: #ff6b8b;
+.header-section h2 i {
+    color: #111111;
+    font-size: 25px;
 }
 
-/* =========================================
-   FILTROS
-========================================= */
 
-.filters-card{
+/* =========================================================
+   3. ALERTAS
+========================================================= */
+
+.alert-container {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    animation: fadeIn .3s ease;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.alert-info {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   4. FILTROS Y BUSCADOR
+========================================================= */
+
+.filters-card {
     display: flex;
-    gap: 15px;
     align-items: end;
+    gap: 15px;
     flex-wrap: wrap;
-    background: #fafafa;
-    border: 1px solid #eee;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 25px;
+
+    background: #ffffff;
+    border: none;
+    border-radius: 14px;
+
+    padding: 18px 22px;
+    margin-bottom: 22px;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
 }
 
-.field{
+.field {
     display: flex;
     flex-direction: column;
     gap: 8px;
     min-width: 180px;
+    flex: 1;
 }
 
-.field label{
+.field:first-child {
+    flex: 2;
+}
+
+.field label {
     font-size: 14px;
     font-weight: 600;
-    color: #444;
+    color: #444444;
 }
 
 .field input,
-.field select,
-.form-group input,
-.form-group select{
+.field select {
     width: 100%;
-    padding: 12px 14px;
+    height: 43px;
+    padding: 10px 14px;
+
+    background: #ffffff;
+    border: 1px solid #dddddd;
     border-radius: 10px;
-    border: 1px solid #ddd;
-    background: white;
+
     font-size: 14px;
-    transition: 0.3s;
+    color: #333333;
+
+    transition: .3s;
 }
 
 .field input:focus,
-.field select:focus,
-.form-group input:focus,
-.form-group select:focus{
+.field select:focus {
     outline: none;
-    border-color: #ff6b8b;
-    box-shadow: 0 0 0 3px rgba(255,107,139,0.15);
+    border-color: #ff8fa3;
+    box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.13);
 }
 
-/* =========================================
-   TABLA
-========================================= */
 
-.tabla-container{
-    overflow-x: auto;
+/* =========================================================
+   5. BOTÓN LIMPIAR
+========================================================= */
+
+.btn-clear {
+    height: 43px;
+    padding: 0 22px;
+
+    background: #f1f1f1;
+    color: #444444;
+
+    border: none;
+    border-radius: 10px;
+
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
 }
 
-.tabla-clientes{
+.btn-clear:hover {
+    background: #e5e5e5;
+}
+
+
+/* =========================================================
+   6. CONTENEDOR DE TABLA
+========================================================= */
+
+.tabla-container {
     width: 100%;
-    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+}
+
+.table-scroll {
+    width: 100%;
+    max-height: 380px;
+    overflow: auto;
+}
+
+
+/* =========================================================
+   7. TABLA DE CLIENTES
+========================================================= */
+
+.tabla-clientes {
+    width: 100%;
     min-width: 950px;
+
+    border-collapse: collapse;
+    background: #ffffff;
 }
 
-.tabla-clientes thead{
-    background: #f9f9f9;
+
+/* ENCABEZADO ROSADO */
+
+.tabla-clientes thead {
+    background: #ff8fa3;
 }
 
-.tabla-clientes th{
-    padding: 18px 16px;
+.tabla-clientes thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+
+    background: #ff8fa3;
+    color: #ffffff;
+
+    padding: 14px 16px;
     text-align: left;
-    color: #555;
-    font-size: 14px;
-    border-bottom: 2px solid #eee;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    border: none;
+    white-space: nowrap;
 }
 
-.tabla-clientes td{
-    padding: 18px 16px;
-    border-bottom: 1px solid #f1f1f1;
+
+/* CUERPO DE TABLA */
+
+.tabla-clientes tbody tr {
+    background: #ffffff;
+    transition: background .2s ease;
+}
+
+.tabla-clientes tbody tr:hover {
+    background: #fff4f6;
+}
+
+.tabla-clientes tbody td {
+    padding: 17px 16px;
+
+    color: #222222;
+    font-size: 15px;
+
     vertical-align: middle;
+
+    border-bottom: 1px solid #eeeeee;
 }
 
-.tabla-clientes tbody tr{
-    transition: 0.3s;
-}
 
-.tabla-clientes tbody tr:hover{
-    background: #fafafa;
-}
+/* =========================================================
+   8. INFORMACIÓN DEL CLIENTE
+========================================================= */
 
-/* =========================================
-   CLIENTE
-========================================= */
-
-.cliente-info{
+.cliente-info {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    min-width: 190px;
 }
 
-.cliente-avatar{
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#ff6b8b,#ff9db2);
-    color: white;
+.cliente-info strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111111;
+    line-height: 1.3;
+}
+
+.cliente-avatar {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        #ff6b8b,
+        #ff9db2
+    );
+
+    color: #ffffff;
     font-size: 18px;
-    flex-shrink: 0;
+    font-weight: 700;
 }
 
-/* =========================================
-   BADGES
-========================================= */
+
+/* =========================================================
+   9. USUARIO E IDENTIFICACIÓN
+========================================================= */
+
+.tabla-clientes td:nth-child(3) {
+    min-width: 180px;
+    overflow-wrap: anywhere;
+}
+
+.tabla-clientes td:nth-child(4) {
+    min-width: 120px;
+}
+
+.text-muted {
+    color: #888888;
+}
+
+
+/* =========================================================
+   10. TIPOS DE CLIENTES
+========================================================= */
 
 .badge-online,
-.badge-fisico{
+.badge-fisico {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 7px;
+
     padding: 8px 12px;
     border-radius: 30px;
+
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
-.badge-online{
+.badge-online {
     background: #ecfdf3;
     color: #059669;
 }
 
-.badge-fisico{
+.badge-fisico {
     background: #fff7ed;
     color: #ea580c;
 }
 
-/* =========================================
-   BOTONES
-========================================= */
+
+/* =========================================================
+   11. BOTONES GENERALES
+========================================================= */
 
 .btn-primary,
 .btn-secondary,
-.btn-clear,
 .btn-add,
 .btn-add-small,
-.btn-delete-small{
+.btn-delete-small {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: 0.3s;
     font-weight: 600;
+    transition: .3s;
 }
 
-.btn-primary{
+
+/* BOTÓN PRINCIPAL */
+
+.btn-primary {
     background: #ff6b8b;
-    color: white;
+    color: #ffffff;
     padding: 12px 22px;
 }
 
-.btn-primary:hover{
+.btn-primary:hover {
     background: #ff4f75;
     transform: translateY(-2px);
 }
 
-.btn-secondary{
-    background: #ececec;
-    color: #333;
+
+/* BOTÓN SECUNDARIO */
+
+.btn-secondary {
+    background: #eeeeee;
+    color: #333333;
     padding: 12px 22px;
 }
 
-.btn-secondary:hover{
-    background: #ddd;
+.btn-secondary:hover {
+    background: #dddddd;
 }
 
-.btn-clear{
-    background: #f1f1f1;
-    color: #444;
-    padding: 12px 18px;
-    height: 46px;
-}
 
-.btn-clear:hover{
-    background: #ddd;
-}
+/* =========================================================
+   12. BOTONES DE ACCIONES DE TABLA
+========================================================= */
 
-.btn-add{
-    margin-top: 14px;
-    background: #eff6ff;
-    color: #2563eb;
-    padding: 10px 18px;
-}
-
-.btn-add:hover{
-    background: #dbeafe;
-}
-
-.btn-add-small{
-    background: #22c55e;
-    color: white;
-    width: 42px;
-    height: 42px;
-}
-
-.btn-add-small:hover{
-    background: #16a34a;
-}
-
-.btn-delete-small{
-    background: #ef4444;
-    color: white;
-    width: 42px;
-    height: 42px;
-}
-
-.btn-delete-small:hover{
-    background: #dc2626;
-}
-
-/* =========================================
-   TABLA BOTONES
-========================================= */
-
-.acciones-tabla{
+.acciones-tabla {
     display: flex;
+    align-items: center;
     gap: 8px;
+    flex-wrap: nowrap;
 }
 
-.btn-table{
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+.btn-table {
+    width: 40px;
+    height: 40px;
+
     border: none;
+    border-radius: 10px;
+
     cursor: pointer;
-    transition: 0.3s;
+    transition: .3s;
 }
 
-.btn-view{
+
+/* VER */
+
+.btn-view {
     background: #eff6ff;
     color: #2563eb;
 }
 
-.btn-view:hover{
+.btn-view:hover {
     background: #2563eb;
-    color: white;
+    color: #ffffff;
 }
 
-.btn-edit{
+
+/* EDITAR */
+
+.btn-edit {
     background: #fef3c7;
     color: #d97706;
 }
 
-.btn-edit:hover{
+.btn-edit:hover {
     background: #d97706;
-    color: white;
+    color: #ffffff;
 }
 
-.btn-user{
+
+/* CREAR USUARIO */
+
+.btn-user {
     background: #ecfdf3;
     color: #059669;
 }
 
-.btn-user:hover{
+.btn-user:hover {
     background: #059669;
-    color: white;
+    color: #ffffff;
 }
 
-/* =========================================
-   FOOTER
-========================================= */
 
-.action-footer{
-    margin-top: 25px;
+/* =========================================================
+   13. BOTÓN REGISTRAR CLIENTE
+========================================================= */
+
+.action-footer {
     display: flex;
     justify-content: flex-end;
+    margin-top: 20px;
 }
 
-/* =========================================
-   MODALES
-========================================= */
+.action-footer .btn-primary {
+    background: #ff6b8b;
+    color: #ffffff;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+}
 
-.modal-overlay{
+.action-footer .btn-primary:hover {
+    background: #ff4f75;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   14. SCROLL DE TABLA
+========================================================= */
+
+.table-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 9px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+    background: #999999;
+}
+
+
+/* =========================================================
+   15. MODALES
+========================================================= */
+
+.modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
+
+    background: rgba(0, 0, 0, 0.45);
+
     display: none;
     justify-content: center;
     align-items: center;
+
     z-index: 9999;
     padding: 20px;
 }
 
-.modal-content{
-    background: white;
-    border-radius: 20px;
+.modal-content {
+    background: #ffffff;
+
+    border-radius: 18px;
+
     width: 100%;
     max-width: 650px;
+
     max-height: 95vh;
     overflow-y: auto;
-    animation: modalShow 0.25s ease;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+
+    animation: modalShow .25s ease;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
 }
 
-.modal-large{
+.modal-large {
     max-width: 950px;
 }
 
-@keyframes modalShow{
-    from{
+@keyframes modalShow {
+    from {
         opacity: 0;
-        transform: translateY(15px) scale(0.97);
+        transform: translateY(15px) scale(.97);
     }
-    to{
+
+    to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-.modal-header{
+
+/* =========================================================
+   16. ENCABEZADO DE MODALES
+========================================================= */
+
+.modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding: 22px 25px;
-    border-bottom: 1px solid #eee;
+
+    border-bottom: 1px solid #eeeeee;
 }
 
-.modal-header h3{
-    font-size: 24px;
-    color: #222;
+.modal-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #222222;
 }
 
-.close-btn{
+.modal-header h3 i {
+    color: #ff6b8b;
+}
+
+.close-btn {
     width: 40px;
     height: 40px;
+
     border-radius: 50%;
     border: none;
+
     background: #f4f4f4;
+
     cursor: pointer;
     font-size: 24px;
+    color: #444444;
+
+    transition: .3s;
 }
 
-.close-btn:hover{
-    background: #e5e5e5;
+.close-btn:hover {
+    background: #ffe4e9;
+    color: #ff4f75;
 }
 
-/* =========================================
-   FORMULARIOS
-========================================= */
 
-.modal-form{
+/* =========================================================
+   17. FORMULARIOS DE MODALES
+========================================================= */
+
+.modal-form {
     padding: 25px;
 }
 
-.form-grid{
+.form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
 }
 
-.form-group{
+.form-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
 .form-group label,
-.form-section-full label{
+.form-section-full > label {
     font-weight: 600;
-    color: #444;
+    color: #444444;
+    font-size: 14px;
 }
 
-.form-section-full{
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px 14px;
+
+    border-radius: 10px;
+    border: 1px solid #dddddd;
+
+    background: #ffffff;
+    color: #333333;
+
+    font-size: 14px;
+    transition: .3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #ff8fa3;
+    box-shadow: 0 0 0 3px rgba(255, 143, 163, .13);
+}
+
+
+/* =========================================================
+   18. SECCIONES DE TELÉFONOS Y DIRECCIONES
+========================================================= */
+
+.form-section-full {
     grid-column: 1 / -1;
     margin-top: 10px;
+    border-top: 1px solid #eeeeee;
+    padding-top: 16px;
 }
 
-.dynamic-list{
+.form-section-full > label {
+    display: block;
+    margin-bottom: 12px;
+    color: #ff6b8b;
+}
+
+.form-section-full > label i {
+    margin-right: 5px;
+}
+
+
+/* =========================================================
+   19. LISTAS DINÁMICAS
+========================================================= */
+
+.dynamic-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
+
     margin-top: 12px;
+
+    max-height: 180px;
+    overflow-y: auto;
+
+    padding-right: 5px;
 }
 
-.dynamic-row{
+.dynamic-row {
     display: flex;
-    gap: 10px;
     align-items: center;
+    gap: 10px;
+
     flex-wrap: wrap;
-    background: #fafafa;
-    border: 1px solid #eee;
+
+    background: #fff8fa;
+    border: 1px solid #f5dce2;
+
     border-radius: 12px;
     padding: 12px;
 }
 
 .dynamic-row input,
-.dynamic-row select{
+.dynamic-row select {
     min-width: 120px;
+    flex: 1;
+
     padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
+
+    border-radius: 9px;
+    border: 1px solid #dddddd;
+
+    background: #ffffff;
+    font-size: 13px;
 }
 
-/* =========================================
-   INFO CLIENTE
-========================================= */
+.dynamic-row input:focus,
+.dynamic-row select:focus {
+    outline: none;
+    border-color: #ff8fa3;
+}
 
-.info-cliente-grid{
+
+/* =========================================================
+   20. BOTÓN AGREGAR
+========================================================= */
+
+.btn-add {
+    margin-top: 14px;
+
+    background: #fff0f3;
+    color: #e94f76;
+
+    padding: 10px 18px;
+}
+
+.btn-add:hover {
+    background: #ffe0e7;
+}
+
+
+/* BOTÓN AGREGAR PEQUEÑO */
+
+.btn-add-small {
+    background: #ff8fa3;
+    color: #ffffff;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+}
+
+.btn-add-small:hover {
+    background: #ff6b8b;
+}
+
+
+/* =========================================================
+   21. BOTÓN ELIMINAR
+========================================================= */
+
+.btn-delete-small {
+    background: #ffe4e9;
+    color: #e34c6f;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+}
+
+.btn-delete-small:hover {
+    background: #ff6b8b;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   22. FOOTER DE MODALES
+========================================================= */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+
+    padding: 20px 25px;
+
+    border-top: 1px solid #eeeeee;
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   23. INFORMACIÓN DEL CLIENTE
+========================================================= */
+
+.info-cliente-grid {
     padding: 25px;
+
     display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
     gap: 20px;
 }
 
-.info-card{
-    background: #fafafa;
+.info-card {
+    background: #fff8fa;
+
     border-radius: 14px;
     padding: 20px;
-    border: 1px solid #eee;
+
+    border: 1px solid #f5dce2;
 }
 
-.info-card h4{
-    margin-bottom: 15px;
+.info-card h4 {
+    margin: 0 0 15px;
+
+    color: #ff6b8b;
+    font-size: 17px;
+    font-weight: 700;
 }
 
-.item-info{
-    background: white;
-    border: 1px solid #eee;
+.info-card p {
+    color: #444444;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.info-card p strong {
+    color: #222222;
+}
+
+
+/* =========================================================
+   24. TELÉFONOS
+========================================================= */
+
+.item-info {
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
     border-radius: 10px;
+
     padding: 12px;
     margin-bottom: 10px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.direccion-card{
-    background: white;
-    border: 1px solid #eee;
+.item-info strong {
+    color: #333333;
+}
+
+.item-info span {
+    color: #888888;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   25. DIRECCIONES
+========================================================= */
+
+.direccion-card {
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
     border-radius: 10px;
+
     padding: 15px;
     margin-bottom: 10px;
 }
 
-.full-width{
+.direccion-card strong {
+    color: #ff6b8b;
+}
+
+.direccion-card p {
+    margin: 8px 0;
+}
+
+.direccion-card small {
+    color: #777777;
+}
+
+.full-width {
     grid-column: 1 / -1;
 }
 
-/* =========================================
-   EMPTY
-========================================= */
 
-.empty-table{
+/* =========================================================
+   26. TABLA VACÍA
+========================================================= */
+
+.empty-table {
     text-align: center;
     padding: 40px !important;
-    color: #888;
+    color: #888888;
 }
 
-.empty-table i{
+.empty-table i {
+    display: block;
     font-size: 42px;
     margin-bottom: 12px;
-    color: #bbb;
+    color: #ffb3c1;
 }
 
-/* =========================================
-   TABLETS GRANDES
-========================================= */
+.empty-table p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   27. SCROLL DE LISTAS DINÁMICAS
+========================================================= */
+
+.dynamic-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+.dynamic-list::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+.dynamic-list::-webkit-scrollbar-thumb {
+    background: #e8a2b1;
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   28. TABLETS GRANDES
+========================================================= */
+
 @media (max-width: 1024px) {
 
-    .providers-wrapper,
     .inventory-wapper {
-        padding: 20px;
+        padding: 0 15px;
     }
 
-    .providers-header h2,
     .header-section h2 {
-        font-size: 28px;
+        font-size: 25px;
     }
 
     .modal-large {
@@ -639,31 +963,22 @@
     .tabla-clientes {
         min-width: 900px;
     }
+
 }
 
-/* =========================================
-   TABLETS
-========================================= */
+
+/* =========================================================
+   29. TABLETS
+========================================================= */
+
 @media (max-width: 768px) {
 
-    .providers-wrapper,
     .inventory-wapper {
-        padding: 15px;
+        padding: 10px;
     }
 
-    .providers-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-
-    .providers-header h2,
     .header-section h2 {
-        font-size: 24px;
-    }
-
-    .providers-header .btn-primary {
-        width: 100%;
+        font-size: 23px;
     }
 
     .filters-card {
@@ -673,9 +988,11 @@
         gap: 12px;
     }
 
-    .field {
+    .field,
+    .field:first-child {
         width: 100%;
-        min-width: unset;
+        min-width: 100%;
+        flex: unset;
     }
 
     .field input,
@@ -683,14 +1000,23 @@
         width: 100%;
     }
 
-    .action-footer {
-        justify-content: center;
-        flex-direction: column;
-        gap: 10px;
+    .btn-clear {
+        width: 100%;
     }
 
-    .action-footer button,
-    .action-footer a {
+    .table-scroll {
+        max-height: 400px;
+    }
+
+    .tabla-clientes {
+        min-width: 800px;
+    }
+
+    .action-footer {
+        justify-content: center;
+    }
+
+    .action-footer button {
         width: 100%;
     }
 
@@ -740,32 +1066,33 @@
         grid-template-columns: 1fr;
     }
 
-    .tabla-clientes {
-        min-width: 800px;
+    .full-width {
+        grid-column: 1;
     }
 
-    .acciones-tabla {
+    .modal-footer {
         flex-wrap: wrap;
     }
+
 }
 
-/* =========================================
-   CELULARES
-========================================= */
+
+/* =========================================================
+   30. CELULARES
+========================================================= */
+
 @media (max-width: 576px) {
 
-    .providers-wrapper,
     .inventory-wapper {
-        padding: 10px;
+        padding: 8px;
     }
 
-    .providers-header h2,
     .header-section h2 {
         font-size: 20px;
     }
 
     .header-section h2 i {
-        font-size: 18px;
+        font-size: 19px;
     }
 
     .filters-card {
@@ -789,7 +1116,7 @@
     .btn-secondary,
     .btn-clear,
     .btn-add {
-        width: 100%;
+        padding: 11px 14px;
     }
 
     .btn-add-small,
@@ -825,6 +1152,7 @@
     .cliente-avatar {
         width: 38px;
         height: 38px;
+        min-width: 38px;
         font-size: 15px;
     }
 
@@ -847,14 +1175,20 @@
     .direccion-card {
         padding: 10px;
     }
+
+    .modal-footer {
+        padding: 15px;
+    }
+
 }
 
-/* =========================================
-   CELULARES PEQUEÑOS
-========================================= */
+
+/* =========================================================
+   31. CELULARES PEQUEÑOS
+========================================================= */
+
 @media (max-width: 380px) {
 
-    .providers-header h2,
     .header-section h2 {
         font-size: 18px;
     }
@@ -899,13 +1233,17 @@
     .cliente-avatar {
         width: 34px;
         height: 34px;
+        min-width: 34px;
         font-size: 13px;
     }
+
 }
 
-/* =========================================
-   PANTALLAS GRANDES
-========================================= */
+
+/* =========================================================
+   32. PANTALLAS GRANDES
+========================================================= */
+
 @media (min-width: 1600px) {
 
     .inventory-wapper {
@@ -913,17 +1251,17 @@
         margin: auto;
     }
 
-    .providers-header h2,
     .header-section h2 {
-        font-size: 36px;
+        font-size: 30px;
     }
 
     .tabla-clientes th,
     .tabla-clientes td {
-        padding: 20px;
+        padding: 18px;
     }
 
     .modal-large {
         max-width: 1100px;
     }
+
 }

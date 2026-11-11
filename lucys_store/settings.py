@@ -81,18 +81,20 @@ WSGI_APPLICATION = 'lucys_store.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'LUCYS_STORE',
-        'HOST': 'DESKTOP-FS5V3MM',
+        'HOST': r'DESKTOP-9DL5PR6\SQLEXPRESS',
         'PORT': '',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',
+            'extra_params': 'TrustServerCertificate=yes',
         },
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
